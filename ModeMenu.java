@@ -19,7 +19,7 @@ import javax.swing.JPanel;
  
 @author jppolecat
 */
-public class ModeMenu extends JPanel implements ActionListener
+public class ModeMenu extends JPanel
 {
    private JButton b1, b2, b3;
    private GameMode mode;
@@ -28,15 +28,15 @@ public class ModeMenu extends JPanel implements ActionListener
    {
       b1 = new JButton("Single Player");
       b1.setMnemonic(KeyEvent.VK_S);
-      b1.setActionCommand("single");
+      b1.setActionCommand("Single");
 
       b2 = new JButton("Versus Mode");
       b2.setMnemonic(KeyEvent.VK_V);
-      b2.setActionCommand("versus");
+      b2.setActionCommand("Versus");
       
       b3 = new JButton("Set-Up Mode");
       b3.setMnemonic(KeyEvent.VK_U);
-      b3.setActionCommand("setup");
+      b3.setActionCommand("Setup");
 
       add(b1);
       add(Box.createRigidArea(new Dimension(0, 10)));
@@ -46,34 +46,32 @@ public class ModeMenu extends JPanel implements ActionListener
       
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
       
-      b1.addActionListener(this);
-      b2.addActionListener(this);
-      b3.addActionListener(this);
-      
       mode = GameMode.UNDECIDED;
    }
    
-   public void actionPerformed(ActionEvent event)
+   public void setGameMode(GameMode gm)
    {
-      String command = event.getActionCommand();
-      switch(command)
-      {
-         case ("single"): mode = GameMode.SINGLE;
-            break;
-         case ("versus"): mode = GameMode.VERSUS;
-            break;
-         case ("setup"): mode = GameMode.SET_UP;
-            break;
-         default: System.out.println("Button clicked, maybe??");
-      }
-      System.out.println(mode);
-      repaint();
-      
+       this.mode = gm;
    }
    
    public GameMode getMode()
    {
       return mode;
+   }
+   
+   public JButton getSingle()
+   {
+       return b1;
+   }
+   
+   public JButton getVersus()
+   {
+       return b2;
+   }
+   
+   public JButton getSetup()
+   {
+       return b3;
    }
    
    public void setMode(GameMode m)

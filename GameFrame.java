@@ -24,7 +24,7 @@ public class GameFrame extends JFrame implements ActionListener
    protected GamePanel gamePanel;
    protected ColorMenu colorMenu;
    protected PieceMenu pieceMenu;
-   protected JButton b1, b2;
+   protected JButton b2;
    public static void main(String[] args)
    {
       SwingUtilities.invokeLater(new Runnable()
@@ -36,7 +36,7 @@ public class GameFrame extends JFrame implements ActionListener
       });
    }
 
-   private static void createAndShowGUI()
+   public static void createAndShowGUI()
    {
       GameFrame gf = new GameFrame();
       gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,21 +45,22 @@ public class GameFrame extends JFrame implements ActionListener
    
    public GameFrame()
    {   
-      super("Polecat's Chess Game");
+      super("CrashTesters's Chess Game");
       modeMenu = new ModeMenu();
       gamePanel = new GamePanel();
       colorMenu = new ColorMenu();
       pieceMenu = new PieceMenu();
       
-      b1 = new JButton("Refresh button");
-      b1.setMnemonic(KeyEvent.VK_R);
-      b1.setActionCommand("Refresh");
-      b1.addActionListener(this);
-      
       b2 = new JButton("Main Menu");
       b2.setMnemonic(KeyEvent.VK_M);
       b2.setActionCommand("Main Menu");
       b2.addActionListener(this);
+      
+      modeMenu.getSingle().addActionListener(this);
+      modeMenu.getVersus().addActionListener(this);
+      modeMenu.getSetup().addActionListener(this);
+      colorMenu.getWhite().addActionListener(this);
+      colorMenu.getBlack().addActionListener(this);
       
       System.out.println("Created GUI on EDT? "
             + SwingUtilities.isEventDispatchThread());      
@@ -67,10 +68,7 @@ public class GameFrame extends JFrame implements ActionListener
       
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
-      add(b1, BorderLayout.NORTH);
       add(b2,BorderLayout.WEST);
-            
-//      setVisible(true);
    }
    
    public void actionPerformed(ActionEvent event)
@@ -78,9 +76,24 @@ public class GameFrame extends JFrame implements ActionListener
       String command = event.getActionCommand();
       switch(command)
       {
-         case ("Refresh"): refresh();
-            break;
          case ("Main Menu"): backToMainMenu();
+            break;
+         case ("Single"): modeMenu.setGameMode(GameMode.SINGLE);
+            refresh();
+            break;
+         case ("Versus"): modeMenu.setGameMode(GameMode.VERSUS);
+            colorMenu.setColor(PieceColor.WHITE);
+            refresh();
+            break;
+         case ("Setup"): modeMenu.setGameMode(GameMode.SET_UP);
+            refresh();
+            break;
+         case ("White"): colorMenu.setColor(PieceColor.WHITE);
+            refresh();
+            break;
+         case ("Black"): colorMenu.setColor(PieceColor.BLACK);
+            refresh();
+            gamePanel.flipFirstTurn();
             break;
       }
    }
@@ -91,7 +104,6 @@ public class GameFrame extends JFrame implements ActionListener
       remove(colorMenu);
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
-      add(b1, BorderLayout.NORTH);
       add(b2,BorderLayout.WEST);
       gamePanel.mode = GameMode.UNDECIDED;
       modeMenu.setMode(GameMode.UNDECIDED);
@@ -114,18 +126,14 @@ public class GameFrame extends JFrame implements ActionListener
       if(gamePanel.mode != GameMode.UNDECIDED)
       {
          remove(modeMenu);
-         add(colorMenu, BorderLayout.EAST);
+         if(gamePanel.mode != GameMode.VERSUS)
+            add(colorMenu, BorderLayout.EAST);
       }
       if(gamePanel.mode == GameMode.SET_UP)
       {
          add(pieceMenu, BorderLayout.SOUTH);
       }
       else if(gamePanel.mode == GameMode.SINGLE &&
-            gamePanel.humanPlayer != PieceColor.EMPTY)
-      {
-         remove(colorMenu);
-      }
-      else if(gamePanel.mode == GameMode.VERSUS &&
             gamePanel.humanPlayer != PieceColor.EMPTY)
       {
          remove(colorMenu);

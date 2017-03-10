@@ -1,9 +1,7 @@
 package chessgame;
 
 /**
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+This class is for the movements of the Rook piece
 */
 
 /**
@@ -12,11 +10,18 @@ and open the template in the editor.
 */
 public class Rook extends ChessPiece
 {
+    /*
+   This is the default constructor for a Rook
+   */
    public Rook()
    {
       type = PieceType.ROOK;
    }
    
+   /*
+   This constructor takes an input of the piece color and the starting
+   position for the Rook
+   */
    public Rook(PieceColor c, int xC, int yC)
    {
       type = PieceType.ROOK;
@@ -36,6 +41,10 @@ public class Rook extends ChessPiece
          System.out.println("Error!");
    }
    
+   /*
+   This constructor takes a piece color and sets the starting 
+   position as the default Rook position
+   */
    public Rook(PieceColor c)
    {
       type = PieceType.ROOK;
@@ -51,6 +60,10 @@ public class Rook extends ChessPiece
       }
    }
    
+   /*
+   This constructor takes a Rook as an input and copies all the
+   attributes for the new Rook piece
+   */
    public Rook(Rook cp)
    {
       type = cp.type;
@@ -64,24 +77,22 @@ public class Rook extends ChessPiece
    }
    
    /**
-   
-   @return 
+   This returns the string "Rook" 
    */
    public String toString()
    {
       return "Rook";
    }
    
+   /*
+   This method determines if a selected Rook can move to a selected 
+   square. If the bishop can move to the selected square the method returns
+   true, false otherwise
+   */
    public boolean canMove(int x, int y)
    {
       if(xCoord != x && yCoord != y)
          return false; 
       return true;
-   }
-   
-   public Rook clone() throws CloneNotSupportedException
-   {
-      super.clone();
-      return new Rook(this);
    }
 }

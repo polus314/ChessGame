@@ -16,7 +16,7 @@ import javax.swing.BoxLayout;
  
 @author jppolecat
 */
-public class ColorMenu extends JPanel implements ActionListener
+public class ColorMenu extends JPanel
 {
    private JButton b1, b2;
    private PieceColor chosenColor;
@@ -25,37 +25,37 @@ public class ColorMenu extends JPanel implements ActionListener
    {
       b1 = new JButton("Choose Black Pieces");
       b1.setMnemonic(KeyEvent.VK_B);
-      b1.setActionCommand("black");
+      b1.setActionCommand("Black");
       
       b2 = new JButton("Choose White Pieces");
       b2.setMnemonic(KeyEvent.VK_W);
-      b2.setActionCommand("white");
+      b2.setActionCommand("White");
       
       add(b1);
       add(b2); 
-      
-      b1.addActionListener(this);
-      b2.addActionListener(this);
       
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
       
       chosenColor = PieceColor.EMPTY;
    }
    
-   public void actionPerformed(ActionEvent event)
-   {
-      if(event.getActionCommand().equals("white"))
-      {
-         chosenColor = PieceColor.WHITE;
-      }
-      else
-      {
-         chosenColor = PieceColor.BLACK;
-      }
-   }
-   
    public PieceColor getColor()
    {
       return chosenColor;
+   }
+   
+   public JButton getWhite()
+   {
+       return b2;
+   }
+   
+   public JButton getBlack()
+   {
+       return b1;
+   }
+   
+   public void setColor(PieceColor pc)
+   {
+       this.chosenColor = pc;
    }
 }

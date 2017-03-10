@@ -7,6 +7,12 @@ package chessgame;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 class Checkerboard
 {
@@ -56,7 +62,7 @@ class Checkerboard
     public void paintBoard(Graphics g)
     {
       //paints the light squares
-      g.setColor(Color.lightGray);
+      g.setColor(Color.white);
       for(int j = 0; j < 8; j+=2)
          for(int i = 0; i < 8; i+=2)
             g.fillRect((xPos+(i*SQUARE_WIDTH)),(yPos+(j*SQUARE_HEIGHT)),SQUARE_WIDTH,SQUARE_HEIGHT);
@@ -65,7 +71,7 @@ class Checkerboard
             g.fillRect(xPos + (i*SQUARE_WIDTH),yPos + (j*SQUARE_HEIGHT),SQUARE_WIDTH,SQUARE_HEIGHT);
       
       //paints the dark squares
-      g.setColor(Color.green);
+      g.setColor(Color.gray);
       for(int j = 1; j < 9; j+=2)
          for(int i = 0; i < 8; i+=2)
             g.fillRect((xPos+(i*SQUARE_WIDTH)),(yPos+(j*SQUARE_HEIGHT)),SQUARE_WIDTH,SQUARE_HEIGHT);
@@ -96,8 +102,7 @@ class Checkerboard
     */
     public void paintPiece(Graphics g,ChessPiece cp)
     {
-       Font myFont = new Font("Arial", Font.BOLD, FONT_SIZE);
-       g.setFont(myFont);
+       BufferedImage img = null;
        int pieceXPos, pieceYPos;
        pieceXPos = pieceYPos = 0;
        //if piece isn't a placeholder, generic ChessPiece that represents an
@@ -119,32 +124,86 @@ class Checkerboard
        {
           case ROOK:
          {
-            g.drawString("R", pieceXPos, pieceYPos + CENTERING_AMT_Y);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/rook_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/rook_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/rook_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case KNIGHT:
          {
-            g.drawString("N", pieceXPos, pieceYPos + CENTERING_AMT_Y);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/knight_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/knight_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/knight_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case BISHOP:
          {
-            g.drawString("B", pieceXPos, pieceYPos + CENTERING_AMT_Y);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/bishop_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/bishop_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/bishop_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case QUEEN:
          {
-            g.drawString("Q", pieceXPos, pieceYPos + CENTERING_AMT_Y);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/queen_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/queen_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/queen_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case KING:
          {
-            g.drawString("K", pieceXPos, pieceYPos + CENTERING_AMT_Y);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/king_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/king_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/king_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case PAWN:
          {
-            g.fillOval(pieceXPos, pieceYPos, SQUARE_WIDTH/2, SQUARE_HEIGHT/2);
+            try {
+               if(g.getColor() == Color.white)
+                   img = ImageIO.read(new File("src/chessgame/pawn_w.png"));
+               else if(g.getColor() == Color.black)
+                   img = ImageIO.read(new File("src/chessgame/pawn_b.png"));
+               else if(g.getColor() == Color.red)
+                   img = ImageIO.read(new File("src/chessgame/pawn_r.png"));
+               g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+            } catch(Exception e) {
+            }
             break;
          }
           case EMPTY:
@@ -152,8 +211,7 @@ class Checkerboard
             break;
          }   
        }
-    }
-    
+    }  
     private int flipCoords(int x)
     {
        return 7 - x;

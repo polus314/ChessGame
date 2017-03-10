@@ -1,9 +1,7 @@
 package chessgame;
 
 /**
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+This class is for the movements of the Knight piece
 */
 
 /**
@@ -12,11 +10,19 @@ and open the template in the editor.
 */
 public class Knight extends ChessPiece
 {
+    
+    /*
+    This is the default constructor for the knight piece
+    */
    public Knight()
    {
       type = PieceType.KNIGHT;
    }
    
+   /*
+   This is the constructor that takes a piece color and a starting 
+   position for inputs
+   */
    public Knight(PieceColor c, int xC, int yC)
    {
       type = PieceType.KNIGHT;
@@ -36,6 +42,10 @@ public class Knight extends ChessPiece
          System.out.println("Error!");
    }
    
+   /*
+   This constructor takes a piece color and sets the starting 
+   position as the default position for the knight piece
+   */
    public Knight(PieceColor c)
    {
       type = PieceType.KNIGHT;
@@ -52,6 +62,11 @@ public class Knight extends ChessPiece
       else
          System.out.println("Error!");
    }
+   
+   /*
+   This takes a knight oject as input and copies all the attributes
+   to the new knight piece
+   */
    public Knight(Knight cp)
    {
       type = cp.type;
@@ -65,14 +80,18 @@ public class Knight extends ChessPiece
    }
    
    /**
-   
-   @return 
+   This returns the string "Knight" 
    */
    public String toString()
    {
       return "Knight";
    }
    
+   /*
+   This method determines if a selected Knight can move to a selected 
+   square. If the bishop can move to the selected square the method returns
+   true, false otherwise
+   */
    public boolean canMove(int x, int y)
    {
       if(xCoord + 2 == x && yCoord + 1 == y)
@@ -92,11 +111,5 @@ public class Knight extends ChessPiece
       if(xCoord - 1 == x && yCoord - 2 == y)
          return true;
       return false;
-   }
-   
-   public Knight clone() throws CloneNotSupportedException
-   {
-      super.clone();
-      return new Knight(this);
    }
 }

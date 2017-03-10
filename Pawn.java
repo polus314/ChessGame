@@ -1,9 +1,7 @@
 package chessgame;
 
 /**
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+This class is for the movements of the Pawn piece
 */
 
 /**
@@ -12,11 +10,19 @@ and open the template in the editor.
 */
 public class Pawn extends ChessPiece
 {
+    
+    /*
+    This is the default constructor for a Pawn
+    */
    public Pawn()
    {
       type = PieceType.PAWN;
    }
    
+   /*
+   This constructor takes an input of the piece color and the starting
+   position for the pawn
+   */
    public Pawn(PieceColor c, int xC, int yC)
    {
       type = PieceType.PAWN;
@@ -36,6 +42,10 @@ public class Pawn extends ChessPiece
          System.out.println("Error!");
    }
    
+   /*
+   This constructor takes a piece color and sets the starting 
+   position as the default pawn position
+   */
    public Pawn(PieceColor c)
    {
       type = PieceType.PAWN;
@@ -53,6 +63,10 @@ public class Pawn extends ChessPiece
          System.out.println("Error!");
    }
    
+   /*
+   This constructor takes a Pawn as an input and copies all the
+   attributes for the new pawn piece
+   */
    public Pawn(Pawn cp)
    {
       type = cp.type;
@@ -64,17 +78,20 @@ public class Pawn extends ChessPiece
       xCoord = cp.xCoord;
       yCoord = cp.yCoord;
    }
-      
    
    /**
-   
-   @return 
+   This returns the string "Pawn" 
    */
    public String toString()
    {
       return "Pawn";
    }
    
+   /*
+   This method determines if a selected Pawn can move to a selected 
+   square. If the bishop can move to the selected square the method returns
+   true, false otherwise
+   */
    public boolean canMove(int x, int y)
    {
       if(x != xCoord)
@@ -96,11 +113,5 @@ public class Pawn extends ChessPiece
             return true;
       }
       return false;
-   }
-   
-   public Pawn clone() throws CloneNotSupportedException
-   {
-      super.clone();
-      return new Pawn(this);
    }
 }

@@ -13,6 +13,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GamePanel extends JPanel
 {
@@ -22,6 +24,9 @@ public class GamePanel extends JPanel
    public PieceColor humanPlayer;
    public GameMode mode;
    public ChessPiece pieceToAdd;
+   
+///added next line
+   private boolean moveFinished = false;
 
    /**
     This creates the game panel. The game panel receives mouse events and 
@@ -45,22 +50,31 @@ public class GamePanel extends JPanel
             int y = e.getY();
             if (x < 400 && y < 400)
             {
-               if(mode == GameMode.SINGLE 
-                     && myBoard.gameBoard.playerToMove == humanPlayer)
+               if(mode == GameMode.SINGLE
+                     && myBoard.gameBoard.playerToMove == humanPlayer) {
                      doHumanTurn(e);
-               
+                     if(moveFinished) {
+                        doCPUTurn();
+                        moveFinished = false;
+                     }
+               }       
                if(mode == GameMode.VERSUS)
                   doHumanTurn(e);
-               
                if(mode == GameMode.SET_UP)
                   doSetUp(e);
             }
-
          }
       });
       setMinimumSize(new Dimension(425, 425));
    }
 
+   //Used for when single player plays as black, AI must move first.
+   public void flipFirstTurn()
+   {
+       doCPUTurn();
+       moveFinished = false;
+   }
+   
    public Dimension getPreferredSize()
    {
       return new Dimension(250, 200);
@@ -277,11 +291,6 @@ public class GamePanel extends JPanel
       int a, b, x, y;
       x = e.getX();
       y = e.getY();
-      if(humanPlayer == PieceColor.BLACK)
-      {
-         x = 400 - x;
-         y = 400 - y;
-      }
       a = b = 0;
       for (int i = 0; i < 8; i++)
       {
@@ -298,7 +307,6 @@ public class GamePanel extends JPanel
       ChessPiece queen;
       //declare a possible move
       ChessMove move = new ChessMove(myBoard.gameBoard.findSelected(), a, b);
-
       //if no piece is selected, select the piece clicked on
       if (myBoard.gameBoard.findSelected().equals(new ChessPiece()))
       {
@@ -326,7 +334,7 @@ public class GamePanel extends JPanel
                   if (deepBlue.checkGameOver() == null && mode == GameMode.SINGLE)
                   {
                      myBoard.gameBoard.playerToMove = myBoard.gameBoard.playerToMove.opposite();
-                     doCPUTurn();
+                     moveFinished = true;
                   }
                }
             }
@@ -348,8 +356,8 @@ public class GamePanel extends JPanel
             if (deepBlue.checkGameOver() == null && mode == GameMode.SINGLE)
             {
                updateMoveList(move);
-               myBoard.gameBoard.playerToMove = myBoard.gameBoard.playerToMove.opposite();
-               doCPUTurn();
+               myBoard.gameBoard.playerToMove = myBoard.gameBoard.playerToMove.opposite();       
+               moveFinished = true;
             }
             else if(deepBlue.checkGameOver() != null)
             {
@@ -377,8 +385,7 @@ public class GamePanel extends JPanel
             if (deepBlue.checkGameOver() == null)
             {
                updateMoveList(move);
-               myBoard.gameBoard.playerToMove = myBoard.gameBoard.playerToMove.opposite();
-               doCPUTurn();
+               moveFinished = true;
             }
             else
             {

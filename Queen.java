@@ -2,10 +2,8 @@ package chessgame;
 
 
 /**
- To change this license header, choose License Headers in Project Properties.
- To change this template file, choose Tools | Templates and open the template
- in the editor.
- */
+This class is for the movements of the Queen piece
+*/
 
 /**
 
@@ -13,11 +11,18 @@ package chessgame;
  */
 public class Queen extends ChessPiece
 {
+   /*
+   This is the default constructor for a Queen
+   */
    public Queen()
    {
       type = PieceType.QUEEN;
    }
    
+   /*
+   This constructor takes an input of the piece color and the starting
+   position for the Queen
+   */
    public Queen(PieceColor c, int xC, int yC)
    {
       type = PieceType.QUEEN;
@@ -39,6 +44,10 @@ public class Queen extends ChessPiece
       }
    }
    
+   /*
+   This constructor takes a piece color and sets the starting 
+   position as the default Queen position
+   */
    public Queen(PieceColor c)
    {
       type = PieceType.QUEEN;
@@ -58,6 +67,10 @@ public class Queen extends ChessPiece
       }
    }
    
+   /*
+   This constructor takes a Queen as an input and copies all the
+   attributes for the new Queen piece
+   */
    public Queen(Queen cp)
    {
       type = cp.type;
@@ -71,14 +84,18 @@ public class Queen extends ChessPiece
    }
 
    /**
-
-    @return
-    */
+   This returns the string "Pawn" 
+   */
    public String toString()
    {
       return "Queen";
    }
 
+   /*
+   This method determines if a selected Queen can move to a selected 
+   square. If the bishop can move to the selected square the method returns
+   true, false otherwise
+   */
    public boolean canMove(int x, int y)
    {
       for (int i = 1; i < 8; i++)
