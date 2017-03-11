@@ -86,7 +86,7 @@ public class Rook extends ChessPiece
    
    /*
    This method determines if a selected Rook can move to a selected 
-   square. If the bishop can move to the selected square the method returns
+   square. If the rook can move to the selected square the method returns
    true, false otherwise
    */
    public boolean canMove(int x, int y)

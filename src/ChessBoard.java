@@ -1,20 +1,21 @@
 package chessgame;
 
+import java.util.ArrayList;
+
 /**
  This class creates a 64 square checkerboard using an array that can hold
  chess pieces.
 
  @author jppolecat
  */
-
 public class ChessBoard
 {
-
-   public ChessPiece[][] pieceArray = new ChessPiece[8][8];
+   // TODO - make not all these public, pretty smelly
+   private ChessPiece[][] pieceArray;
    public boolean gameOver;
    public PieceColor playerToMove;
-   public ChessMove[] wMoveList = new ChessMove[121];
-   public ChessMove[] bMoveList = new ChessMove[121];
+   public ArrayList<ChessMove> wMoveList;
+   public ArrayList<ChessMove> bMoveList;
    public int numWMoves;
    public int numBMoves;
    public float mobilityRating;
@@ -26,6 +27,7 @@ public class ChessBoard
     */
    public ChessBoard()
    {
+      pieceArray = new ChessPiece[8][8];
       //set up pieces on each side
       for (int i = 0; i < 8; i++)
       {
@@ -65,46 +67,75 @@ public class ChessBoard
          }
       }
 
+      wMoveList = new ArrayList<>();
+      bMoveList = new ArrayList<>();
       gameOver = false;
       playerToMove = PieceColor.WHITE;
    }
 
    /**
     Copy constructor
-   
+
     @param template
     */
    public ChessBoard(ChessBoard template)
    {
+      pieceArray = new ChessPiece[8][8];
       copy(template);
    }
-   
+
    public ChessBoard(PieceType type)
    {
       //implement setting up only white or black?
-      
+
       if (type == PieceType.EMPTY)
       {
          for (int i = 0; i < 8; i++)
+         {
             for (int j = 0; j < 8; j++)
+            {
                pieceArray[i][j] = new ChessPiece();
+            }
+         }
       }
    }
    
    /**
-   This method determines whether a piece can capture another piece at the 
-   given coordinates, basically whether the piece can move there, except for
-   pawns. Used in checkForCheck(), ironically doesn't check for Check for this
-   move
-   
-   @param cp
-   @param xDest
-   @param yDest
-   @return 
+   Returns the piece at the given board coordinates
+   @param row           - row of piece, rows start at 0
+   @param col           - column of piece, columns start at 0
+   @return ChessPiece   - chess piece that is at the given coordinates
    */
+   public ChessPiece getPieceAt(int row, int col)
+   {
+      return pieceArray[row][col];
+   }
+   
+   /**
+   Sets the piece at the given board coordinates
+   @param cp   - chess piece to place at these coordinates
+   @param row  - row of piece, rows start at 0
+   @param col  - column of piece, columns start at 0
+   */
+   public void setPieceAt(ChessPiece cp, int row, int col)
+   {
+      pieceArray[row][col] = cp;
+   }
+
+   /**
+    This method determines whether a piece can capture another piece at the
+    given coordinates, basically whether the piece can move there, except for
+    pawns. Used in checkForCheck(), ironically doesn't check for Check for
+    this move
+
+    @param cp
+    @param xDest
+    @param yDest
+    @return
+    */
    public boolean canCapture(ChessPiece cp, int xDest, int yDest)
    {
-      if (cp instanceof Pawn 
+      if (cp instanceof Pawn
             && pieceArray[xDest][yDest].getColor() == cp.getColor().opposite())
       {
          if (cp.yCoord + 1 == yDest && cp.color == PieceColor.BLACK)
@@ -128,86 +159,45 @@ public class ChessBoard
          if (cp.canMove(xDest, yDest)
                && pathIsClear(xDest, yDest)
                && spaceIsOpen(xDest, yDest, cp.getColor()))
+         {
             return true;
+         }
       }
       return false;
    }
-   
+
    public boolean canCastleKS(PieceColor color)
    {
-      System.out.println("In canCastleKS()");
-//      boolean canDo = true;
-      int y;
-      if(color == PieceColor.BLACK)
-         y = 0;
-      else
-         y = 7;
+      int y = color == PieceColor.BLACK ? 0 : 7;
+      
       //check to see if King and Rook are present and unmoved
       ChessPiece cp = pieceArray[4][y];
-      System.out.println("Level 0");
-      if(cp.type != PieceType.KING || cp.hasMoved == true)
-         return false;
-      
-      cp = pieceArray[7][y];
-      System.out.println("Level 1");
-      if(cp.type != PieceType.ROOK || cp.hasMoved == true)
-         return false;
-      
-      System.out.println("Level 2");
-      if(!spaceIsEmpty(5,y) || !spaceIsEmpty(6,y))
-         return false;
-      
-      System.out.println("Level 3");
-      pieceArray[4][y].unselect();
-      for(int i = 0; i < 8; i++)
+      if (cp.type != PieceType.KING || cp.hasMoved == true)
       {
-         for(int j = 0; j < 8; j++)
-         {
-            pieceArray[i][j].select();
-            if(pieceArray[i][j].getColor() == color.opposite()
-                  && (canCapture(pieceArray[i][j],4,y)
-                  || canCapture(pieceArray[i][j],5,y)
-                  || canCapture(pieceArray[i][j],6,y)))
-            {
-               pieceArray[i][j].unselect();
-               return false;
-            }
-            pieceArray[i][j].unselect();
-         }
+         return false;
       }
-      pieceArray[4][y].select();
-      System.out.println("Level 4");
-      return true;  
-   }
-   
-   public boolean canCastleQS(PieceColor color)
-   {
-      int y;
-      if(color == PieceColor.BLACK)
-         y = 0;
-      else
-         y = 7;
-      //check to see if King and Rook are present and unmoved
-      ChessPiece cp = pieceArray[4][y];
-      if(cp.type != PieceType.KING || cp.hasMoved == true)
-         return false;
-      
-      cp = pieceArray[0][y];
-      if(cp.type != PieceType.ROOK || cp.hasMoved == true)
-         return false;
 
-      if(!spaceIsEmpty(1,y) || !spaceIsEmpty(2,y) || !spaceIsEmpty(3,y))
-         return false;
-      pieceArray[4][y].unselect();
-      for(int i = 0; i < 8; i++)
+      cp = pieceArray[7][y];
+      if (cp.type != PieceType.ROOK || cp.hasMoved == true)
       {
-         for(int j = 0; j < 8; j++)
+         return false;
+      }
+
+      if (!spaceIsEmpty(5, y) || !spaceIsEmpty(6, y))
+      {
+         return false;
+      }
+
+      pieceArray[4][y].unselect();
+      for (int i = 0; i < 8; i++)
+      {
+         for (int j = 0; j < 8; j++)
          {
             pieceArray[i][j].select();
-            if(pieceArray[i][j].getColor() == color.opposite()
-                  && (canCapture(pieceArray[i][j],2,y)
-                  || canCapture(pieceArray[i][j],3,y)
-                  || canCapture(pieceArray[i][j],4,y)))
+            if (pieceArray[i][j].getColor() == color.opposite()
+                  && (canCapture(pieceArray[i][j], 4, y)
+                  || canCapture(pieceArray[i][j], 5, y)
+                  || canCapture(pieceArray[i][j], 6, y)))
             {
                pieceArray[i][j].unselect();
                return false;
@@ -219,12 +209,54 @@ public class ChessBoard
       System.out.println("Level 4");
       return true;
    }
-   
+
+   public boolean canCastleQS(PieceColor color)
+   {
+      int y = color == PieceColor.BLACK ? 0 : 7;
+      
+      //check to see if King and Rook are present and unmoved
+      ChessPiece cp = pieceArray[4][y];
+      if (cp.type != PieceType.KING || cp.hasMoved == true)
+      {
+         return false;
+      }
+
+      cp = pieceArray[0][y];
+      if (cp.type != PieceType.ROOK || cp.hasMoved == true)
+      {
+         return false;
+      }
+
+      if (!spaceIsEmpty(1, y) || !spaceIsEmpty(2, y) || !spaceIsEmpty(3, y))
+      {
+         return false;
+      }
+      pieceArray[4][y].unselect();
+      for (int i = 0; i < 8; i++)
+      {
+         for (int j = 0; j < 8; j++)
+         {
+            pieceArray[i][j].select();
+            if (pieceArray[i][j].getColor() == color.opposite()
+                  && (canCapture(pieceArray[i][j], 2, y)
+                  || canCapture(pieceArray[i][j], 3, y)
+                  || canCapture(pieceArray[i][j], 4, y)))
+            {
+               pieceArray[i][j].unselect();
+               return false;
+            }
+            pieceArray[i][j].unselect();
+         }
+      }
+      pieceArray[4][y].select();
+      return true;
+   }
+
    public boolean capturePiece(int x, int y)
    {
-      int[] coords = findSelectedCoords();
-      int xSel = coords[0];
-      int ySel = coords[1];
+      ChessPiece selected = findSelected();
+      int xSel = selected.getX();
+      int ySel = selected.getY();
       PieceColor selColor = pieceArray[xSel][ySel].getColor();
       PieceColor captureColor = pieceArray[x][y].getColor();
       if (pieceArray[xSel][ySel] instanceof Pawn
@@ -256,8 +288,8 @@ public class ChessBoard
       {
          if (pathIsClear(x, y) && selColor != captureColor)
          {
-            movedBoard.replacePiece(xSel,ySel,x,y);
-            if(!movedBoard.checkForCheck(selColor))
+            movedBoard.replacePiece(xSel, ySel, x, y);
+            if (!movedBoard.checkForCheck(selColor))
             {
                replacePiece(xSel, ySel, x, y);
                if (pieceArray[x][y] instanceof King
@@ -274,41 +306,39 @@ public class ChessBoard
       }
       return false;
    }
-   
+
    public boolean castle(ChessMove move)
    {
-      
-      if(move.piece.type == PieceType.KING)
+      ChessPiece castler = move.piece;
+      if (castler.type == PieceType.KING)
       {
-         int y;
-         if (move.piece.getColor() == PieceColor.WHITE)
-            y = 7;
-         else
-            y = 0;
-         if(canCastleKS(move.piece.getColor()) && move.getXDest() == 6)
+         int y = castler.getColor() == PieceColor.WHITE ? 7 : 0;
+
+         if (canCastleKS(castler.getColor()) && move.getXDest() == 6)
          {
             move.setMoveType(MoveType.CASTLE_KS);
-            replacePiece(4,y,6,y);
-            replacePiece(7,y,5,y);
+            replacePiece(4, y, 6, y);
+            replacePiece(7, y, 5, y);
             return true;
          }
-         if(canCastleQS(move.piece.getColor()) && move.getXDest() == 2)
+         if (canCastleQS(castler.getColor()) && move.getXDest() == 2)
          {
             move.setMoveType(MoveType.CASTLE_QS);
-            replacePiece(4,y,2,y);
-            replacePiece(0,y,3,y);
+            replacePiece(4, y, 2, y);
+            replacePiece(0, y, 3, y);
             return true;
          }
       }
       return false;
    }
-   
+
    /**
-   This method determines if the player of the given color is in check, if no
-   King is found, returns false
-   @param color
-   @return true if opposing player can capture King from this position
-   */
+    This method determines if the player of the given color is in check, if no
+    King is found, returns false
+
+    @param color
+    @return true if opposing player can capture King from this position
+    */
    public boolean checkForCheck(PieceColor color)
    {
       boolean hasCheck = false;
@@ -317,13 +347,13 @@ public class ChessBoard
       {
          return false;
       }
-      King royalty = (King) cp;
+      
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
             pieceArray[i][j].select();
-            if (canCapture(pieceArray[i][j], royalty.xCoord, royalty.yCoord))
+            if (canCapture(pieceArray[i][j], cp.xCoord, cp.yCoord))
             {
                hasCheck = true;
             }
@@ -332,7 +362,7 @@ public class ChessBoard
       }
       return hasCheck;
    }
-   
+
    private boolean clearPathBishop(int xi, int yi, int x, int y)
    {
       for (int i = 1; i < 8; i++) //see Bishop.canMove(int,int)
@@ -380,7 +410,7 @@ public class ChessBoard
       }
       return true;
    }
-   
+
    private boolean clearPathRook(int xi, int yi, int x, int y)
    {
       if (y < yi && xi == x)
@@ -425,12 +455,13 @@ public class ChessBoard
       }
       return true;
    }
-   
-      /**
-   This method compares two Chess Boards, useful for sorting
-   @param cb
-   @return -1 if this is worse, 0 if equal, 1 if better than param
-   */
+
+   /**
+    This method compares two Chess Boards, useful for sorting
+
+    @param cb
+    @return -1 if this is worse, 0 if equal, 1 if better than param
+    */
    public int compareTo(ChessBoard cb)
    {
       if (cb.materialRating > materialRating)
@@ -450,19 +481,21 @@ public class ChessBoard
       }
       return 1;
    }
-   
-      /**
-   An apparently useless method I wrote early in making this game
-   @return 
-   */
+
+   /**
+    An apparently useless method I wrote early in making this game
+
+    @return int - number of pieces on the board
+    */
    public int countPieces()
    {
       int count = 0;
+      ChessPiece blank = new ChessPiece();
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            if (!pieceArray[j][i].equals(new ChessPiece()))
+            if (!pieceArray[i][j].equals(blank))
             {
                count++;
             }
@@ -470,28 +503,37 @@ public class ChessBoard
       }
       return count;
    }
-   
-      /**
-   Two ChessBoards are equal if each square has the same piece on both
-   @param obj
-   @return 
-   */
+
+   /**
+    Two ChessBoards are equal if each square has the same piece on both
+
+    @param obj
+    @return
+    */
+   @Override
    public boolean equals(Object obj)
    {
-      boolean isEqual = true;
-      if (obj instanceof ChessBoard)
+      if(!(obj instanceof ChessBoard))
+      {
+         return false;
+      } 
+      else
       {
          ChessBoard cb = (ChessBoard) obj;
          for (int i = 0; i < 8; i++)
+         {
             for (int j = 0; j < 8; j++)
-               if(!pieceArray[i][j].equals(cb.pieceArray[i][j]))
-                  isEqual = false;
+            {
+               if (!pieceArray[i][j].equals(cb.pieceArray[i][j]))
+               {
+                  return false;
+               }
+            }
+         }
       }
-      else
-         isEqual = false;
-      return isEqual;
+      return true;
    }
-   
+
    /**
     Finds a piece on the ChessBoard. A piece is the same if it is the same
     type and color.
@@ -514,8 +556,8 @@ public class ChessBoard
       }
       return new ChessPiece();
    }
-   
-      public ChessPiece findSelected()
+
+   public ChessPiece findSelected()
    {
       for (int i = 0; i < 8; i++)
       {
@@ -529,29 +571,8 @@ public class ChessBoard
       }
       return new ChessPiece();
    }
-      
-   public int[] findSelectedCoords()
-   {
-      int[] coords =
-      {
-         0, 0
-      };
-      for (int i = 0; i < 8; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            if (pieceArray[i][j].selected)
-            {
-               coords[0] = i;
-               coords[1] = j;
-               return coords;
-            }
-         }
-      }
-      return coords;
-   }
-   
-   public boolean movePiece(int xf, int yf)   
+
+   public boolean movePiece(int xf, int yf)
    {
       int xi, yi;
       xi = yi = -1;
@@ -571,13 +592,12 @@ public class ChessBoard
          return false;
       }
       ChessPiece mover = pieceArray[xi][yi];
-      
 
       ChessBoard movedBoard = new ChessBoard(this);
-      if(mover.canMove(xf, yf) && pathIsClear(xf, yf))
+      if (mover.canMove(xf, yf) && pathIsClear(xf, yf))
       {
          movedBoard.replacePiece(xi, yi, xf, yf);
-         if(!movedBoard.checkForCheck(mover.getColor()))
+         if (!movedBoard.checkForCheck(mover.getColor()))
          {
             replacePiece(xi, yi, xf, yf);
             if (mover instanceof King // castling concerns
@@ -593,7 +613,7 @@ public class ChessBoard
       }
       return false;
    }
-   
+
    public ChessPiece needPromotion()
    {
       for (int i = 0; i < 8; i++)
@@ -609,7 +629,7 @@ public class ChessBoard
       }
       return new ChessPiece();
    }
-   
+
    /**
     This method determines if a chess piece has any pieces blocking its way.
     It is assumed that the coordinates constitute a valid move for that piece
@@ -622,9 +642,9 @@ public class ChessBoard
    public boolean pathIsClear(int x, int y)
    {
       boolean clear = true;
-      int[] coords = findSelectedCoords();
-      int xi = coords[0];
-      int yi = coords[1];
+      ChessPiece selected = findSelected();
+      int xi = selected.getX();
+      int yi = selected.getY();
       switch (findSelected().type)
       {
          case PAWN:
@@ -674,11 +694,11 @@ public class ChessBoard
     */
    public boolean spaceIsOpen(int x, int y, PieceColor color)
    {
-      boolean open = pieceArray[x][y].equals(new ChessPiece())
+      return pieceArray[x][y].equals(new ChessPiece())
             || pieceArray[x][y].getColor() != color;
-      return open;
    }
 
+   // TODO - not deal with graphics in this class
    public void replacePiece(int xi, int yi, int xf, int yf)
    {
       pieceArray[xi][yi].movePieceShape(xf, yf); //graphical position
@@ -704,21 +724,21 @@ public class ChessBoard
       gameOver = cb.gameOver;
       playerToMove = cb.playerToMove;
    }
-   
+
    public String toString()
    {
       String string = "";
-      for(int i = 0; i < 8; i++)
+      for (int i = 0; i < 8; i++)
       {
-         string = string + "\n";
-         for(int j = 0; j < 8; j++)
+         string += "\n";
+         for (int j = 0; j < 8; j++)
          {
             string = string + pieceArray[j][i].toString() + " ";
          }
       }
       return string;
    }
-   
+
    /**
     This method tells you whose turn it is to make the next move.
 
@@ -727,10 +747,5 @@ public class ChessBoard
    public PieceColor whoseTurn()
    {
       return playerToMove;
-   }
-   
-   public static void main(String args[])
-   {
-      
    }
 }

@@ -151,7 +151,7 @@ public class GameFrame extends JFrame implements ActionListener
    private ChessPiece determinePieceToAdd()
    {
       PieceType type = pieceMenu.getPieceType();
-      ChessPiece piece = new ChessPiece();
+      ChessPiece piece;
       switch (type)
       {
          case KING: piece = new King(colorMenu.getColor());

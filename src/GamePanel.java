@@ -105,7 +105,7 @@ public class GamePanel extends JPanel
    */
    public void selectPiece(int x, int y)
    {
-      myBoard.gameBoard.pieceArray[x][y].toggleSelected();
+      myBoard.gameBoard.getPieceAt(x,y).toggleSelected();
    }
 
    /**
@@ -248,24 +248,25 @@ public class GamePanel extends JPanel
       //capture
       if (move.getMoveType() == MoveType.UNOCCUPIED)
       {
-         myBoard.gameBoard.pieceArray[move.piece.getX()][move.piece.getY()].select();
+         myBoard.gameBoard.getPieceAt(move.piece.getX(), move.piece.getY()).select();
          myBoard.gameBoard.movePiece(move.getXDest(), move.getYDest());
       }
       else if (move.getMoveType() == MoveType.CAPTURE)
       {
-         myBoard.gameBoard.pieceArray[move.piece.getX()][move.piece.getY()].select();
+         myBoard.gameBoard.getPieceAt(move.piece.getX(), move.piece.getY()).select();
          myBoard.gameBoard.capturePiece(move.getXDest(), move.getYDest());
       }
       else
       {
          System.out.println("The CPU Turn is messed up!");
       }
+      queen = myBoard.gameBoard.needPromotion();
       //promote pawns as necessary
-      if (!myBoard.gameBoard.needPromotion().equals(new ChessPiece()))
+      if (!queen.equals(new ChessPiece()))
       {
-         queen = myBoard.gameBoard.needPromotion();
-         myBoard.gameBoard.pieceArray[queen.getX()][queen.getY()]
-               = new Queen(queen.getColor(), queen.getX(), queen.getY());
+         int x = queen.getX(), y = queen.getY();
+         queen = new Queen(queen.getColor(), x, y);
+         myBoard.gameBoard.setPieceAt(queen, x, y);
          move.setMoveType(MoveType.PROMOTION);
       }
       //introduces concept of check, not implemented logically yet for human
@@ -310,13 +311,13 @@ public class GamePanel extends JPanel
       //if no piece is selected, select the piece clicked on
       if (myBoard.gameBoard.findSelected().equals(new ChessPiece()))
       {
-         if(myBoard.gameBoard.pieceArray[a][b].getColor() == myBoard.gameBoard.playerToMove)
+         if(myBoard.gameBoard.getPieceAt(a,b).getColor() == myBoard.gameBoard.playerToMove)
             selectPiece(a, b);
       }
       //if clicked piece is selected, unselect the piece
-      else if (myBoard.gameBoard.findSelected().equals(myBoard.gameBoard.pieceArray[a][b]))
+      else if (myBoard.gameBoard.findSelected().equals(myBoard.gameBoard.getPieceAt(a,b)))
       {
-         myBoard.gameBoard.pieceArray[a][b].unselect();
+         myBoard.gameBoard.getPieceAt(a,b).unselect();
       }
       //if piece is selected and space clicked on is empty, try to 
       //move to that space, will only work if piece moves that direction
@@ -342,11 +343,12 @@ public class GamePanel extends JPanel
          if (myBoard.gameBoard.movePiece(a, b))
          {
             //if a pawn is on the last rank, places a queen there
-            if (!myBoard.gameBoard.needPromotion().equals(new ChessPiece()))
+            queen = myBoard.gameBoard.needPromotion();
+            if (!queen.equals(new ChessPiece()))
             {
-               queen = myBoard.gameBoard.needPromotion();
-               myBoard.gameBoard.pieceArray[queen.getX()][queen.getY()]
-                     = new Queen(queen.getColor(), queen.getX(), queen.getY());
+               int xCoord = queen.getX(), yCoord = queen.getY();
+               queen = new Queen(queen.getColor(), xCoord, yCoord);
+               myBoard.gameBoard.setPieceAt(queen, xCoord, yCoord);
                move.setMoveType(MoveType.PROMOTION);
             }
             if(myBoard.gameBoard.checkForCheck(humanPlayer.opposite()))
@@ -375,11 +377,12 @@ public class GamePanel extends JPanel
             move.setMoveType(MoveType.CAPTURE);
             if(myBoard.gameBoard.checkForCheck(humanPlayer.opposite()))
                move.givesCheck = true;
+            queen = myBoard.gameBoard.needPromotion();
             if (!myBoard.gameBoard.needPromotion().equals(new ChessPiece()))
             {
-               queen = myBoard.gameBoard.needPromotion();
-               myBoard.gameBoard.pieceArray[queen.getX()][queen.getY()]
-                     = new Queen(queen.getColor(), queen.getX(), queen.getY());
+               int xCoord = queen.getX(), yCoord = queen.getY();
+               queen = new Queen(queen.getColor(), xCoord, yCoord);
+               myBoard.gameBoard.setPieceAt(queen, xCoord, yCoord);  
                move.setMoveType(MoveType.PROMOTION);
             }
             if (deepBlue.checkGameOver() == null)
@@ -421,20 +424,20 @@ public class GamePanel extends JPanel
       ChessPiece selPiece = board.findSelected();
       if(pieceToAdd.equals(new ChessPiece()))
       {
-         board.pieceArray[a][b] = new ChessPiece();
+         board.setPieceAt(new ChessPiece(), a, b);
       }
       if(selPiece.equals(new ChessPiece())
-            && !board.pieceArray[a][b].equals(new ChessPiece()))
+            && !board.getPieceAt(a,b).equals(new ChessPiece()))
       {
-         board.pieceArray[a][b].select();
+         board.getPieceAt(a,b).select();
       }
       else if(selPiece.equals(new ChessPiece()))
       {
-         board.pieceArray[a][b] = addPiece(a,b);
+         board.setPieceAt(addPiece(a,b), a, b);
       }
-      else if(selPiece.equals(board.pieceArray[a][b]))
+      else if(selPiece.equals(board.getPieceAt(a,b)))
       {
-         board.pieceArray[a][b].unselect();
+         board.getPieceAt(a,b).unselect();
       }
       else
       {

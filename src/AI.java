@@ -11,11 +11,18 @@ public class AI
 
    private ChessBoard gameBoard;
 
+   /**
+   Default constructor, initializes the chessboard to the start of a new game
+   */
    public AI()
    {
       gameBoard = new ChessBoard();
    }
 
+   /**
+   Parameterized constructor, sets the chessboard to cb
+   @param cb - board that AI should use for calculations
+   */
    public AI(ChessBoard cb)
    {
       gameBoard = new ChessBoard(cb);
@@ -38,16 +45,23 @@ public class AI
       xf = cm.getXDest();
       yf = cm.getYDest();
       nextNode.replacePiece(xi, yi, xf, yf);
-      if (nextNode.pieceArray[xf][yf] instanceof King // castling concerns
-            || cb.pieceArray[xf][yf] instanceof Rook)
+      if (nextNode.getPieceAt(xf, yf) instanceof King // castling concerns
+            || cb.getPieceAt(xf, yf) instanceof Rook)
       {
-         nextNode.pieceArray[xf][yf].hasMoved = true;
+         nextNode.getPieceAt(xf, yf).hasMoved = true;
       }
       nextNode.mobilityRating = cm.getMobilityRating();
       nextNode.materialRating = cm.getMaterialRating();
       return nextNode;
    }
    
+   /**
+   Finds all chess pieces that can attack/defend the square at (xDest, yDest)
+   @param cb      - board to check
+   @param xDest   - x position of target square
+   @param yDest   - y position of target square
+   @return array of all chess pieces that can attack this square
+   */
    public ChessPiece[] aimedHere(ChessBoard cb, int xDest, int yDest)
    {
       ChessPiece [] defenders = new ChessPiece [32];
@@ -55,21 +69,35 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            ChessPiece cp = cb.pieceArray[i][j];
+            boolean isADefender = false;
+            ChessPiece cp = cb.getPieceAt(i,j);
             cp.select();
-            if(cp.canMove(xDest, yDest) 
-                  && cb.pathIsClear(xDest, yDest)
-                  && cp.type != PieceType.PAWN)
-               defenders[length(defenders)] = cp;
-            else if(cp.type == PieceType.PAWN
-                  && cp.color == PieceColor.BLACK
-                  && (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
-                  && cp.yCoord + 1 == yDest)
-               defenders[length(defenders)] = cp;
-            else if(cp.type == PieceType.PAWN
-                  && cp.color == PieceColor.WHITE
-                  && (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
-                  && cp.yCoord - 1 == yDest)
+            
+            // if regular non-empty piece, check if it can move here and the
+            // path is clear
+            if(!cp.equals(new ChessPiece()) && cp.type != PieceType.PAWN)
+            {
+               isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(xDest, yDest);
+            }
+            // if a pawn, they capture differently than they move
+            else
+            {
+               // square must be one column to the left or right
+               if(cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
+               {
+                  // Black captures down, White captures up
+                  if(cp.color == PieceColor.BLACK && cp.yCoord + 1 == yDest)
+                  {
+                     isADefender = true;
+                  }
+                  else if(cp.color == PieceColor.WHITE && cp.yCoord - 1 == yDest)
+                  {
+                     isADefender = true;
+                  }
+               }
+            }
+            
+            if(isADefender)
                defenders[length(defenders)] = cp;
             cp.unselect();
          }
@@ -77,37 +105,48 @@ public class AI
       return defenders;
    }
    
+   /**
+   Checks to see if either side has been checkmated or if stalemate has
+   occurred.
+   @return PieceColor - WHITE if White has won
+                        BLACK if Black has won
+                        EMPTY if stalemate has occurred
+                        null if game isn't over
+   TODO - rename and/or write a second method
+   */
    public PieceColor checkGameOver()
    {
+      // don't want to change the member, so make a copy
       ChessBoard gammyBoard = new ChessBoard(gameBoard);
-      int numWMoves, numBMoves;
-      numWMoves = length(findAllMoves(PieceColor.WHITE, gammyBoard));
-      numBMoves = length(findAllMoves(PieceColor.BLACK, gammyBoard));
-      System.out.println("Number of pieces on the board: " + gammyBoard.countPieces());
-      if (numBMoves == 0)
+      int numWMoves = length(findAllMoves(PieceColor.WHITE, gammyBoard));
+      int numBMoves = length(findAllMoves(PieceColor.BLACK, gammyBoard));
+
+      // TODO - should take whose move it is into account?
+      if (numBMoves == 0) // if Black has no moves
       {
-         if(gammyBoard.checkForCheck(PieceColor.BLACK))
+         if(gammyBoard.checkForCheck(PieceColor.BLACK)) // Black is checkmated
          {
             gameBoard.gameOver = true;
             return PieceColor.WHITE;
          }
          else
          {
-            return PieceColor.EMPTY;
-         }
+            return PieceColor.EMPTY;   // Black isn't in check, but can't move
+         }                             // so it is stalemate
       }
       else if (numWMoves == 0)
       {
-         if(gammyBoard.checkForCheck(PieceColor.WHITE))
+         if(gammyBoard.checkForCheck(PieceColor.WHITE)) // White is checkmated
          {
             gameBoard.gameOver = true;
             return PieceColor.BLACK;
          }
          else
          {
-            return PieceColor.EMPTY;
-         }
+            return PieceColor.EMPTY;   // White isn't in check, but can't move
+         }                             // so it is stalemate
       }
+      // impossible to checkmate with this many pieces
       else if(gammyBoard.countPieces() == 2)
       {
          gameBoard.gameOver = true;
@@ -186,13 +225,13 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            cb.pieceArray[i][j].select();
-            if (cb.pieceArray[i][j].getColor() == color)
+            cb.getPieceAt(i,j).select();
+            if (cb.getPieceAt(i,j).getColor() == color)
             {
-               ChessMove [] tempList = findMoves(cb, cb.pieceArray[i][j]);
+               ChessMove [] tempList = findMoves(cb, cb.getPieceAt(i,j));
                concatenateMoveLists(moveList, tempList);
             }
-            cb.pieceArray[i][j].unselect();
+            cb.getPieceAt(i,j).unselect();
          }
       }
       return moveList;
@@ -388,7 +427,7 @@ public class AI
                //this is how pawns capture
                if (color == PieceColor.WHITE && yi - yf == 1
                      && (xi - xf == 1 || xf - xi == 1)
-                     && cb.pieceArray[xf][yf].getColor() == PieceColor.BLACK)
+                     && cb.getPieceAt(xf, yf).getColor() == PieceColor.BLACK)
                {
                   possMove.setMoveType(MoveType.CAPTURE);
                   moveList[numMoves] = possMove;
@@ -396,7 +435,7 @@ public class AI
                }
                if (color == PieceColor.BLACK && yf - yi == 1
                      && (xi - xf == 1 || xf - xi == 1)
-                     && cb.pieceArray[xf][yf].getColor() == PieceColor.WHITE)
+                     && cb.getPieceAt(xf, yf).getColor() == PieceColor.WHITE)
                {
                   possMove.setMoveType(MoveType.CAPTURE);
                   moveList[numMoves] = possMove;
@@ -411,7 +450,6 @@ public class AI
    public int generateMoveTree(Tree parentTree, PieceColor color)
    {
       ChessMove [] moveList = findAllMoves(color, parentTree.info);
-      //System.out.println("Length of moveList1: " + length(moveList));
       int legalMoves = length(moveList);
       if (legalMoves == 0)
       {
@@ -440,14 +478,10 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            if(cb.pieceArray[i][j].getColor() == color)
-               pieces[length(pieces)] = cb.pieceArray[i][j];
+            if(cb.getPieceAt(i,j).getColor() == color)
+               pieces[length(pieces)] = cb.getPieceAt(i,j);
          }
       }
-//      if(color == PieceColor.WHITE)
-//         System.out.println("White pieces: " + length(pieces));
-//      else
-//         System.out.println("Black pieces:" + length(pieces));
       return pieces;
    }
    
@@ -523,37 +557,37 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            cb.pieceArray[i][j].select();
-            if (cb.pieceArray[i][j].getColor() == color)
+            cb.getPieceAt(i,j).select();
+            if (cb.getPieceAt(i,j).getColor() == color)
             {
                for (int k = 0; k < 8; k++)
                {
                   for (int m = 0; m < 8; m++)
                   {
-                     if (cb.pieceArray[i][j].canMove(k, m)
+                     if (cb.getPieceAt(i,j).canMove(k, m)
                            && cb.pathIsClear(k, m)
                            && cb.spaceIsEmpty(k, m))
                      {
                         numMoves++;
                      }
-                     else if (cb.pieceArray[i][j].canMove(k, m)
+                     else if (cb.getPieceAt(i,j).canMove(k, m)
                            && cb.pathIsClear(k, m)
-                           && cb.spaceIsOpen(k, m, cb.pieceArray[i][j].getColor())
-                           && !(cb.pieceArray[i][j] instanceof Pawn))
+                           && cb.spaceIsOpen(k, m, cb.getPieceAt(i,j).getColor())
+                           && !(cb.getPieceAt(i,j) instanceof Pawn))
                      {
                         numMoves++;
                      }
-                     else if (cb.pieceArray[i][j] instanceof Pawn)
+                     else if (cb.getPieceAt(i,j) instanceof Pawn)
                      {
                         if (color == PieceColor.WHITE && j - m == 1
                               && (i - k == 1 || k - i == 1)
-                              && cb.pieceArray[k][m].getColor() == PieceColor.BLACK)
+                              && cb.getPieceAt(k,m).getColor() == PieceColor.BLACK)
                         {
                            numMoves++;
                         }
                         if (color == PieceColor.BLACK && m - j == 1
                               && (i - k == 1 || k - i == 1)
-                              && cb.pieceArray[k][m].getColor() == PieceColor.WHITE)
+                              && cb.getPieceAt(k,m).getColor() == PieceColor.WHITE)
                         {
                            numMoves++;
                         }
@@ -561,7 +595,7 @@ public class AI
                   }
                }
             }
-            cb.pieceArray[i][j].unselect();
+            cb.getPieceAt(i,j).unselect();
          }
       }
       return numMoves;
@@ -609,10 +643,10 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            totalMaterial += cb.pieceArray[i][j].value;
-            if (cb.pieceArray[i][j].getColor().equals(color))
+            totalMaterial += cb.getPieceAt(i,j).value;
+            if (cb.getPieceAt(i,j).getColor().equals(color))
             {
-               myMaterial += cb.pieceArray[i][j].value;
+               myMaterial += cb.getPieceAt(i,j).value;
             }
          }
       }
@@ -638,16 +672,18 @@ public class AI
    {
       if (color == PieceColor.WHITE)
       {
-         for (int i = 0; i < 121; i++)
+         int count = gameBoard.wMoveList.size();
+         for (int i = 0; i < count; i++)
          {
-            System.out.println(gameBoard.wMoveList[i].toString() + "\n");
+            System.out.println(gameBoard.wMoveList.get(i).toString() + "\n");
          }
       }
       else if (color == PieceColor.BLACK)
       {
-         for (int i = 0; i < 121; i++)
+         int count = gameBoard.bMoveList.size();
+         for (int i = 0; i < count; i++)
          {
-            System.out.println(gameBoard.bMoveList[i].toString() + "\n");
+            System.out.println(gameBoard.bMoveList.get(i).toString() + "\n");
          }
       }
    }
@@ -834,12 +870,12 @@ public class AI
    {
       AI deepBlue = new AI();
       deepBlue.hangRating(deepBlue.gameBoard, PieceColor.WHITE);
-      deepBlue.gameBoard.pieceArray[4][6].select();
+      deepBlue.gameBoard.getPieceAt(4, 6).select();
       deepBlue.gameBoard.movePiece(4, 4);
       
       for(int i = 0; i < 8; i++)
       {
-         deepBlue.gameBoard.pieceArray[i][1].select();
+         deepBlue.gameBoard.getPieceAt(i, 1).select();
          deepBlue.gameBoard.movePiece(i, 3);
       }
       System.out.println(deepBlue.gameBoard);
