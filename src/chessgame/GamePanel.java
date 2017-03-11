@@ -13,8 +13,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GamePanel extends JPanel
 {
@@ -37,7 +35,7 @@ public class GamePanel extends JPanel
       moveList = new ChessMove[10];
       humanPlayer = PieceColor.EMPTY;
       myBoard = new Checkerboard();
-      deepBlue = new AI(myBoard.gameBoard);
+      deepBlue = new AI(myBoard.gameBoard);      
       mode = GameMode.UNDECIDED;
       pieceToAdd = new ChessPiece();
       setBorder(BorderFactory.createLineBorder(Color.black));

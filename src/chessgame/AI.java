@@ -43,9 +43,9 @@ public class AI
     @param cm - move to execute
     @return ChessBoard - resulting board position after the move
     */
-   public ChessBoard advancePosition(ChessBoard cb, ChessMove cm)
+   private ChessBoard advancePosition(ChessBoard cb, ChessMove cm)
    {
-      // all of this should be a method in ChessBoard
+      // TODO - all of this should be a method in ChessBoard
 
       ChessBoard nextNode = new ChessBoard(cb);
       int xi, xf, yi, yf;
@@ -72,7 +72,7 @@ public class AI
     @param yDest - y position of target square
     @return array of all chess pieces that can attack this square
     */
-   public ChessPiece[] aimedHere(ChessBoard cb, int xDest, int yDest)
+   private ChessPiece[] aimedHere(ChessBoard cb, int xDest, int yDest)
    {
       ChessPiece[] defenders = new ChessPiece[32];
       for (int i = 0; i < 8; i++)
@@ -172,7 +172,7 @@ public class AI
     @param mainList
     @param tempList
     */
-   public void concatenateMoveLists(ChessMove[] mainList, ChessMove[] tempList)
+   private void concatenateMoveLists(ChessMove[] mainList, ChessMove[] tempList)
    {
       int start = length(mainList);
       int end = start + length(tempList);
@@ -191,7 +191,7 @@ public class AI
     @param moveTree
     @return
     */
-   public ChessBoard[] copyBoards(ChessBoard[] moveTree)
+   private ChessBoard[] copyBoards(ChessBoard[] moveTree)
    {
       ChessBoard[] copyTree = new ChessBoard[length(moveTree)];
       for (int i = 0; i < length(moveTree); i++)
@@ -203,23 +203,6 @@ public class AI
    }
 
    /**
-    This method simply finds the number of moves in the moveList THIS METHOD
-    IS OBSOLETE - USE length() INSTEAD
-
-    @param moveList
-    @return
-    */
-   private int countMoves(ChessMove[] moveList)
-   {
-      int count = 0;
-      while (moveList[count] != null)
-      {
-         count++;
-      }
-      return count;
-   }
-
-   /**
     This method finds all possible moves for the given color and updates that
     count in cb
 
@@ -227,7 +210,7 @@ public class AI
     @param cb
     @return list of moves
     */
-   public ChessMove[] findAllMoves(PieceColor color, ChessBoard cb)
+   private ChessMove[] findAllMoves(PieceColor color, ChessBoard cb)
    {
       int numMoves = 0;
       ChessMove[] moveList = new ChessMove[121]; //121 is the most moves possible?
@@ -254,6 +237,7 @@ public class AI
     */
    public ChessMove findBestMove(PieceColor color)
    {
+      // TODO - refactor this method
       ChessBoard gammyBoard = new ChessBoard(gameBoard);
       PieceColor oppositeColor = color.opposite();
 
@@ -369,7 +353,7 @@ public class AI
     @param cb
     @return
     */
-   public int findBoard(ChessBoard[] moveTree, ChessBoard cb)
+   private int findBoard(ChessBoard[] moveTree, ChessBoard cb)
    {
       for (int i = 0; i < moveTree.length; i++)
       {
@@ -388,7 +372,7 @@ public class AI
     @param cp
     @return
     */
-   public ChessMove[] findMoves(ChessBoard cb, ChessPiece cp)
+   private ChessMove[] findMoves(ChessBoard cb, ChessPiece cp)
    {
       ChessMove[] moveList = new ChessMove[27];
       int numMoves = 0;
@@ -446,7 +430,7 @@ public class AI
       return moveList;
    }
 
-   public int generateMoveTree(Tree parentTree, PieceColor color)
+   private int generateMoveTree(Tree parentTree, PieceColor color)
    {
       ChessMove[] moveList = findAllMoves(color, parentTree.info);
       int legalMoves = length(moveList);
@@ -470,7 +454,7 @@ public class AI
       return legalMoves;
    }
 
-   public ChessPiece[] getPieces(ChessBoard cb, PieceColor color)
+   private ChessPiece[] getPieces(ChessBoard cb, PieceColor color)
    {
       ChessPiece[] pieces = new ChessPiece[64];
       for (int i = 0; i < 8; i++)
@@ -494,7 +478,7 @@ public class AI
     @param color
     @return
     */
-   public int hangRating(ChessBoard cb, PieceColor color)
+   private int hangRating(ChessBoard cb, PieceColor color)
    {
       int valueOfHanging = 0;
       ChessPiece[] goodPieces = getPieces(cb, color);
@@ -567,7 +551,7 @@ public class AI
    @param cb    - board position to analyze
    @return int - number of potential moves that are available
    */
-   public int howManyMoves(PieceColor color, ChessBoard cb)
+   private int howManyMoves(PieceColor color, ChessBoard cb)
    {
       int numMoves = 0;
       for (int i = 0; i < 8; i++)
@@ -638,7 +622,7 @@ public class AI
     @param list
     @return int - number of elements in this list
     */
-   public int length(Object[] list)
+   private int length(Object[] list)
    {
       int count = 0;
       if (list == null || list.length == 0)
@@ -659,7 +643,7 @@ public class AI
    @param color
    @return 
    */
-   public float matRating(ChessBoard cb, PieceColor color)
+   private float matRating(ChessBoard cb, PieceColor color)
    {
       float rating, myMaterial, totalMaterial;
       totalMaterial = myMaterial = 0.0f;
@@ -687,7 +671,7 @@ public class AI
     @return int - value of parameter that is less than (or tied for least
     with) the other two
     */
-   public int minimum(int a, int b, int c)
+   private int minimum(int a, int b, int c)
    {
       if (a < b && a < c)
       {
@@ -707,7 +691,7 @@ public class AI
     @param color - player whose pieces' mobility will be evaluated
     @return int - rating of how mobile this player's pieces are
     */
-   public int mobRating(ChessBoard cb, PieceColor color)
+   private int mobRating(ChessBoard cb, PieceColor color)
    {
       return howManyMoves(color, cb);
    }
@@ -719,7 +703,7 @@ public class AI
     @param cb
     @param moveList
     */
-   public void rateMoves(ChessBoard cb, ChessMove[] moveList)
+   private void rateMoves(ChessBoard cb, ChessMove[] moveList)
    {
       ChessBoard temp;
       PieceColor color = moveList[0].piece.getColor();
@@ -737,7 +721,7 @@ public class AI
 
     @param list - the list of boards to be sorted
     */
-   public void sortBoardsA(ChessBoard[] list)
+   private void sortBoardsA(ChessBoard[] list)
    {
       // TODO - make this more efficient than freakin' BUBBLE SORT
       for (int i = 0; i < length(list) - 1; i++)
@@ -759,7 +743,7 @@ public class AI
 
     @param list - the list of boards to be sorted
     */
-   public void sortBoardsD(ChessBoard[] list)
+   private void sortBoardsD(ChessBoard[] list)
    {
       // TODO - make this more efficient than freakin' BUBBLE SORT
       for (int i = 0; i < length(list) - 1; i++)
@@ -781,10 +765,10 @@ public class AI
 
     @param moveList
     */
-   public void sortMovesA(ChessMove[] moveList)
+   private void sortMovesA(ChessMove[] moveList)
    {
       // TODO - make this more efficient than freakin' BUBBLE SORT
-      int numMoves = countMoves(moveList);
+      int numMoves = length(moveList);
       for (int i = 0; i < numMoves - 1; i++)
       {
          for (int j = numMoves - 1; j > i; j--)
@@ -804,10 +788,10 @@ public class AI
 
     @param moveList
     */
-   public void sortMovesD(ChessMove[] moveList)
+   private void sortMovesD(ChessMove[] moveList)
    {
       // TODO - make this more efficient than freakin' BUBBLE SORT
-      int numMoves = countMoves(moveList);
+      int numMoves = length(moveList);
       for (int i = 0; i < numMoves - 1; i++)
       {
          for (int j = numMoves - 1; j > i; j--)
@@ -830,7 +814,7 @@ public class AI
     @param num
     @return
     */
-   public int sumValue(ChessPiece[] pieces, int num)
+   private int sumValue(ChessPiece[] pieces, int num)
    {
       int sum = 0;
       if (num > length(pieces))
