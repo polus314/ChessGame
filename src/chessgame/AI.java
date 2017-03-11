@@ -1,5 +1,8 @@
 package chessgame;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  Kept for posterity:
 
@@ -260,20 +263,12 @@ public class AI
          }
       }
 
-      Tree moveTree = new Tree(null, gammyBoard);
-      int counter1 = minimum(legalMoves, noHangingMoves, 5);
+      Tree<ChessBoard> moveTree = new Tree<>(gammyBoard);
+      int counter1 = Math.min(Math.min(legalMoves, noHangingMoves), 5);
       if (noHangingMoves == 0)
       {
-         counter1 = minimum(legalMoves, 5, 5);
+         counter1 = Math.min(legalMoves, 5);
       }
-//      if(noHangingMoves < 6)
-//      {
-//         counter1 = noHangingMoves;
-//      }
-//      if (legalMoves < 5)
-//      {
-//         counter1 = legalMoves;
-//      }
 
       for (int i = 0; i < counter1; i++)
       {
@@ -288,7 +283,7 @@ public class AI
       {
          totalMoves += generateMoveTree(moveTree.getChildTree(i), oppositeColor);
 
-         Tree childTree = moveTree.getChildTree(i);
+         Tree<ChessBoard> childTree = moveTree.getChildTree(i);
          if (childTree.numChildren() < 5)
          {
             counter2 = childTree.numChildren();
@@ -297,6 +292,9 @@ public class AI
          {
             totalMoves += generateMoveTree(childTree.getChildTree(j), color);
 
+            // this seems to be just iterating one level deeper, cut because
+            // it consumed too much time
+            
 //            int counter3 = 5; 
 //            Tree grandChild = childTree.getChildTree(j);
 //            if(grandChild.numChildren() < 5)
@@ -316,13 +314,13 @@ public class AI
       }
 
       Queue nodeList = new Queue();
-      List finalPositions = new List();
+      ArrayList<ChessBoard> finalPositions = new ArrayList<>();
       //get all terminal Nodes
       nodeList.enqueue(moveTree);
       while (!nodeList.isEmpty())
       {
-         Tree tree = (Tree) nodeList.dequeue();
-         if (!tree.isTerminal())
+         Tree<ChessBoard> tree = (Tree) nodeList.dequeue();
+         if (!tree.isLeaf())
          {
             for (int i = 0; i < tree.numChildren(); i++)
             {
@@ -336,10 +334,17 @@ public class AI
       }
       //Have all the positions, now need to sort them and trace back the best
       //move to its root
-      finalPositions.sortListD();
+      sortBoardsD(finalPositions);
 
-      Tree bestMove = moveTree.find(finalPositions.getBoard(0));
-      Tree ancestor = bestMove.getRootChild();
+      Tree bestMove = moveTree.find(finalPositions.get(0));
+      
+      Tree ancestor = null;
+      for(Tree childOfRoot : moveTree.children)
+      {
+         if(childOfRoot.find(bestMove) != null)
+            ancestor = childOfRoot;
+      }
+      
       int index = moveTree.getIndex(ancestor);
       return moveList[index];
       //Sorting the positions given by the white moves, picking the worst one
@@ -430,7 +435,7 @@ public class AI
       return moveList;
    }
 
-   private int generateMoveTree(Tree parentTree, PieceColor color)
+   private int generateMoveTree(Tree<ChessBoard> parentTree, PieceColor color)
    {
       ChessMove[] moveList = findAllMoves(color, parentTree.info);
       int legalMoves = length(moveList);
@@ -663,28 +668,6 @@ public class AI
    }
 
    /**
-    Returns the smallest of a, b, c
-
-    @param a - first integer to compare
-    @param b - second integer to compare
-    @param c - third integer to compare
-    @return int - value of parameter that is less than (or tied for least
-    with) the other two
-    */
-   private int minimum(int a, int b, int c)
-   {
-      if (a < b && a < c)
-      {
-         return a;
-      }
-      if (b < c)
-      {
-         return b;
-      }
-      return c;
-   }
-
-   /**
     Rates the mobility of the given board position
 
     @param cb - chess board to evaluate
@@ -721,21 +704,9 @@ public class AI
 
     @param list - the list of boards to be sorted
     */
-   private void sortBoardsA(ChessBoard[] list)
+   private void sortBoardsA(ArrayList<ChessBoard> list)
    {
-      // TODO - make this more efficient than freakin' BUBBLE SORT
-      for (int i = 0; i < length(list) - 1; i++)
-      {
-         for (int j = length(list) - 1; j > i; j--)
-         {
-            if (list[j].compareTo(list[j - 1]) < 0)
-            {
-               ChessBoard temp = list[j - 1];
-               list[j - 1] = list[j];
-               list[j] = temp;
-            }
-         }
-      }
+      Collections.sort(list);
    }
 
    /**
@@ -743,21 +714,10 @@ public class AI
 
     @param list - the list of boards to be sorted
     */
-   private void sortBoardsD(ChessBoard[] list)
+   private void sortBoardsD(ArrayList<ChessBoard> list)
    {
-      // TODO - make this more efficient than freakin' BUBBLE SORT
-      for (int i = 0; i < length(list) - 1; i++)
-      {
-         for (int j = length(list) - 1; j > i; j--)
-         {
-            if (list[j].compareTo(list[j - 1]) > 0)
-            {
-               ChessBoard temp = list[j - 1];
-               list[j - 1] = list[j];
-               list[j] = temp;
-            }
-         }
-      }
+      Collections.sort(list);
+      Collections.reverse(list);
    }
 
    /**

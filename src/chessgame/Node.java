@@ -21,7 +21,6 @@ public class Node<T>
    {
       next = n;
       prev = p;
-      tree = new Tree(parent, cb);
    }
    
    public Node(T t, Node<T> p, Node<T> n)

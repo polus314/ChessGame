@@ -1,14 +1,14 @@
 package chessgame;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
- This class creates a 64 square checkerboard using an array that can hold
- chess pieces.
+ This class creates a 64 square board that holds ChessPieces
 
  @author jppolecat
  */
-public class ChessBoard
+public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard>
 {
    private ChessPiece[][] pieceArray;
    // TODO - move this up to AI?
@@ -99,6 +99,27 @@ public class ChessBoard
             }
          }
       }
+   }
+   
+   @Override
+   public int compare(ChessBoard cb1, ChessBoard cb2)
+   {
+      if (cb1.materialRating > cb2.materialRating)
+      {
+         return 1;
+      }
+      if (cb1.materialRating == cb2.materialRating)
+      {
+         if (cb1.mobilityRating > cb2.mobilityRating)
+         {
+            return 1;
+         }
+         if (cb1.mobilityRating == cb2.mobilityRating)
+         {
+            return 0;
+         }
+      }
+      return -1;
    }
    
    /**
@@ -506,19 +527,20 @@ public class ChessBoard
     @param cb
     @return -1 if this is worse, 0 if equal, 1 if better than param
     */
+   @Override
    public int compareTo(ChessBoard cb)
    {
-      if (cb.materialRating > materialRating)
+      if (materialRating < cb.materialRating)
       {
          return -1;
       }
-      if (cb.materialRating == materialRating)
+      if (materialRating == cb.materialRating)
       {
-         if (cb.mobilityRating > mobilityRating)
+         if (mobilityRating < cb.mobilityRating)
          {
             return -1;
          }
-         if (cb.mobilityRating == mobilityRating)
+         if (mobilityRating == cb.mobilityRating)
          {
             return 0;
          }
