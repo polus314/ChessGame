@@ -11,12 +11,10 @@ and create new chess pieces.
 public class ChessPiece
 {
    protected PieceType type;
-   protected String pieceName;
    protected int value;
    protected int xCoord;
    protected int yCoord;
    protected PieceColor color;
-   protected boolean selected;
    protected boolean hasMoved;
 
    /*
@@ -25,12 +23,10 @@ public class ChessPiece
    public ChessPiece()
    {
       type = PieceType.EMPTY;
-      pieceName = "     ";
       value = 0;
       color = PieceColor.EMPTY;
       xCoord = 0;
       yCoord = 0;
-      selected = false;
       hasMoved = false;
    }
 
@@ -41,9 +37,7 @@ public class ChessPiece
    public ChessPiece(ChessPiece cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -85,39 +79,6 @@ public class ChessPiece
    }
 
    /*
-   This will change the boolean value of if a piece is selected.
-   If selected is true it will be set to false and visa versa
-   */
-   public void toggleSelected()
-   {
-      selected = !selected;
-   }
-
-   /*
-   This sets selected to true
-   */
-   public void select()
-   {
-      selected = true;
-   }
-
-   /*
-   This sets selected to false
-   */
-   public void unselect()
-   {
-      selected = false;
-   }
-
-   /*
-   this returns the boolean value of selected
-   */
-   public boolean isSelected()
-   {
-      return selected;
-   }
-
-   /*
    This method inputs an x and y coordinate. It returns false here, but
    is overwritten in subclasses
    */
@@ -127,14 +88,12 @@ public class ChessPiece
    }
 
    /*
-   This will input a chess peice and copy all the attributes to the 
+   This will input a chess piece and copy all the attributes to the 
    selected chess piece
    */
    public void copy(ChessPiece cp)
    {
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -195,7 +154,7 @@ public class ChessPiece
    */
    public String toString()
    {
-      return pieceName;
+      return color.toString() + " ChessPiece";
    }
 
    /*

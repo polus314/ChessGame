@@ -32,4 +32,14 @@ public enum PieceColor
          return WHITE;
       return EMPTY;
    }
+   
+   @Override
+   public String toString()
+   {
+      if(this == WHITE)
+         return "White";
+      if(this == BLACK)
+         return "Black";
+      return "Empty";
+   }
 }

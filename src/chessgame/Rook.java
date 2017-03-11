@@ -29,16 +29,6 @@ public class Rook extends ChessPiece
       xCoord = xC;
       yCoord = yC;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BRook";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WRook";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -50,14 +40,6 @@ public class Rook extends ChessPiece
       type = PieceType.ROOK;
       value = 5;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BRook";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WRook";
-      }
    }
    
    /*
@@ -67,9 +49,7 @@ public class Rook extends ChessPiece
    public Rook(Rook cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -77,11 +57,14 @@ public class Rook extends ChessPiece
    }
    
    /**
-   This returns the string "Rook" 
+   Returns a string describing this rook
+   
+   @return String - description of this
    */
+   @Override
    public String toString()
    {
-      return "Rook";
+      return color.toString() + " Rook";
    }
    
    /*
@@ -89,10 +72,9 @@ public class Rook extends ChessPiece
    square. If the rook can move to the selected square the method returns
    true, false otherwise
    */
+   @Override
    public boolean canMove(int x, int y)
    {
-      if(xCoord != x && yCoord != y)
-         return false; 
-      return true;
+      return xCoord == x || yCoord == y;
    }
 }

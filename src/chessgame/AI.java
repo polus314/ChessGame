@@ -1,43 +1,52 @@
 package chessgame;
 
 /**
- This is supposed to be the brains behind the program. We shall see... This
- program is for Miguel Colunga-Santoyo.
+ Kept for posterity:
+
+ //Shoutout to my homeboy Miguel Colunga-Santoyo
+
+ */
+/**
+ This class represents an entity that can analyze a chess board in order to
+ find better and worse moves to play.
 
  @author jppolecat
  */
 public class AI
 {
 
-   private ChessBoard gameBoard;
+   private final ChessBoard gameBoard;
 
    /**
-   Default constructor, initializes the chessboard to the start of a new game
-   */
+    Default constructor, initializes the chessboard to the start of a new game
+    */
    public AI()
    {
       gameBoard = new ChessBoard();
    }
 
    /**
-   Parameterized constructor, sets the chessboard to cb
-   @param cb - board that AI should use for calculations
-   */
+    Parameterized constructor, sets the chessboard to cb
+
+    @param cb - board that AI should use for calculations
+    */
    public AI(ChessBoard cb)
    {
       gameBoard = new ChessBoard(cb);
    }
-   
+
    /**
     This method makes the given move on the given board and returns a copy of
     the resulting board.
 
-    @param cb
-    @param cm
-    @return
+    @param cb - chess board on which to execute the move
+    @param cm - move to execute
+    @return ChessBoard - resulting board position after the move
     */
    public ChessBoard advancePosition(ChessBoard cb, ChessMove cm)
    {
+      // all of this should be a method in ChessBoard
+
       ChessBoard nextNode = new ChessBoard(cb);
       int xi, xf, yi, yf;
       xi = cm.piece.xCoord;
@@ -54,69 +63,69 @@ public class AI
       nextNode.materialRating = cm.getMaterialRating();
       return nextNode;
    }
-   
+
    /**
-   Finds all chess pieces that can attack/defend the square at (xDest, yDest)
-   @param cb      - board to check
-   @param xDest   - x position of target square
-   @param yDest   - y position of target square
-   @return array of all chess pieces that can attack this square
-   */
+    Finds all chess pieces that can attack/defend the square at (xDest, yDest)
+
+    @param cb - board to check
+    @param xDest - x position of target square
+    @param yDest - y position of target square
+    @return array of all chess pieces that can attack this square
+    */
    public ChessPiece[] aimedHere(ChessBoard cb, int xDest, int yDest)
    {
-      ChessPiece [] defenders = new ChessPiece [32];
+      ChessPiece[] defenders = new ChessPiece[32];
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
             boolean isADefender = false;
-            ChessPiece cp = cb.getPieceAt(i,j);
-            cp.select();
-            
+            ChessPiece cp = cb.getPieceAt(i, j);
+
             // if regular non-empty piece, check if it can move here and the
             // path is clear
-            if(!cp.equals(new ChessPiece()) && cp.type != PieceType.PAWN)
+            if (!cp.equals(new ChessPiece()) && cp.type != PieceType.PAWN)
             {
-               isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(xDest, yDest);
+               isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
             }
             // if a pawn, they capture differently than they move
             else
             {
                // square must be one column to the left or right
-               if(cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
+               if (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
                {
                   // Black captures down, White captures up
-                  if(cp.color == PieceColor.BLACK && cp.yCoord + 1 == yDest)
+                  if (cp.color == PieceColor.BLACK && cp.yCoord + 1 == yDest)
                   {
                      isADefender = true;
                   }
-                  else if(cp.color == PieceColor.WHITE && cp.yCoord - 1 == yDest)
+                  else if (cp.color == PieceColor.WHITE && cp.yCoord - 1 == yDest)
                   {
                      isADefender = true;
                   }
                }
             }
-            
-            if(isADefender)
+
+            if (isADefender)
+            {
                defenders[length(defenders)] = cp;
-            cp.unselect();
+            }
          }
       }
       return defenders;
    }
-   
+
    /**
-   Checks to see if either side has been checkmated or if stalemate has
-   occurred.
-   @return PieceColor - WHITE if White has won
-                        BLACK if Black has won
-                        EMPTY if stalemate has occurred
-                        null if game isn't over
-   TODO - rename and/or write a second method
-   */
+    Checks to see if either side has been checkmated or if stalemate has
+    occurred.
+
+    @return PieceColor - WHITE if White has won BLACK if Black has won EMPTY
+    if stalemate has occurred null if game isn't over TODO - rename and/or
+    write a second method
+    */
    public PieceColor checkGameOver()
    {
-      // don't want to change the member, so make a copy
+      // don't want to change the instance variable gameBoard, so make a copy
       ChessBoard gammyBoard = new ChessBoard(gameBoard);
       int numWMoves = length(findAllMoves(PieceColor.WHITE, gammyBoard));
       int numBMoves = length(findAllMoves(PieceColor.BLACK, gammyBoard));
@@ -124,7 +133,7 @@ public class AI
       // TODO - should take whose move it is into account?
       if (numBMoves == 0) // if Black has no moves
       {
-         if(gammyBoard.checkForCheck(PieceColor.BLACK)) // Black is checkmated
+         if (gammyBoard.checkForCheck(PieceColor.BLACK)) // Black is checkmated
          {
             gameBoard.gameOver = true;
             return PieceColor.WHITE;
@@ -136,7 +145,7 @@ public class AI
       }
       else if (numWMoves == 0)
       {
-         if(gammyBoard.checkForCheck(PieceColor.WHITE)) // White is checkmated
+         if (gammyBoard.checkForCheck(PieceColor.WHITE)) // White is checkmated
          {
             gameBoard.gameOver = true;
             return PieceColor.BLACK;
@@ -147,7 +156,7 @@ public class AI
          }                             // so it is stalemate
       }
       // impossible to checkmate with this many pieces
-      else if(gammyBoard.countPieces() == 2)
+      else if (gammyBoard.countPieces() == 2)
       {
          gameBoard.gameOver = true;
          return PieceColor.EMPTY;
@@ -155,26 +164,27 @@ public class AI
       gameBoard.gameOver = false;
       return null;
    }
-   
+
    /**
-   This method adds tempList to the end of mainList, assumes that mainList
-   has enough space
-   @param mainList
-   @param tempList 
-   */
-   public void concatenateMoveLists(ChessMove [] mainList, ChessMove [] tempList)
+    This method adds tempList to the end of mainList, assumes that mainList
+    has enough space
+
+    @param mainList
+    @param tempList
+    */
+   public void concatenateMoveLists(ChessMove[] mainList, ChessMove[] tempList)
    {
       int start = length(mainList);
       int end = start + length(tempList);
-      if(end > start)
+      if (end > start)
       {
          for (int i = start; i < end; i++)
          {
-            mainList[i] = tempList[i-start];
+            mainList[i] = tempList[i - start];
          }
       }
    }
-   
+
    /**
     This method copies an array of ChessBoards and returns that copy
 
@@ -191,10 +201,10 @@ public class AI
       }
       return copyTree;
    }
-   
+
    /**
-    This method simply finds the number of moves in the moveList
-    THIS METHOD IS OBSOLETE - USE length() INSTEAD
+    This method simply finds the number of moves in the moveList THIS METHOD
+    IS OBSOLETE - USE length() INSTEAD
 
     @param moveList
     @return
@@ -208,7 +218,7 @@ public class AI
       }
       return count;
    }
-   
+
    /**
     This method finds all possible moves for the given color and updates that
     count in cb
@@ -225,18 +235,16 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            cb.getPieceAt(i,j).select();
-            if (cb.getPieceAt(i,j).getColor() == color)
+            if (cb.getPieceAt(i, j).getColor() == color)
             {
-               ChessMove [] tempList = findMoves(cb, cb.getPieceAt(i,j));
+               ChessMove[] tempList = findMoves(cb, cb.getPieceAt(i, j));
                concatenateMoveLists(moveList, tempList);
             }
-            cb.getPieceAt(i,j).unselect();
          }
       }
       return moveList;
    }
-   
+
    /**
     This method tests all moves and evaluate the positions that result. The
     moves are then ranked and the best one is chosen.
@@ -250,8 +258,7 @@ public class AI
       PieceColor oppositeColor = color.opposite();
 
       //Checking for Checkmate, if no legal moves, then game is over
-      ChessMove [] moveList = findAllMoves(color, gammyBoard);
-      System.out.println("Length of moveList1: " + length(moveList));
+      ChessMove[] moveList = findAllMoves(color, gammyBoard);
       int legalMoves = length(moveList);
       if (legalMoves == 0)
       {
@@ -261,19 +268,17 @@ public class AI
       sortMovesD(moveList);
       //find moves that don't leave a piece hanging
       int noHangingMoves = 0;
-      for(int i = 0; i < length(moveList); i++)
-      {
-         if(moveList[i].getHangRating() == 0)
-            noHangingMoves++;
-      }
-      
-      System.out.println("Hanging Ratings");
       for (int i = 0; i < length(moveList); i++)
-         System.out.println(moveList[i].getHangRating());
-      
+      {
+         if (moveList[i].getHangRating() == 0)
+         {
+            noHangingMoves++;
+         }
+      }
+
       Tree moveTree = new Tree(null, gammyBoard);
       int counter1 = minimum(legalMoves, noHangingMoves, 5);
-      if(noHangingMoves == 0)
+      if (noHangingMoves == 0)
       {
          counter1 = minimum(legalMoves, 5, 5);
       }
@@ -285,7 +290,7 @@ public class AI
 //      {
 //         counter1 = legalMoves;
 //      }
-      
+
       for (int i = 0; i < counter1; i++)
       {
          moveTree.addChild(advancePosition(gammyBoard, moveList[i]));
@@ -293,12 +298,12 @@ public class AI
 
       //Checking for Checkmate, if no legal moves, then game is over
       int totalMoves = 0;
-      
+
       int counter2 = 5;
       for (int i = 0; i < counter1; i++)
       {
          totalMoves += generateMoveTree(moveTree.getChildTree(i), oppositeColor);
-         
+
          Tree childTree = moveTree.getChildTree(i);
          if (childTree.numChildren() < 5)
          {
@@ -307,7 +312,7 @@ public class AI
          for (int j = 0; j < counter2; j++)
          {
             totalMoves += generateMoveTree(childTree.getChildTree(j), color);
-            
+
 //            int counter3 = 5; 
 //            Tree grandChild = childTree.getChildTree(j);
 //            if(grandChild.numChildren() < 5)
@@ -319,21 +324,21 @@ public class AI
 //               totalMoves += generateMoveTree(grandChild.getChildTree(k), oppositeColor);
 //            }
          }
-         
+
       }
       if (totalMoves == 0)
       {
          return new ChessMove();
       }
-      
+
       Queue nodeList = new Queue();
       List finalPositions = new List();
       //get all terminal Nodes
       nodeList.enqueue(moveTree);
-      while(!nodeList.isEmpty())
+      while (!nodeList.isEmpty())
       {
          Tree tree = (Tree) nodeList.dequeue();
-         if(!tree.isTerminal())
+         if (!tree.isTerminal())
          {
             for (int i = 0; i < tree.numChildren(); i++)
             {
@@ -348,20 +353,14 @@ public class AI
       //Have all the positions, now need to sort them and trace back the best
       //move to its root
       finalPositions.sortListD();
-      
-      System.out.println("Length of Move List: " + finalPositions.length());
-      System.out.println("Best Move: " + finalPositions.getBoard(0).materialRating
-         + " " + finalPositions.getBoard(0).mobilityRating);
-      System.out.println("Worst Move: " + finalPositions.getBoard(finalPositions.length()).materialRating
-         + " " + finalPositions.getBoard(finalPositions.length()).mobilityRating);
-      
+
       Tree bestMove = moveTree.find(finalPositions.getBoard(0));
       Tree ancestor = bestMove.getRootChild();
       int index = moveTree.getIndex(ancestor);
       return moveList[index];
       //Sorting the positions given by the white moves, picking the worst one
    }
-   
+
    /**
     This method takes an array of ChessBoards and finds the one that is equal
     to cb, NOTE: Currently, moveTree is always full
@@ -381,7 +380,7 @@ public class AI
       }
       return -1;
    }
-   
+
    /**
     This method finds all legal moves for this piece on this board
 
@@ -391,7 +390,7 @@ public class AI
     */
    public ChessMove[] findMoves(ChessBoard cb, ChessPiece cp)
    {
-      ChessMove [] moveList = new ChessMove[27];
+      ChessMove[] moveList = new ChessMove[27];
       int numMoves = 0;
       PieceColor color = cp.getColor();
       int xi = cp.xCoord;
@@ -406,16 +405,16 @@ public class AI
             {
                ;
             }
-            else if (cp.canMove(xf, yf)            //piece moves this way
-                  && cb.pathIsClear(xf, yf)        //no pieces in the way
+            else if (cp.canMove(xf, yf) //piece moves this way
+                  && cb.pathIsClear(cp, xf, yf) //no pieces in the way
                   && cb.spaceIsEmpty(xf, yf))      //space is empty
             {
                moveList[numMoves] = possMove;
                numMoves++;
             }
-            else if (cp.canMove(xf, yf)            
-                  && cb.pathIsClear(xf, yf)
-                  && cb.spaceIsOpen(xf, yf, cp.getColor())  //piece is opposite color
+            else if (cp.canMove(xf, yf)
+                  && cb.pathIsClear(cp, xf, yf)
+                  && cb.spaceIsOpen(xf, yf, cp.getColor()) //piece is opposite color
                   && !(cp instanceof Pawn))                 //pawns capture differently
             {                                               //than they move
                possMove.setMoveType(MoveType.CAPTURE);
@@ -446,10 +445,10 @@ public class AI
       }
       return moveList;
    }
- 
+
    public int generateMoveTree(Tree parentTree, PieceColor color)
    {
-      ChessMove [] moveList = findAllMoves(color, parentTree.info);
+      ChessMove[] moveList = findAllMoves(color, parentTree.info);
       int legalMoves = length(moveList);
       if (legalMoves == 0)
       {
@@ -467,64 +466,70 @@ public class AI
       {
          parentTree.addChild(advancePosition(parentTree.info, moveList[i]));
       }
-      
+
       return legalMoves;
    }
-   
-   public ChessPiece [] getPieces(ChessBoard cb, PieceColor color)
+
+   public ChessPiece[] getPieces(ChessBoard cb, PieceColor color)
    {
-      ChessPiece [] pieces = new ChessPiece[64];
+      ChessPiece[] pieces = new ChessPiece[64];
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            if(cb.getPieceAt(i,j).getColor() == color)
-               pieces[length(pieces)] = cb.getPieceAt(i,j);
+            if (cb.getPieceAt(i, j).getColor() == color)
+            {
+               pieces[length(pieces)] = cb.getPieceAt(i, j);
+            }
          }
       }
       return pieces;
    }
-   
+
    /**
-   This method will return the number of pieces this color has "hanging" or
-   insufficiently defended
-   
-   @param cb
-   @param color
-   @return 
-   */
+    This method will return the number of pieces this color has "hanging" or
+    insufficiently defended
+
+    @param cb
+    @param color
+    @return
+    */
    public int hangRating(ChessBoard cb, PieceColor color)
    {
       int valueOfHanging = 0;
-      ChessPiece [] goodPieces = getPieces(cb, color);
-      ChessPiece [] badPieces = getPieces(cb, color.opposite());
-      for(int i = 0; i < length(goodPieces); i++)
+      ChessPiece[] goodPieces = getPieces(cb, color);
+      ChessPiece[] badPieces = getPieces(cb, color.opposite());
+      for (int i = 0; i < length(goodPieces); i++)
       {
          boolean isHanging = false;
          ChessPiece goodCP = goodPieces[i];
-         for(int j = 0; j < length(badPieces); j++)
+         for (int j = 0; j < length(badPieces); j++)
          {
             //case 1: piece is attacked by a lower valued piece
-            if(cb.canCapture(badPieces[j], goodCP.xCoord, goodCP.yCoord) 
-                  && badPieces[j].value < goodCP.value )
+            if (cb.canCapture(badPieces[j], goodCP.xCoord, goodCP.yCoord)
+                  && badPieces[j].value < goodCP.value)
             {
                isHanging = true;
             }
             //case 2: piece's attackers are worth less than the defenders
          }
-         ChessPiece [] piecesInAction = aimedHere(cb, goodCP.xCoord, goodCP.yCoord);
-         if(!isHanging)
+         ChessPiece[] piecesInAction = aimedHere(cb, goodCP.xCoord, goodCP.yCoord);
+         if (!isHanging)
          {
-            ChessPiece [] attackers = new ChessPiece[16];
-            ChessPiece [] defenders = new ChessPiece[16];
-            for(int k = 0; k < length(piecesInAction); k++)
+            ChessPiece[] attackers = new ChessPiece[16];
+            ChessPiece[] defenders = new ChessPiece[16];
+            for (int k = 0; k < length(piecesInAction); k++)
             {
                if (piecesInAction[k].color == color)
+               {
                   defenders[length(defenders)] = piecesInAction[k];
+               }
                else
+               {
                   attackers[length(attackers)] = piecesInAction[k];
+               }
             }
-            if(length(attackers) == 0)
+            if (length(attackers) == 0)
             {
                isHanging = false;
             }
@@ -535,21 +540,33 @@ public class AI
             //this is rather confusing, but I think it works
             else if (length(defenders) == length(attackers))
             {
-               if(sumValue(defenders, length(attackers) - 1) + goodCP.value 
-                  >= sumValue(attackers, length(attackers)))
-               isHanging = true;
+               if (sumValue(defenders, length(attackers) - 1) + goodCP.value
+                     >= sumValue(attackers, length(attackers)))
+               {
+                  isHanging = true;
+               }
             }
-            else if(length(defenders) > length(attackers))
+            else if (length(defenders) > length(attackers))
             {
                isHanging = false;
             }
          }
-         if(isHanging)
+         if (isHanging)
+         {
             valueOfHanging += goodPieces[i].value;
+         }
       }
       return valueOfHanging;
    }
+
+   /**
+   Counts how many moves there are for the given color and board position,
+   doesn't consider check preventing any of these moves
    
+   @param color - player whose moves should be considered
+   @param cb    - board position to analyze
+   @return int - number of potential moves that are available
+   */
    public int howManyMoves(PieceColor color, ChessBoard cb)
    {
       int numMoves = 0;
@@ -557,37 +574,37 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            cb.getPieceAt(i,j).select();
-            if (cb.getPieceAt(i,j).getColor() == color)
+            ChessPiece cp = cb.getPieceAt(i, j);
+            if (cp.getColor() == color)
             {
                for (int k = 0; k < 8; k++)
                {
                   for (int m = 0; m < 8; m++)
                   {
-                     if (cb.getPieceAt(i,j).canMove(k, m)
-                           && cb.pathIsClear(k, m)
+                     if (cp.canMove(k, m)
+                           && cb.pathIsClear(cp, k, m)
                            && cb.spaceIsEmpty(k, m))
                      {
                         numMoves++;
                      }
-                     else if (cb.getPieceAt(i,j).canMove(k, m)
-                           && cb.pathIsClear(k, m)
-                           && cb.spaceIsOpen(k, m, cb.getPieceAt(i,j).getColor())
-                           && !(cb.getPieceAt(i,j) instanceof Pawn))
+                     else if (cp.canMove(k, m)
+                           && cb.pathIsClear(cp, k, m)
+                           && cb.spaceIsOpen(k, m, cp.getColor())
+                           && !(cp instanceof Pawn))
                      {
                         numMoves++;
                      }
-                     else if (cb.getPieceAt(i,j) instanceof Pawn)
+                     else if (cp instanceof Pawn)
                      {
                         if (color == PieceColor.WHITE && j - m == 1
                               && (i - k == 1 || k - i == 1)
-                              && cb.getPieceAt(k,m).getColor() == PieceColor.BLACK)
+                              && cb.getPieceAt(k, m).getColor() == PieceColor.BLACK)
                         {
                            numMoves++;
                         }
                         if (color == PieceColor.BLACK && m - j == 1
                               && (i - k == 1 || k - i == 1)
-                              && cb.getPieceAt(k,m).getColor() == PieceColor.WHITE)
+                              && cb.getPieceAt(k, m).getColor() == PieceColor.WHITE)
                         {
                            numMoves++;
                         }
@@ -595,36 +612,36 @@ public class AI
                   }
                }
             }
-            cb.getPieceAt(i,j).unselect();
          }
       }
       return numMoves;
    }
-   
+
    /**
     This method determines whether a move will result in the moving player
     being in check.
 
-    @param cb
-    @param cm
+    @param cb - chess board to execute move on
+    @param cm - move to execute
+    @return   - whether or not check is a result of this move
     */
    public boolean leadsToCheck(ChessBoard cb, ChessMove cm)
    {
       ChessBoard temp = advancePosition(cb, cm);
       return temp.checkForCheck(cm.piece.getColor());
    }
-   
-      /**
+
+   /**
     This method finds how many objects are in a list. Assumes a contiguous
     list
 
     @param list
-    @return
+    @return int - number of elements in this list
     */
    public int length(Object[] list)
    {
       int count = 0;
-      if (list.length == 0)
+      if (list == null || list.length == 0)
       {
          return 0;
       }
@@ -634,7 +651,14 @@ public class AI
       }
       return count;
    }
+
+   /**
+   Rates the given board
    
+   @param cb
+   @param color
+   @return 
+   */
    public float matRating(ChessBoard cb, PieceColor color)
    {
       float rating, myMaterial, totalMaterial;
@@ -643,58 +667,59 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            totalMaterial += cb.getPieceAt(i,j).value;
-            if (cb.getPieceAt(i,j).getColor().equals(color))
+            totalMaterial += cb.getPieceAt(i, j).value;
+            if (cb.getPieceAt(i, j).getColor().equals(color))
             {
-               myMaterial += cb.getPieceAt(i,j).value;
+               myMaterial += cb.getPieceAt(i, j).value;
             }
          }
       }
       rating = myMaterial / (totalMaterial - myMaterial);
       return rating;
    }
-   
+
+   /**
+    Returns the smallest of a, b, c
+
+    @param a - first integer to compare
+    @param b - second integer to compare
+    @param c - third integer to compare
+    @return int - value of parameter that is less than (or tied for least
+    with) the other two
+    */
    public int minimum(int a, int b, int c)
    {
-      if(a < b && a < c)
+      if (a < b && a < c)
+      {
          return a;
-      if(b < c)
+      }
+      if (b < c)
+      {
          return b;
+      }
       return c;
    }
-   
+
+   /**
+    Rates the mobility of the given board position
+
+    @param cb - chess board to evaluate
+    @param color - player whose pieces' mobility will be evaluated
+    @return int - rating of how mobile this player's pieces are
+    */
    public int mobRating(ChessBoard cb, PieceColor color)
    {
       return howManyMoves(color, cb);
    }
-   
-   public void printList(PieceColor color)
-   {
-      if (color == PieceColor.WHITE)
-      {
-         int count = gameBoard.wMoveList.size();
-         for (int i = 0; i < count; i++)
-         {
-            System.out.println(gameBoard.wMoveList.get(i).toString() + "\n");
-         }
-      }
-      else if (color == PieceColor.BLACK)
-      {
-         int count = gameBoard.bMoveList.size();
-         for (int i = 0; i < count; i++)
-         {
-            System.out.println(gameBoard.bMoveList.get(i).toString() + "\n");
-         }
-      }
-   }
-   
+
    /**
-   This method takes a list of ChessMoves and the ChessBoard they will be made
-   on, assigns each move a mobility, material, and hanging rating
-   @param cb
-   @param moveList 
-   */
-   public void rateMoves(ChessBoard cb, ChessMove [] moveList)
+    This method takes a list of ChessMoves and the ChessBoard they will be
+    made on, assigns each move a mobility, material, and hanging rating
+
+    @param cb
+    @param moveList
+    */
+   public void rateMoves(ChessBoard cb, ChessMove[] moveList)
    {
       ChessBoard temp;
       PieceColor color = moveList[0].piece.getColor();
@@ -706,62 +731,15 @@ public class AI
          moveList[i].setHangRating(hangRating(temp, color));
       }
    }
-   
+
    /**
-    This method removes any moves from moveList that will lead to the moving
-    player being in check. THIS METHOD IS OBSOLETE BECAUSE OF leadsToCheck()
+    Sorts the given list of boards in ascending order
 
-    @param color - same color as moveList
-    @param cb
-    @param moveList
-    @return
+    @param list - the list of boards to be sorted
     */
-   private int removeBeingChecked(ChessBoard cb, ChessMove[] moveList)
-   {
-      int numRemoved = 0;
-      int numMoves = countMoves(moveList);
-      int removeIndices[] = new int[numMoves];
-      PieceColor color = moveList[0].piece.getColor();
-      for (int i = 0; i < numMoves; i++)
-      {
-         ChessBoard nextPosition = advancePosition(cb, moveList[i]);
-         if (nextPosition.checkForCheck(color))
-         {
-            removeIndices[numRemoved] = i;
-            numRemoved++;
-         }
-      }
-
-      ChessMove[] checkless = new ChessMove[numMoves - numRemoved];
-      for (int i = 0; i < numRemoved; i++)
-      {
-         moveList[removeIndices[i]] = null;
-      }
-
-      int numAdded = 0;
-      for (int i = 0; i < numMoves; i++)
-      {
-         if (moveList[i] != null)
-         {
-            checkless[numAdded] = moveList[i];
-            numAdded++;
-         }
-      }
-      moveList = checkless;
-
-      if (numMoves - numRemoved != numAdded)
-      {
-         System.out.println("Check the removeBeingChecked() method");
-      }
-      for (int i = 0; i < numAdded; i++)
-      {
-         System.out.println(i + ": " + moveList[i]);
-      }
-      return numAdded;
-   }
-   
    public void sortBoardsA(ChessBoard[] list)
    {
+      // TODO - make this more efficient than freakin' BUBBLE SORT
       for (int i = 0; i < length(list) - 1; i++)
       {
          for (int j = length(list) - 1; j > i; j--)
@@ -775,9 +753,15 @@ public class AI
          }
       }
    }
-   
+
+   /**
+    Sorts the given list of boards in descending order
+
+    @param list - the list of boards to be sorted
+    */
    public void sortBoardsD(ChessBoard[] list)
    {
+      // TODO - make this more efficient than freakin' BUBBLE SORT
       for (int i = 0; i < length(list) - 1; i++)
       {
          for (int j = length(list) - 1; j > i; j--)
@@ -791,9 +775,15 @@ public class AI
          }
       }
    }
-   
+
+   /**
+    Sorts the given moveList in ascending order
+
+    @param moveList
+    */
    public void sortMovesA(ChessMove[] moveList)
    {
+      // TODO - make this more efficient than freakin' BUBBLE SORT
       int numMoves = countMoves(moveList);
       for (int i = 0; i < numMoves - 1; i++)
       {
@@ -810,13 +800,13 @@ public class AI
    }
 
    /**
-    This method sorts the move list and puts the best ones at the lowest
-    indices.
+    Sorts the given moveList in descending order
 
     @param moveList
     */
    public void sortMovesD(ChessMove[] moveList)
    {
+      // TODO - make this more efficient than freakin' BUBBLE SORT
       int numMoves = countMoves(moveList);
       for (int i = 0; i < numMoves - 1; i++)
       {
@@ -831,30 +821,31 @@ public class AI
          }
       }
    }
-   
+
    /**
-   This method finds the sum of the values of the "num"-smallest pieces in the
-   array, simply summing the entire array if num > length(pieces)
-   
-   @param pieces
-   @param num
-   @return 
-   */
-   public int sumValue(ChessPiece [] pieces, int num)
+    This method finds the sum of the values of the "num"-smallest pieces in
+    the array, simply summing the entire array if num > length(pieces)
+
+    @param pieces
+    @param num
+    @return
+    */
+   public int sumValue(ChessPiece[] pieces, int num)
    {
       int sum = 0;
-      if(num > length(pieces))
+      if (num > length(pieces))
       {
          num = length(pieces);
       }
+      // TODO - G-Dang it, can I stop using BUBBLE SORT??
       for (int i = 0; i < length(pieces) - 1; i++)
       {
          for (int j = length(pieces) - 1; j > i; j--)
          {
-            if(pieces[j].value < pieces[j-1].value)
+            if (pieces[j].value < pieces[j - 1].value)
             {
-               ChessPiece temp = pieces[j-1];
-               pieces[j-1] = pieces[j];
+               ChessPiece temp = pieces[j - 1];
+               pieces[j - 1] = pieces[j];
                pieces[j] = temp;
             }
          }
@@ -870,13 +861,13 @@ public class AI
    {
       AI deepBlue = new AI();
       deepBlue.hangRating(deepBlue.gameBoard, PieceColor.WHITE);
-      deepBlue.gameBoard.getPieceAt(4, 6).select();
-      deepBlue.gameBoard.movePiece(4, 4);
-      
-      for(int i = 0; i < 8; i++)
+      ChessPiece mover = deepBlue.gameBoard.getPieceAt(4, 6);
+      deepBlue.gameBoard.movePiece(mover, 4, 4);
+
+      for (int i = 0; i < 8; i++)
       {
-         deepBlue.gameBoard.getPieceAt(i, 1).select();
-         deepBlue.gameBoard.movePiece(i, 3);
+         mover = deepBlue.gameBoard.getPieceAt(i, 1);
+         deepBlue.gameBoard.movePiece(mover, i, 3);
       }
       System.out.println(deepBlue.gameBoard);
       deepBlue.hangRating(deepBlue.gameBoard, PieceColor.BLACK);

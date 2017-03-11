@@ -31,16 +31,6 @@ public class King extends ChessPiece
       xCoord = xC;
       yCoord = yC;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BKing";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WKing";
-      }
-      else
-         System.out.println("Error in King constructor!");
    }
    
    /*
@@ -53,16 +43,6 @@ public class King extends ChessPiece
       value = 10;
       hasMoved = false;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BKing";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WKing";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -72,9 +52,7 @@ public class King extends ChessPiece
    public King(King cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -82,22 +60,26 @@ public class King extends ChessPiece
    }
    
    /**
-   This returns the string "King" 
+   Returns a string describing this king
+   
+   @return String - description of this
    */
+   @Override
    public String toString()
    {
-      return "King";
+      return color.toString() + " King";
    }
    
    /*
-   This method determines if a selected King can move to a selected 
-   square. If the bishop can move to the selected square the method returns
+   This method determines if this king can move to a selected 
+   square. If the king can move to the selected square the method returns
    true, false otherwise
    */
+   @Override
    public boolean canMove(int x, int y)
    {
-      if(x - xCoord > -2 && x - xCoord < 2)
-         if(y - yCoord > -2 && y - yCoord < 2)
+      if(-1 <= x - xCoord && x - xCoord <= 1)
+         if(-1 <= y - yCoord && y - yCoord <= 1)
             return true;
       return false;
    }

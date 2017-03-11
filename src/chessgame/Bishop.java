@@ -30,16 +30,6 @@ public class Bishop extends ChessPiece
       xCoord = xC;
       yCoord = yC;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BBishop";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WBishop";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -51,16 +41,6 @@ public class Bishop extends ChessPiece
       type = PieceType.BISHOP;
       value = 3;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BBishop";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WBishop";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -70,9 +50,7 @@ public class Bishop extends ChessPiece
    public Bishop(Bishop cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -80,25 +58,29 @@ public class Bishop extends ChessPiece
    }
    
    /**
-   This returns the string "Bishop"
+   Returns a string describing this bishop
+   
+   @return String - description of this
    */
+   @Override
    public String toString()
    {
-      return "Bishop";
+      return color.toString() + " Bishop";
    }
    
    /*
-   This method determines if a selected bishop can move to a selected 
+   This method determines if this bishop can move to a selected 
    square. If the bishop can move to the selected square the method returns
    true, false otherwise
    */
+   @Override
    public boolean canMove(int x, int y)
    {
       for(int i = 1; i < 8; i++)
-         if((xCoord+i == x && yCoord+i == y) ||
-            (xCoord-i == x && yCoord+i == y) ||
-            (xCoord+i == x && yCoord-i == y) ||
-            (xCoord-i == x && yCoord-i == y) )
+         if((xCoord + i == x && yCoord + i == y) ||
+            (xCoord - i == x && yCoord + i == y) ||
+            (xCoord + i == x && yCoord - i == y) ||
+            (xCoord - i == x && yCoord - i == y) )
             return true;
       return false;
    }

@@ -30,16 +30,6 @@ public class Knight extends ChessPiece
       xCoord = xC;
       yCoord = yC;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BKnight";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WKnight";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -51,16 +41,6 @@ public class Knight extends ChessPiece
       type = PieceType.KNIGHT;
       value = 3;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BKnight";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WKnight";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -70,9 +50,7 @@ public class Knight extends ChessPiece
    public Knight(Knight cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -80,18 +58,22 @@ public class Knight extends ChessPiece
    }
    
    /**
-   This returns the string "Knight" 
+   Returns a string describing this knight
+   
+   @return String - description of this
    */
+   @Override
    public String toString()
    {
-      return "Knight";
+      return color.toString() + " Knight";
    }
    
    /*
-   This method determines if a selected Knight can move to a selected 
-   square. If the bishop can move to the selected square the method returns
+   This method determines if this Knight can move to a selected 
+   square. If the Knight can move to the selected square the method returns
    true, false otherwise
    */
+   @Override
    public boolean canMove(int x, int y)
    {
       if(xCoord + 2 == x && yCoord + 1 == y)

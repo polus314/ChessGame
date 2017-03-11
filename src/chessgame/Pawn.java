@@ -30,16 +30,6 @@ public class Pawn extends ChessPiece
       xCoord = xC;
       yCoord = yC;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BPawn";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WPawn";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -51,16 +41,6 @@ public class Pawn extends ChessPiece
       type = PieceType.PAWN;
       value = 1;
       color = c;
-      if (c == PieceColor.BLACK)
-      {
-         pieceName = "BPawn";
-      }
-      else if (c == PieceColor.WHITE)
-      {
-         pieceName = "WPawn";
-      }
-      else
-         System.out.println("Error!");
    }
    
    /*
@@ -70,9 +50,7 @@ public class Pawn extends ChessPiece
    public Pawn(Pawn cp)
    {
       type = cp.type;
-      pieceName = cp.pieceName;
       color = cp.color;
-      selected = cp.selected;
       hasMoved = cp.hasMoved;
       value = cp.value;
       xCoord = cp.xCoord;
@@ -80,18 +58,22 @@ public class Pawn extends ChessPiece
    }
    
    /**
-   This returns the string "Pawn" 
+   Returns a string describing this pawn
+   
+   @return String - description of this
    */
+   @Override
    public String toString()
    {
-      return "Pawn";
+      return color.toString() + " Pawn";
    }
    
    /*
-   This method determines if a selected Pawn can move to a selected 
-   square. If the bishop can move to the selected square the method returns
+   This method determines if this Pawn can move to a selected 
+   square. If the pawn can move to the selected square the method returns
    true, false otherwise
    */
+   @Override
    public boolean canMove(int x, int y)
    {
       if(x != xCoord)

@@ -10,17 +10,18 @@ import java.util.ArrayList;
  */
 public class ChessBoard
 {
-   // TODO - make not all these public, pretty smelly
    private ChessPiece[][] pieceArray;
+   // TODO - move this up to AI?
    public boolean gameOver;
-   public PieceColor playerToMove;
-   public ArrayList<ChessMove> wMoveList;
-   public ArrayList<ChessMove> bMoveList;
-   public int numWMoves;
-   public int numBMoves;
+   private PieceColor playerToMove;
+   private ArrayList<ChessMove> wMoveList;
+   private ArrayList<ChessMove> bMoveList;
+   private int numWMoves;
+   private int numBMoves;
+   // TODO - move this up to AI as well?
    public float mobilityRating;
    public float materialRating;
-   public int hangingPieces;
+   private int hangingPieces;
 
    /**
     This constructor sets up a standard chess game on the board
@@ -101,6 +102,24 @@ public class ChessBoard
    }
    
    /**
+   Returns which color will move next
+   @return - color to move next, EMPTY if game is over
+   */
+   public PieceColor getPlayerToMove()
+   {
+      return playerToMove;
+   }
+   
+   /**
+   Returns true if game is over, false otherwise
+   @return boolean - whether or not game is over
+   */
+   public boolean isGameOver()
+   {
+      return gameOver;
+   }
+   
+   /**
    Returns the piece at the given board coordinates
    @param row           - row of piece, rows start at 0
    @param col           - column of piece, columns start at 0
@@ -157,7 +176,7 @@ public class ChessBoard
       else
       {
          if (cp.canMove(xDest, yDest)
-               && pathIsClear(xDest, yDest)
+               && pathIsClear(cp, xDest, yDest)
                && spaceIsOpen(xDest, yDest, cp.getColor()))
          {
             return true;
@@ -166,19 +185,28 @@ public class ChessBoard
       return false;
    }
 
+   /**
+   Determines if the King of the given color is able to castle king-side.
+   Factors considered are:
+      - Open path
+      - King and Rook have not moved
+      - King is not in check
+   @param color - player who is trying to castle
+   @return boolean - true if castling is legal, false otherwise
+   */
    public boolean canCastleKS(PieceColor color)
    {
       int y = color == PieceColor.BLACK ? 0 : 7;
       
       //check to see if King and Rook are present and unmoved
-      ChessPiece cp = pieceArray[4][y];
-      if (cp.type != PieceType.KING || cp.hasMoved == true)
+      ChessPiece cp = getPieceAt(4,y);
+      if (cp.type != PieceType.KING || cp.hasMoved)
       {
          return false;
       }
 
-      cp = pieceArray[7][y];
-      if (cp.type != PieceType.ROOK || cp.hasMoved == true)
+      cp = getPieceAt(7,y);
+      if (cp.type != PieceType.ROOK || cp.hasMoved)
       {
          return false;
       }
@@ -188,41 +216,45 @@ public class ChessBoard
          return false;
       }
 
-      pieceArray[4][y].unselect();
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            pieceArray[i][j].select();
-            if (pieceArray[i][j].getColor() == color.opposite()
-                  && (canCapture(pieceArray[i][j], 4, y)
-                  || canCapture(pieceArray[i][j], 5, y)
-                  || canCapture(pieceArray[i][j], 6, y)))
+            cp = getPieceAt(i,j);
+            if (cp.getColor() == color.opposite()
+                  && (canCapture(cp, 4, y)
+                  || canCapture(cp, 5, y)
+                  || canCapture(cp, 6, y)))
             {
-               pieceArray[i][j].unselect();
                return false;
             }
-            pieceArray[i][j].unselect();
          }
       }
-      pieceArray[4][y].select();
-      System.out.println("Level 4");
       return true;
    }
 
+   /**
+   Determines if the King of the given color is able to castle queen-side.
+   Factors considered are:
+      - Open path
+      - King and Rook have not moved
+      - King is not in check
+   @param color - player who is trying to castle
+   @return boolean - true if castling is legal, false otherwise
+   */
    public boolean canCastleQS(PieceColor color)
    {
       int y = color == PieceColor.BLACK ? 0 : 7;
       
       //check to see if King and Rook are present and unmoved
-      ChessPiece cp = pieceArray[4][y];
-      if (cp.type != PieceType.KING || cp.hasMoved == true)
+      ChessPiece cp = getPieceAt(4,y);
+      if (cp.type != PieceType.KING || cp.hasMoved)
       {
          return false;
       }
 
-      cp = pieceArray[0][y];
-      if (cp.type != PieceType.ROOK || cp.hasMoved == true)
+      cp = getPieceAt(0,y);
+      if (cp.type != PieceType.ROOK || cp.hasMoved)
       {
          return false;
       }
@@ -231,38 +263,33 @@ public class ChessBoard
       {
          return false;
       }
-      pieceArray[4][y].unselect();
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            pieceArray[i][j].select();
-            if (pieceArray[i][j].getColor() == color.opposite()
-                  && (canCapture(pieceArray[i][j], 2, y)
-                  || canCapture(pieceArray[i][j], 3, y)
-                  || canCapture(pieceArray[i][j], 4, y)))
+            cp = getPieceAt(i,j);
+            if (cp.getColor() == color.opposite()
+                  && (canCapture(cp, 2, y)
+                  || canCapture(cp, 3, y)
+                  || canCapture(cp, 4, y)))
             {
-               pieceArray[i][j].unselect();
                return false;
             }
-            pieceArray[i][j].unselect();
          }
       }
-      pieceArray[4][y].select();
       return true;
    }
 
-   public boolean capturePiece(int x, int y)
+   public boolean capturePiece(ChessPiece attacker, int x, int y)
    {
-      ChessPiece selected = findSelected();
-      int xSel = selected.getX();
-      int ySel = selected.getY();
-      PieceColor selColor = pieceArray[xSel][ySel].getColor();
-      PieceColor captureColor = pieceArray[x][y].getColor();
-      if (pieceArray[xSel][ySel] instanceof Pawn
-            && selColor != captureColor)
+      int xSel = attacker.getX();
+      int ySel = attacker.getY();
+      PieceColor attColor = getPieceAt(xSel,ySel).getColor();
+      PieceColor captureColor = getPieceAt(x,y).getColor();
+      if (getPieceAt(xSel, ySel) instanceof Pawn
+            && attColor != captureColor)
       {
-         if (ySel + 1 == y && selColor == PieceColor.BLACK)
+         if (ySel + 1 == y && attColor == PieceColor.BLACK)
          {
             if (xSel + 1 == x || xSel - 1 == x)
             {
@@ -271,7 +298,7 @@ public class ChessBoard
                return true;
             }
          }
-         if (ySel - 1 == y && selColor == PieceColor.WHITE)
+         if (ySel - 1 == y && attColor == PieceColor.WHITE)
          {
             if (xSel + 1 == x || xSel - 1 == x)
             {
@@ -284,23 +311,22 @@ public class ChessBoard
       }
 
       ChessBoard movedBoard = new ChessBoard(this);
-      if (pieceArray[xSel][ySel].canMove(x, y))
+      if (getPieceAt(xSel, ySel).canMove(x, y))
       {
-         if (pathIsClear(x, y) && selColor != captureColor)
+         if (pathIsClear(attacker, x, y) && attColor != captureColor)
          {
             movedBoard.replacePiece(xSel, ySel, x, y);
-            if (!movedBoard.checkForCheck(selColor))
+            if (!movedBoard.checkForCheck(attColor))
             {
                replacePiece(xSel, ySel, x, y);
-               if (pieceArray[x][y] instanceof King
-                     || pieceArray[x][y] instanceof Rook)
+               if (getPieceAt(x,y) instanceof King
+                     || getPieceAt(x,y) instanceof Rook)
                {
-                  pieceArray[x][y].hasMoved = true;
+                  getPieceAt(x,y).hasMoved = true;
                }
                playerToMove = playerToMove.opposite();
                return true;
             }
-            System.out.println("Can't capture into check!");
             return false;
          }
       }
@@ -352,17 +378,25 @@ public class ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
-            pieceArray[i][j].select();
-            if (canCapture(pieceArray[i][j], cp.xCoord, cp.yCoord))
+            if (canCapture(getPieceAt(i,j), cp.xCoord, cp.yCoord))
             {
                hasCheck = true;
             }
-            pieceArray[i][j].unselect();
          }
       }
       return hasCheck;
    }
 
+   /**
+   Helper method to check all squares that a bishop will move through when
+   moving from (xi,yi) to (x,y)
+   
+   @param xi - original x coordinate
+   @param yi - original y coordinate
+   @param x - destination x coordinate
+   @param y - destination y coordinate
+   @return true - whether bishop has an unobstructed path
+   */
    private boolean clearPathBishop(int xi, int yi, int x, int y)
    {
       for (int i = 1; i < 8; i++) //see Bishop.canMove(int,int)
@@ -371,7 +405,7 @@ public class ChessBoard
          {
             for (int j = 1; j < i; j++)
             {
-               if (!pieceArray[xi + j][yi + j].equals(new ChessPiece()))
+               if (!spaceIsEmpty(xi + j, yi + j))
                {
                   return false;
                }
@@ -381,7 +415,7 @@ public class ChessBoard
          {
             for (int j = 1; j < i; j++)
             {
-               if (!pieceArray[xi + j][yi - j].equals(new ChessPiece()))
+               if (!spaceIsEmpty(xi + j, yi - j))
                {
                   return false;
                }
@@ -391,7 +425,7 @@ public class ChessBoard
          {
             for (int j = 1; j < i; j++)
             {
-               if (!pieceArray[xi - j][yi + j].equals(new ChessPiece()))
+               if (!spaceIsEmpty(xi - j, yi + j))
                {
                   return false;
                }
@@ -401,7 +435,7 @@ public class ChessBoard
          {
             for (int j = 1; j < i; j++)
             {
-               if (!pieceArray[xi - j][yi - j].equals(new ChessPiece()))
+               if (!spaceIsEmpty(xi - j, yi - j))
                {
                   return false;
                }
@@ -411,13 +445,23 @@ public class ChessBoard
       return true;
    }
 
+   /**
+   Helper method to check all squares that a rook will move through when
+   moving from (xi,yi) to (x,y)
+   
+   @param xi - original x coordinate
+   @param yi - original y coordinate
+   @param x - destination x coordinate
+   @param y - destination y coordinate
+   @return true - whether rook has an unobstructed path
+   */
    private boolean clearPathRook(int xi, int yi, int x, int y)
    {
       if (y < yi && xi == x)
       {
          for (int i = y + 1; i < yi; i++)
          {
-            if (!pieceArray[x][i].equals(new ChessPiece()))
+            if (!spaceIsEmpty(x, i))
             {
                return false;
             }
@@ -427,7 +471,7 @@ public class ChessBoard
       {
          for (int i = yi + 1; i < y; i++)
          {
-            if (!pieceArray[x][i].equals(new ChessPiece()))
+            if (!spaceIsEmpty(x, i))
             {
                return false;
             }
@@ -437,7 +481,7 @@ public class ChessBoard
       {
          for (int i = x + 1; i < xi; i++)
          {
-            if (!pieceArray[i][y].equals(new ChessPiece()))
+            if (!spaceIsEmpty(i, y))
             {
                return false;
             }
@@ -447,7 +491,7 @@ public class ChessBoard
       {
          for (int i = xi + 1; i < x; i++)
          {
-            if (!pieceArray[i][y].equals(new ChessPiece()))
+            if (!spaceIsEmpty(i, y))
             {
                return false;
             }
@@ -495,7 +539,7 @@ public class ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
-            if (!pieceArray[i][j].equals(blank))
+            if (!getPieceAt(i,j).equals(blank))
             {
                count++;
             }
@@ -524,7 +568,7 @@ public class ChessBoard
          {
             for (int j = 0; j < 8; j++)
             {
-               if (!pieceArray[i][j].equals(cb.pieceArray[i][j]))
+               if (!getPieceAt(i,j).equals(cb.getPieceAt(i,j)))
                {
                   return false;
                }
@@ -548,53 +592,31 @@ public class ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
-            if (cp.equals(pieceArray[i][j]))
+            if (cp.equals(getPieceAt(i,j)))
             {
-               return pieceArray[i][j];
+               return getPieceAt(i,j);
             }
          }
       }
       return new ChessPiece();
    }
 
-   public ChessPiece findSelected()
+   /**
+   Moves the given piece to the destination coordinates, if it is a legal
+   move, and updates which player is next to move. If move is not legal,
+   returns false and doesn't change whose move is next.
+   
+   @param mover - piece trying to move
+   @param xf    - destination x coordinate
+   @param yf    - destination y coordinate
+   @return boolean - whether or not a legal move was executed
+   */
+   public boolean movePiece(ChessPiece mover, int xf, int yf)
    {
-      for (int i = 0; i < 8; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            if (pieceArray[i][j].selected)
-            {
-               return pieceArray[i][j];
-            }
-         }
-      }
-      return new ChessPiece();
-   }
-
-   public boolean movePiece(int xf, int yf)
-   {
-      int xi, yi;
-      xi = yi = -1;
-      for (int i = 0; i < 8; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            if (pieceArray[i][j].selected)
-            {
-               xi = i;
-               yi = j;
-            }
-         }
-      }
-      if (xi == -1)
-      {
-         return false;
-      }
-      ChessPiece mover = pieceArray[xi][yi];
-
+      int xi = mover.getX();
+      int yi = mover.getY();
       ChessBoard movedBoard = new ChessBoard(this);
-      if (mover.canMove(xf, yf) && pathIsClear(xf, yf))
+      if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf))
       {
          movedBoard.replacePiece(xi, yi, xf, yf);
          if (!movedBoard.checkForCheck(mover.getColor()))
@@ -608,12 +630,17 @@ public class ChessBoard
             playerToMove = playerToMove.opposite();
             return true;
          }
-         System.out.println("Can't move into check!!");
          return false;
       }
       return false;
    }
 
+   /**
+   Checks to see if there any pawns that have reached the other side of the
+   board and thus need to be promoted.
+   
+   @return ChessPiece - the pawn that needs promoting, else new ChessPiece()
+   */
    public ChessPiece needPromotion()
    {
       for (int i = 0; i < 8; i++)
@@ -633,29 +660,28 @@ public class ChessBoard
    /**
     This method determines if a chess piece has any pieces blocking its way.
     It is assumed that the coordinates constitute a valid move for that piece
-    and the piece being considered MUST BE SELECTED
-
+    
+    @param mover
     @param x
     @param y
     @return true if the piece has nothing blocking it, false otherwise
     */
-   public boolean pathIsClear(int x, int y)
+   public boolean pathIsClear(ChessPiece mover, int x, int y)
    {
       boolean clear = true;
-      ChessPiece selected = findSelected();
-      int xi = selected.getX();
-      int yi = selected.getY();
-      switch (findSelected().type)
+      int xi = mover.getX();
+      int yi = mover.getY();
+      switch (mover.type)
       {
          case PAWN:
-         {
-            if (findSelected().getColor() == PieceColor.WHITE && yi == 6)
+         {  // for pawns, check that 2-space intial move is unobstructed
+            if (mover.getColor() == PieceColor.WHITE && yi == 6)
             {
-               clear = pieceArray[xi][yi - 1].equals(new ChessPiece());
+               clear = spaceIsEmpty(xi, yi - 1);
             }
-            if (findSelected().getColor() == PieceColor.BLACK && yi == 1)
+            if (mover.getColor() == PieceColor.BLACK && yi == 1)
             {
-               clear = pieceArray[xi][yi + 1].equals(new ChessPiece());
+               clear = spaceIsEmpty(xi, yi + 1);
             }
             break;
          }
@@ -674,6 +700,10 @@ public class ChessBoard
             clear = clearPathBishop(xi, yi, x, y) && clearPathRook(xi, yi, x, y);
             break;
          }
+         default:
+         {
+            clear = true; // King and Knight always have a clear path
+         }   
       }
       return clear;
    }
@@ -694,17 +724,15 @@ public class ChessBoard
     */
    public boolean spaceIsOpen(int x, int y, PieceColor color)
    {
-      return pieceArray[x][y].equals(new ChessPiece())
-            || pieceArray[x][y].getColor() != color;
+      return spaceIsEmpty(x,y) || pieceArray[x][y].getColor() != color;
    }
 
    // TODO - not deal with graphics in this class
    public void replacePiece(int xi, int yi, int xf, int yf)
    {
       pieceArray[xi][yi].movePieceShape(xf, yf); //graphical position
-      pieceArray[xf][yf] = pieceArray[xi][yi];//logical position
+      pieceArray[xf][yf] = pieceArray[xi][yi];   //logical position
       pieceArray[xi][yi] = new ChessPiece();
-      pieceArray[xf][yf].selected = false;
    }
 
    public void setPlayerToMove(PieceColor player)

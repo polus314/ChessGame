@@ -39,6 +39,7 @@ class Checkerboard
    private int xPos;
    private int yPos;
    public ChessBoard gameBoard;
+   public ChessPiece selectedPiece = new ChessPiece();
 
    public Checkerboard()
    {
@@ -63,7 +64,7 @@ class Checkerboard
          "w", "b", "r"
       };
 
-      String imgFolderPath = "src/chessgame/";
+      String imgFolderPath = "resources/";
       int count = 0;
       for (String piece : pieceTypes)
       {
@@ -82,21 +83,37 @@ class Checkerboard
       }
    }
 
+   /**
+   Sets the board's x position to x
+   @param x - new x coordinate
+   */
    public void setX(int x)
    {
       this.xPos = x;
    }
 
+   /**
+   Returns the board's x position
+   @return int - current x coordinate
+   */
    public int getX()
    {
       return xPos;
    }
 
+   /**
+   Sets the board's y position to y
+   @param y - new y coordinate
+   */
    public void setY(int y)
    {
       this.yPos = y;
    }
 
+   /**
+   Returns the board's y position
+   @return int - current y coordinate
+   */
    public int getY()
    {
       return yPos;
@@ -106,7 +123,7 @@ class Checkerboard
     This method paints a 64 square board of alternating colors, as well as all
     the pieces that are still in play
 
-    @param g
+    @param g - graphics object used to draw the board
     */
    public void paintBoard(Graphics g)
    {
@@ -146,23 +163,25 @@ class Checkerboard
 
       //paints all the pieces, checking if they are white, black or currently
       //selected
+      ChessPiece thisPiece;
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            if (gameBoard.getPieceAt(i, j).getColor() == PieceColor.BLACK)
+            thisPiece = gameBoard.getPieceAt(i, j);
+            if (thisPiece.getColor() == PieceColor.BLACK)
             {
                g.setColor(Color.black);
             }
-            else if (gameBoard.getPieceAt(i, j).getColor() == PieceColor.WHITE)
+            else if (thisPiece.getColor() == PieceColor.WHITE)
             {
                g.setColor(Color.white);
             }
-            if (gameBoard.getPieceAt(i, j).isSelected())
+            if (thisPiece == selectedPiece)
             {
                g.setColor(Color.red);
             }
-            paintPiece(g, gameBoard.getPieceAt(i, j));
+            paintPiece(g, thisPiece);
          }
       }
    }
@@ -174,7 +193,7 @@ class Checkerboard
     @param g
     @param cp
     */
-   public void paintPiece(Graphics g, ChessPiece cp)
+   private void paintPiece(Graphics g, ChessPiece cp)
    {
       BufferedImage img;
       int pieceXPos, pieceYPos;
