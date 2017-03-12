@@ -84,4 +84,10 @@ public class Bishop extends ChessPiece
             return true;
       return false;
    }
+   
+   @Override
+   public ChessPiece copyOfThis()
+   {
+      return new Bishop(this);
+   }
 }

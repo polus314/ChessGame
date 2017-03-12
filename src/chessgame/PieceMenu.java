@@ -6,11 +6,9 @@ and open the template in the editor.
 
 package chessgame;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -79,8 +77,6 @@ public class PieceMenu extends JPanel implements ActionListener
       nButton.addActionListener(this);
       pButton.addActionListener(this);
       eButton.addActionListener(this);
-      
-      piece = new ChessPiece();
    }
    
    public void actionPerformed(ActionEvent event)
@@ -100,7 +96,7 @@ public class PieceMenu extends JPanel implements ActionListener
             break;
          case ("pawn"): piece = new Pawn();
             break;
-         case ("empty"): piece = new ChessPiece();
+         case ("empty"): piece = null;
             break;
          default: System.out.println("Button clicked, maybe??");
       }

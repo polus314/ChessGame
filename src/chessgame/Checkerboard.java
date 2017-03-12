@@ -39,7 +39,7 @@ class Checkerboard
    private int xPos;
    private int yPos;
    public ChessBoard gameBoard;
-   public ChessPiece selectedPiece = new ChessPiece();
+   public ChessPiece selectedPiece;
 
    public Checkerboard()
    {
@@ -169,6 +169,8 @@ class Checkerboard
          for (int j = 0; j < 8; j++)
          {
             thisPiece = gameBoard.getPieceAt(i, j);
+            if(thisPiece == null)
+               continue;
             if (thisPiece.getColor() == PieceColor.BLACK)
             {
                g.setColor(Color.black);
@@ -198,9 +200,9 @@ class Checkerboard
       BufferedImage img;
       int pieceXPos, pieceYPos;
 
-      //if piece isn't a placeholder, generic ChessPiece that represents an
-      //empty square logically, determines where on the board it should be drawn
-      if (cp.equals(new ChessPiece()))
+      // if there is a piece on this square, determines where on the board it 
+      // should be drawn
+      if (cp == null)
       {
          return;
       }

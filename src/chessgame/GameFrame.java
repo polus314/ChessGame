@@ -76,22 +76,22 @@ public class GameFrame extends JFrame implements ActionListener
       String command = event.getActionCommand();
       switch(command)
       {
-         case ("Main Menu"): backToMainMenu();
+         case "Main Menu": backToMainMenu();
             break;
-         case ("Single"): modeMenu.setGameMode(GameMode.SINGLE);
+         case "Single": modeMenu.setGameMode(GameMode.SINGLE);
             refresh();
             break;
-         case ("Versus"): modeMenu.setGameMode(GameMode.VERSUS);
+         case "Versus": modeMenu.setGameMode(GameMode.VERSUS);
             colorMenu.setColor(PieceColor.WHITE);
             refresh();
             break;
-         case ("Setup"): modeMenu.setGameMode(GameMode.SET_UP);
+         case "Setup": modeMenu.setGameMode(GameMode.SET_UP);
             refresh();
             break;
-         case ("White"): colorMenu.setColor(PieceColor.WHITE);
+         case "White": colorMenu.setColor(PieceColor.WHITE);
             refresh();
             break;
-         case ("Black"): colorMenu.setColor(PieceColor.BLACK);
+         case "Black": colorMenu.setColor(PieceColor.BLACK);
             refresh();
             gamePanel.flipFirstTurn();
             break;
@@ -160,9 +160,7 @@ public class GameFrame extends JFrame implements ActionListener
          return new Bishop(colorMenu.getColor());
       else if(piece instanceof Knight)
          return new Knight(colorMenu.getColor());
-      else if(piece instanceof Pawn)
+      else //if(piece instanceof Pawn)
          return new Pawn(colorMenu.getColor());
-      else
-         return new ChessPiece();
    }
 }

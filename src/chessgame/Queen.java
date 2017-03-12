@@ -91,4 +91,10 @@ public class Queen extends ChessPiece
       }
       return true;
    }
+   
+   @Override
+   public ChessPiece copyOfThis()
+   {
+      return new Queen(this);
+   }
 }

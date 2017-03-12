@@ -83,4 +83,10 @@ public class King extends ChessPiece
             return true;
       return false;
    }
+   
+   @Override
+   public ChessPiece copyOfThis()
+   {
+      return new King(this);
+   }
 }

@@ -8,7 +8,7 @@ and create new chess pieces.
 /**
  @author jppolecat
  */
-public class ChessPiece
+public abstract class ChessPiece
 {
    protected int value;
    protected int xCoord;
@@ -25,6 +25,7 @@ public class ChessPiece
       xCoord = 0;
       yCoord = 0;
       hasMoved = false;
+      color = PieceColor.WHITE;
    }
 
    /*
@@ -75,13 +76,10 @@ public class ChessPiece
    }
 
    /*
-   This method inputs an x and y coordinate. It returns false here, but
-   is overwritten in subclasses
+   This method takes an x and y coordinate as input and returns whether or not
+   this chess piece can move to those coordinates
    */
-   public boolean canMove(int x, int y)
-   {
-      return false;
-   }
+   public abstract boolean canMove(int x, int y);
 
    /*
    This will input a chess piece and copy all the attributes to the 
@@ -99,43 +97,7 @@ public class ChessPiece
    /*
    This method will create a copy of whatever chess piece calls the method
    */
-   public ChessPiece copyOfThis()
-   {
-      if (this instanceof King)
-      {
-         King king = (King) this;
-         return new King(king);
-      }
-      if (this instanceof Queen)
-      {
-         Queen queen = (Queen) this;
-         return new Queen(queen);
-      }
-      if (this instanceof Rook)
-      {
-         Rook rook = (Rook) this;
-         return new Rook(rook);
-      }
-      if (this instanceof Bishop)
-      {
-         Bishop bishop = (Bishop) this;
-         return new Bishop(bishop);
-      }
-      if (this instanceof Knight)
-      {
-         Knight knight = (Knight) this;
-         return new Knight(knight);
-      }
-      if (this instanceof Pawn)
-      {
-         Pawn pawn = (Pawn) this;
-         return new Pawn(pawn);
-      }
-      else
-      {
-         return new ChessPiece();
-      }
-   }
+   public abstract ChessPiece copyOfThis();
 
    /*
    This returns a string of the piece name

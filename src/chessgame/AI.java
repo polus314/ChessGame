@@ -84,10 +84,12 @@ public class AI
          {
             boolean isADefender = false;
             ChessPiece cp = cb.getPieceAt(i, j);
-
+            if(cp == null) // if no piece, don't check for anything
+               continue;
+            
             // if regular non-empty piece, check if it can move here and the
             // path is clear
-            if (!cp.equals(new ChessPiece()) && !(cp instanceof Pawn))
+            if (!(cp instanceof Pawn))
             {
                isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
             }
@@ -222,9 +224,12 @@ public class AI
       {
          for (int j = 0; j < 8; j++)
          {
-            if (cb.getPieceAt(i, j).getColor() == color)
+            ChessPiece current = cb.getPieceAt(i,j);
+            if(current == null)
+               continue;
+            if (current.getColor() == color)
             {
-               ChessMove[] tempList = findMoves(cb, cb.getPieceAt(i, j));
+               ChessMove[] tempList = findMoves(cb, current);
                concatenateMoveLists(moveList, tempList);
             }
          }
@@ -345,6 +350,16 @@ public class AI
          if(childOfRoot.find(bestMove) != null)
             ancestor = childOfRoot;
       }
+      
+      
+
+      // REMOVE ONCE THIS METHOD IS SORTED OUT
+      if(ancestor == null)
+         return moveList[0];
+      // REMOVE ONCE THIS METHOD IS SORTED OUT
+      
+      
+      
       
       int index = moveTree.getIndex(ancestor);
       return moveList[index];

@@ -19,7 +19,6 @@ public class ChessMove
 
    public ChessMove()
    {
-      piece = new ChessPiece();
       xDest = 7;
       yDest = 7;
       moveType = MoveType.UNOCCUPIED;
@@ -29,7 +28,7 @@ public class ChessMove
 
    public ChessMove(ChessPiece cp, int xD, int yD)
    {
-      piece = cp.copyOfThis();
+      piece = cp;
       xDest = xD;
       yDest = yD;
       moveType = MoveType.UNOCCUPIED;

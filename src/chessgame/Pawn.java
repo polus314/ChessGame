@@ -96,4 +96,10 @@ public class Pawn extends ChessPiece
       }
       return false;
    }
+   
+   @Override
+   public ChessPiece copyOfThis()
+   {
+      return new Pawn(this);
+   }
 }

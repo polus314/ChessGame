@@ -77,4 +77,10 @@ public class Rook extends ChessPiece
    {
       return xCoord == x || yCoord == y;
    }
+   
+   @Override
+   public ChessPiece copyOfThis()
+   {
+      return new Rook(this);
+   }
 }

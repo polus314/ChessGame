@@ -60,14 +60,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       pieceArray[3][0] = new Queen(PieceColor.BLACK, 3, 0);
       pieceArray[4][0] = new King(PieceColor.BLACK, 4, 0);
 
-      for (int i = 2; i < 6; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            pieceArray[j][i] = new ChessPiece();
-         }
-      }
-
       wMoveList = new ArrayList<>();
       bMoveList = new ArrayList<>();
       gameOver = false;
@@ -159,6 +151,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     */
    public boolean canCapture(ChessPiece cp, int xDest, int yDest)
    {
+      if(cp == null)
+         return false;
+      
       if (cp instanceof Pawn
             && pieceArray[xDest][yDest].getColor() == cp.getColor().opposite())
       {
@@ -374,7 +369,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    {
       boolean hasCheck = false;
       ChessPiece cp = find(new King(color));
-      if (cp.equals(new ChessPiece()))
+      if (cp == null)
       {
          return false;
       }
@@ -540,12 +535,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    public int countPieces()
    {
       int count = 0;
-      ChessPiece blank = new ChessPiece();
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            if (!getPieceAt(i,j).equals(blank))
+            if (getPieceAt(i,j) != null)
             {
                count++;
             }
@@ -604,7 +598,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             }
          }
       }
-      return new ChessPiece();
+      return null;
    }
 
    /**
@@ -660,7 +654,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             return pieceArray[i][7];
          }
       }
-      return new ChessPiece();
+      return null;
    }
 
    /**
@@ -713,7 +707,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    public boolean spaceIsEmpty(int x, int y)
    {
-      return pieceArray[x][y].equals(new ChessPiece());
+      return pieceArray[x][y] == null;
    }
 
    /**
@@ -733,9 +727,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    // TODO - not deal with graphics in this class
    public void replacePiece(int xi, int yi, int xf, int yf)
    {
-      pieceArray[xi][yi].movePieceShape(xf, yf); //graphical position
-      pieceArray[xf][yf] = pieceArray[xi][yi];   //logical position
-      pieceArray[xi][yi] = new ChessPiece();
+      if(getPieceAt(xi, yi) != null)
+         getPieceAt(xi, yi).movePieceShape(xf, yf);//graphical position
+      setPieceAt(getPieceAt(xi, yi), xf, yf);      //logical position
+      pieceArray[xi][yi] = null;
    }
 
    public void setPlayerToMove(PieceColor player)
@@ -745,11 +740,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    public void copy(ChessBoard cb)
    {
+      ChessPiece current;
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
          {
-            pieceArray[i][j] = cb.pieceArray[i][j].copyOfThis();
+            current = getPieceAt(i,j);
+            if(current != null)
+               pieceArray[i][j] = current.copyOfThis();
          }
       }
       gameOver = cb.gameOver;
