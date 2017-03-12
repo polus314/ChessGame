@@ -119,53 +119,54 @@ public class AI
    }
 
    /**
-    Checks to see if either side has been checkmated or if stalemate has
-    occurred.
-
-    @return PieceColor - WHITE if White has won BLACK if Black has won EMPTY
-    if stalemate has occurred null if game isn't over TODO - rename and/or
-    write a second method
-    */
-   public PieceColor checkGameOver()
+   Returns whether or not the game on gameBoard is over, whether that be win,
+   draw or tie.
+   
+   @return boolean - true if play should halt, false otherwise
+   */
+   public boolean isGameOver()
    {
       // don't want to change the instance variable gameBoard, so make a copy
       ChessBoard gammyBoard = new ChessBoard(gameBoard);
       int numWMoves = length(findAllMoves(PieceColor.WHITE, gammyBoard));
       int numBMoves = length(findAllMoves(PieceColor.BLACK, gammyBoard));
 
-      // TODO - should take whose move it is into account?
-      if (numBMoves == 0) // if Black has no moves
+      PieceColor playerToMove = gammyBoard.getPlayerToMove();
+      if ((numBMoves == 0 && playerToMove == PieceColor.BLACK) ||
+          (numWMoves == 0 && playerToMove == PieceColor.WHITE))
       {
-         if (gammyBoard.checkForCheck(PieceColor.BLACK)) // Black is checkmated
-         {
-            gameBoard.gameOver = true;
-            return PieceColor.WHITE;
-         }
-         else
-         {
-            return PieceColor.EMPTY;   // Black isn't in check, but can't move
-         }                             // so it is stalemate
+         return true;
       }
-      else if (numWMoves == 0)
-      {
-         if (gammyBoard.checkForCheck(PieceColor.WHITE)) // White is checkmated
-         {
-            gameBoard.gameOver = true;
-            return PieceColor.BLACK;
-         }
-         else
-         {
-            return PieceColor.EMPTY;   // White isn't in check, but can't move
-         }                             // so it is stalemate
-      }
-      // impossible to checkmate with this many pieces
-      else if (gammyBoard.countPieces() == 2)
-      {
-         gameBoard.gameOver = true;
-         return PieceColor.EMPTY;
-      }
+ 
       gameBoard.gameOver = false;
-      return null;
+      return false;
+   }
+   
+   /**
+   Returns the color that has the won the game
+   
+   @return PieceColor - color that won the game, null if tied or game isn't
+   over
+   */
+   public PieceColor getWinningSide()
+   {
+      if(!isGameOver())
+      {
+         return null;
+      }
+      
+      if(gameBoard.checkForCheck(PieceColor.WHITE))
+      {
+         return PieceColor.BLACK;
+      }
+      else if(gameBoard.checkForCheck(PieceColor.BLACK))
+      {
+         return PieceColor.WHITE;
+      }
+      else
+      {
+         return null;
+      }
    }
 
    /**

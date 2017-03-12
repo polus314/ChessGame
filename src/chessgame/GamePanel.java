@@ -33,7 +33,7 @@ public class GamePanel extends JPanel
    public GamePanel()
    {
       moveList = new ChessMove[10];
-      humanPlayer = PieceColor.EMPTY;
+      humanPlayer = PieceColor.WHITE;
       myBoard = new Checkerboard();
       deepBlue = new AI(myBoard.gameBoard);      
       mode = GameMode.UNDECIDED;
@@ -189,17 +189,17 @@ public class GamePanel extends JPanel
       Font myFont = new Font("Arial", Font.BOLD, 100);
       g.setFont(myFont);
       g.setColor(Color.blue);
-      if(deepBlue.checkGameOver() == humanPlayer)
+      if(deepBlue.getWinningSide() == humanPlayer)
       {
          g.drawString("YOU", 100, 500);
          g.drawString("WIN", 350, 500);
       }
-      else if(deepBlue.checkGameOver() == humanPlayer.opposite())
+      else if(deepBlue.getWinningSide() == humanPlayer.opposite())
       {
          g.drawString("YOU", 50, 500);
          g.drawString("STINK", 50, 500);
       }
-      else if(deepBlue.checkGameOver() == PieceColor.EMPTY)
+      else if(deepBlue.getWinningSide() == null)
       {
          g.drawString("STALEMATE", 0, 285);
       }
@@ -276,7 +276,7 @@ public class GamePanel extends JPanel
       updateMoveList(move);
       deepBlue = new AI(myBoard.gameBoard);
       //unless the game is over
-      if (deepBlue.checkGameOver() != null)
+      if (deepBlue.isGameOver())
          return;
       //allow human to make next move
       myBoard.gameBoard.setPlayerToMove(humanPlayer);
@@ -320,7 +320,7 @@ public class GamePanel extends JPanel
                if( myBoard.gameBoard.castle(move))
                {
                   updateMoveList(move);
-                  if (deepBlue.checkGameOver() == null && mode == GameMode.SINGLE)
+                  if (!deepBlue.isGameOver() && mode == GameMode.SINGLE)
                   {
                      myBoard.gameBoard.setPlayerToMove(myBoard.gameBoard.getPlayerToMove().opposite());
                      myBoard.selectedPiece = new ChessPiece();
@@ -345,13 +345,13 @@ public class GamePanel extends JPanel
                move.givesCheck = true;
             //end game if a king is missing, set CPU to move so no
             //more mouse events are processed on the checker board
-            if (deepBlue.checkGameOver() == null && mode == GameMode.SINGLE)
+            if (!deepBlue.isGameOver() && mode == GameMode.SINGLE)
             {
                updateMoveList(move);
                myBoard.gameBoard.setPlayerToMove(myBoard.gameBoard.getPlayerToMove().opposite());       
                moveFinished = true;
             }
-            else if(deepBlue.checkGameOver() != null)
+            else if(deepBlue.isGameOver())
             {
                move.givesMate = true;
                updateMoveList(move);
@@ -376,7 +376,7 @@ public class GamePanel extends JPanel
                myBoard.gameBoard.setPieceAt(queen, xCoord, yCoord);  
                move.setMoveType(MoveType.PROMOTION);
             }
-            if (deepBlue.checkGameOver() == null)
+            if (!deepBlue.isGameOver())
             {
                updateMoveList(move);
                moveFinished = true;

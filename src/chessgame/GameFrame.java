@@ -133,8 +133,7 @@ public class GameFrame extends JFrame implements ActionListener
       {
          add(pieceMenu, BorderLayout.SOUTH);
       }
-      else if(gamePanel.mode == GameMode.SINGLE &&
-            gamePanel.humanPlayer != PieceColor.EMPTY)
+      else if(gamePanel.mode == GameMode.SINGLE)
       {
          remove(colorMenu);
       }

@@ -36,7 +36,7 @@ public class ColorMenu extends JPanel
       
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
       
-      chosenColor = PieceColor.EMPTY;
+      chosenColor = PieceColor.WHITE;
    }
    
    public PieceColor getColor()
