@@ -84,22 +84,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       pieceArray = new ChessPiece[8][8];
       copy(template);
    }
-
-   public ChessBoard(PieceType type)
-   {
-      //implement setting up only white or black?
-
-      if (type == PieceType.EMPTY)
-      {
-         for (int i = 0; i < 8; i++)
-         {
-            for (int j = 0; j < 8; j++)
-            {
-               pieceArray[i][j] = new ChessPiece();
-            }
-         }
-      }
-   }
    
    @Override
    public int compare(ChessBoard cb1, ChessBoard cb2)
@@ -221,13 +205,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       
       //check to see if King and Rook are present and unmoved
       ChessPiece cp = getPieceAt(4,y);
-      if (cp.type != PieceType.KING || cp.hasMoved)
+      if (!(cp instanceof King) || cp.hasMoved)
       {
          return false;
       }
 
       cp = getPieceAt(7,y);
-      if (cp.type != PieceType.ROOK || cp.hasMoved)
+      if (!(cp instanceof Rook) || cp.hasMoved)
       {
          return false;
       }
@@ -269,13 +253,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       
       //check to see if King and Rook are present and unmoved
       ChessPiece cp = getPieceAt(4,y);
-      if (cp.type != PieceType.KING || cp.hasMoved)
+      if (!(cp instanceof King) || cp.hasMoved)
       {
          return false;
       }
 
       cp = getPieceAt(0,y);
-      if (cp.type != PieceType.ROOK || cp.hasMoved)
+      if (!(cp instanceof Rook) || cp.hasMoved)
       {
          return false;
       }
@@ -357,7 +341,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    public boolean castle(ChessMove move)
    {
       ChessPiece castler = move.piece;
-      if (castler.type == PieceType.KING)
+      if (castler instanceof King)
       {
          int y = castler.getColor() == PieceColor.WHITE ? 7 : 0;
 
@@ -693,40 +677,37 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       boolean clear = true;
       int xi = mover.getX();
       int yi = mover.getY();
-      switch (mover.type)
+      Class c = mover.getClass();
+      if(c == Pawn.class)
       {
-         case PAWN:
-         {  // for pawns, check that 2-space intial move is unobstructed
-            if (mover.getColor() == PieceColor.WHITE && yi == 6)
-            {
-               clear = spaceIsEmpty(xi, yi - 1);
-            }
-            if (mover.getColor() == PieceColor.BLACK && yi == 1)
-            {
-               clear = spaceIsEmpty(xi, yi + 1);
-            }
-            break;
-         }
-         case ROOK:
+         // check to make sure initial 2-space move is unobstructed
+         if (mover.getColor() == PieceColor.WHITE && yi == 6 && y == 4)
          {
-            clear = clearPathRook(xi, yi, x, y);
-            break;
+            clear = spaceIsEmpty(xi, yi - 1);
          }
-         case BISHOP:
+         if (mover.getColor() == PieceColor.BLACK && yi == 1 && y == 3)
          {
-            clear = clearPathBishop(xi, yi, x, y);
-            break;
+            clear = spaceIsEmpty(xi, yi + 1);
          }
-         case QUEEN: //Bishop combined with Rook clearPath methods
-         {
-            clear = clearPathBishop(xi, yi, x, y) && clearPathRook(xi, yi, x, y);
-            break;
-         }
-         default:
-         {
-            clear = true; // King and Knight always have a clear path
-         }   
       }
+      else if(c == Rook.class)
+      {
+         clear = clearPathRook(xi, yi, x, y);
+      }
+      else if(c == Bishop.class)
+      {
+         clear = clearPathBishop(xi, yi, x, y);
+      }
+      else if(c == Queen.class)
+      {
+         //Bishop combined with Rook clearPath methods
+         clear = clearPathBishop(xi, yi, x, y) && clearPathRook(xi, yi, x, y);
+      }
+      else
+      {
+         clear = true; // King and Knight always have a clear path
+      }
+      
       return clear;
    }
 

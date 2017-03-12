@@ -156,7 +156,7 @@ public class ChessMove
    private String captureMoveToString()
    {
       String moveName = "";
-      if (piece.type == PieceType.PAWN)
+      if (piece instanceof Pawn)
       {
          moveName = intToColumn(piece.xCoord);
       }
@@ -167,7 +167,7 @@ public class ChessMove
 
    private String intToColumn(int xCoord)
    {
-      String column = "";
+      String column;
       switch (xCoord)
       {
          case 0:
@@ -237,35 +237,20 @@ public class ChessMove
 
    private String pieceToString()
    {
-      String moveName;
-      PieceType type = piece.type;
-      switch (type)
-      {
-         case KING:
-            moveName = "K";
-            break;
-         case QUEEN:
-            moveName = "Q";
-            break;
-         case ROOK:
-            moveName = "R";
-            break;
-         case BISHOP:
-            moveName = "B";
-            break;
-         case KNIGHT:
-            moveName = "N";
-            break;
-         case PAWN:
-            moveName = "";
-            break;
-         case EMPTY:
-            moveName = "???";
-            break;
-         default:
-            moveName = "ZZZ";
-      }
-      return moveName;
+      if(piece instanceof King)
+         return "K";
+      else if(piece instanceof Queen)
+         return "Q";
+      else if(piece instanceof Bishop)
+         return "B";
+      else if(piece instanceof Rook)
+         return "R";
+      else if(piece instanceof Knight)
+         return "N";
+      else if(piece instanceof Pawn)
+         return "";
+      else
+         return "???";
    }
 
    public String toString()
@@ -312,8 +297,6 @@ public class ChessMove
          moveName = moveName + "+";
       }
       return moveName;
-//      return piece.toString() + " " + (piece.getX() + 1) + "," + (8 - piece.getY())
-//            + " to " + (xDest + 1) + "," + (8 - yDest);
    }
 
    public boolean equals(Object obj)

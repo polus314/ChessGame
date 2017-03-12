@@ -16,7 +16,7 @@ public class King extends ChessPiece
     */
    public King()
    {
-      type = PieceType.KING;
+      super();
    }
    
    /*
@@ -25,7 +25,7 @@ public class King extends ChessPiece
    */
    public King(PieceColor c, int xC, int yC)
    {
-      type = PieceType.KING;
+      super();
       hasMoved = false;
       value = 10;
       xCoord = xC;
@@ -39,7 +39,7 @@ public class King extends ChessPiece
    */
    public King(PieceColor c)
    {
-      type = PieceType.KING;
+      super();
       value = 10;
       hasMoved = false;
       color = c;
@@ -51,7 +51,7 @@ public class King extends ChessPiece
    */
    public King(King cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;

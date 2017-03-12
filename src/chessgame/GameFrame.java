@@ -150,24 +150,20 @@ public class GameFrame extends JFrame implements ActionListener
    
    private ChessPiece determinePieceToAdd()
    {
-      PieceType type = pieceMenu.getPieceType();
-      ChessPiece piece;
-      switch (type)
-      {
-         case KING: piece = new King(colorMenu.getColor());
-            break;
-         case QUEEN: piece = new Queen(colorMenu.getColor());
-            break;
-         case ROOK: piece = new Rook(colorMenu.getColor());
-            break;
-         case BISHOP: piece = new Bishop(colorMenu.getColor());
-            break;
-         case KNIGHT: piece = new Knight(colorMenu.getColor());
-            break;
-         case PAWN: piece = new Pawn(colorMenu.getColor());
-            break;
-         default: piece = new ChessPiece();
-      }
-      return piece;
+      ChessPiece piece = pieceMenu.getPiece();
+      if(piece instanceof King)
+         return new King(colorMenu.getColor());
+      else if(piece instanceof Queen)
+         return new Queen(colorMenu.getColor());
+      else if(piece instanceof Rook)
+         return new Rook(colorMenu.getColor());
+      else if(piece instanceof Bishop)
+         return new Bishop(colorMenu.getColor());
+      else if(piece instanceof Knight)
+         return new Knight(colorMenu.getColor());
+      else if(piece instanceof Pawn)
+         return new Pawn(colorMenu.getColor());
+      else
+         return new ChessPiece();
    }
 }

@@ -312,7 +312,7 @@ public class GamePanel extends JPanel
       //and the path is clear
       else if (myBoard.gameBoard.spaceIsEmpty(a, b))
       {
-         if(move.piece.type == PieceType.KING)
+         if(move.piece instanceof King)
          {
             if(myBoard.gameBoard.canCastleKS(humanPlayer)
                   || myBoard.gameBoard.canCastleQS(humanPlayer))
@@ -431,24 +431,20 @@ public class GamePanel extends JPanel
       if(pieceToAdd == null)
          return new ChessPiece();
       PieceColor color = pieceToAdd.getColor();
-      switch(pieceToAdd.type)
-      {
-         case QUEEN: 
-            return new Queen(color, x, y);
-         case KING:
-            return new King(color, x, y);
-         case ROOK:
-            return new Rook(color, x, y);
-         case BISHOP:
-            return new Bishop(color, x, y);
-         case KNIGHT:
-            return new Knight(color, x, y);
-         case PAWN:
-            return new Pawn(color, x, y);
-         default:
-            return new ChessPiece();
-                 
-      }
+      if(pieceToAdd instanceof Queen)
+         return new Queen(color, x, y);
+      else if(pieceToAdd instanceof King)
+         return new King(color, x, y);
+      else if(pieceToAdd instanceof Bishop)
+         return new Bishop(color, x, y);
+      else if(pieceToAdd instanceof Rook)
+         return new Rook(color, x, y);
+      else if(pieceToAdd instanceof Knight)
+         return new Knight(color, x, y);
+      else if(pieceToAdd instanceof Pawn)
+         return new Pawn(color, x, y);
+      else
+         return new ChessPiece();
    }
    
    public void setMode(GameMode gameMode)

@@ -16,7 +16,7 @@ public class Bishop extends ChessPiece
     */
    public Bishop()
    {
-      type = PieceType.BISHOP;
+      super();
    }
    
    /*
@@ -25,7 +25,7 @@ public class Bishop extends ChessPiece
    */
    public Bishop(PieceColor c, int xC, int yC)
    {
-      type = PieceType.BISHOP;
+      super();
       value = 3;
       xCoord = xC;
       yCoord = yC;
@@ -38,7 +38,7 @@ public class Bishop extends ChessPiece
    */
    public Bishop(PieceColor c)
    {
-      type = PieceType.BISHOP;
+      super();
       value = 3;
       color = c;
    }
@@ -49,7 +49,7 @@ public class Bishop extends ChessPiece
    */
    public Bishop(Bishop cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;

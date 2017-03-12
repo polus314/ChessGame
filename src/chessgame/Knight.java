@@ -16,7 +16,7 @@ public class Knight extends ChessPiece
     */
    public Knight()
    {
-      type = PieceType.KNIGHT;
+      super();
    }
    
    /*
@@ -25,7 +25,7 @@ public class Knight extends ChessPiece
    */
    public Knight(PieceColor c, int xC, int yC)
    {
-      type = PieceType.KNIGHT;
+      super();
       value = 3;
       xCoord = xC;
       yCoord = yC;
@@ -38,7 +38,7 @@ public class Knight extends ChessPiece
    */
    public Knight(PieceColor c)
    {
-      type = PieceType.KNIGHT;
+      super();
       value = 3;
       color = c;
    }
@@ -49,7 +49,7 @@ public class Knight extends ChessPiece
    */
    public Knight(Knight cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;

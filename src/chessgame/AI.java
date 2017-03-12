@@ -87,7 +87,7 @@ public class AI
 
             // if regular non-empty piece, check if it can move here and the
             // path is clear
-            if (!cp.equals(new ChessPiece()) && cp.type != PieceType.PAWN)
+            if (!cp.equals(new ChessPiece()) && !(cp instanceof Pawn))
             {
                isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
             }

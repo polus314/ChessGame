@@ -15,7 +15,7 @@ public class Rook extends ChessPiece
    */
    public Rook()
    {
-      type = PieceType.ROOK;
+      super();
    }
    
    /*
@@ -24,7 +24,7 @@ public class Rook extends ChessPiece
    */
    public Rook(PieceColor c, int xC, int yC)
    {
-      type = PieceType.ROOK;
+      super();
       value = 5;
       xCoord = xC;
       yCoord = yC;
@@ -37,7 +37,7 @@ public class Rook extends ChessPiece
    */
    public Rook(PieceColor c)
    {
-      type = PieceType.ROOK;
+      super();
       value = 5;
       color = c;
    }
@@ -48,7 +48,7 @@ public class Rook extends ChessPiece
    */
    public Rook(Rook cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;

@@ -16,7 +16,7 @@ public class Pawn extends ChessPiece
     */
    public Pawn()
    {
-      type = PieceType.PAWN;
+      super();
    }
    
    /*
@@ -25,7 +25,7 @@ public class Pawn extends ChessPiece
    */
    public Pawn(PieceColor c, int xC, int yC)
    {
-      type = PieceType.PAWN;
+      super();
       value = 1;
       xCoord = xC;
       yCoord = yC;
@@ -38,7 +38,7 @@ public class Pawn extends ChessPiece
    */
    public Pawn(PieceColor c)
    {
-      type = PieceType.PAWN;
+      super();
       value = 1;
       color = c;
    }
@@ -49,7 +49,7 @@ public class Pawn extends ChessPiece
    */
    public Pawn(Pawn cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;

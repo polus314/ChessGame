@@ -215,58 +215,82 @@ class Checkerboard
          pieceXPos = xPos + SQUARE_WIDTH * cp.getX() + CENTERING_AMT_X;
          pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_X;
       }
-      int pieceOffset = 0, colorOffset = 0;
-      switch (cp.getType())
-      {
-         case ROOK:
-         {
-            pieceOffset = IMG_ROOK;
-            break;
-         }
-         case KNIGHT:
-         {
-            pieceOffset = IMG_KNIGHT;
-            break;
-         }
-         case BISHOP:
-         {
-            pieceOffset = IMG_BISHOP;
-            break;
-         }
-         case QUEEN:
-         {
-            pieceOffset = IMG_QUEEN;
-            break;
-         }
-         case KING:
-         {
-            pieceOffset = IMG_KING;
-            break;
-         }
-         case PAWN:
-         {
-            pieceOffset = IMG_PAWN;
-            break;
-         }
-         case EMPTY:
-         {
-            break;
-         }
-      }
-      if (g.getColor() == Color.white)
-      {
-         colorOffset = IMG_WHITE;
-      }
-      else if (g.getColor() == Color.black)
-      {
-         colorOffset = IMG_BLACK;
-      }
-      else if (g.getColor() == Color.red)
-      {
-         colorOffset = IMG_RED;
-      }
-      img = pieceImages[pieceOffset * NUM_COLORS + colorOffset];
+      
+      int imageIndex = getImageIndex(cp, g.getColor());
+      img = pieceImages[imageIndex];
       g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+   }
+   
+   /**
+   Finds the image for a piece of this type and color in the image array.
+   Images are organized first by type and then by color
+   
+   @param cp - chess piece of the type to display
+   @param c  - color of piece to display
+   @return int - index of image to display
+   */
+   private int getImageIndex(ChessPiece cp, Color c)
+   {
+      return getPieceOffset(cp) * NUM_COLORS + getColorOffset(c);
+   }
+   
+   /**
+   Returns the pieceOffset for this piece in the image array
+   
+   @param cp - chess piece for which image is being retrieved
+   @return int - pieceOffset of image
+   */
+   private int getPieceOffset(ChessPiece cp)
+   {
+      Class c = cp.getClass();
+      if(c == Rook.class)
+      {
+         return IMG_ROOK;
+      }
+      else if(c == Bishop.class)
+      {
+         return IMG_BISHOP;
+      }
+      else if(c == Knight.class)
+      {
+         return IMG_KNIGHT;
+      }
+      else if(c == Queen.class)
+      {
+         return IMG_QUEEN;
+      }
+      else if(c == King.class)
+      {
+         return IMG_KING;
+      }
+      else if(c == Pawn.class)
+      {
+         return IMG_PAWN;
+      }
+      
+      return 0;
+   }
+   
+   /**
+   Returns the colorOffset for a piece of the given Color
+   
+   @param c - color of the piece for which an image is being found
+   @return int - colorOffset for image
+   */
+   private int getColorOffset(Color c)
+   {
+      if(c == Color.red)
+      {
+         return IMG_RED;
+      }
+      else if(c == Color.black)
+      {
+         return IMG_BLACK;
+      }
+      else
+      {
+         return IMG_WHITE;
+      }
    }
 
    private int flipCoords(int x)

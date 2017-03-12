@@ -34,7 +34,7 @@ public class Tree<T>
    {
       if(info.equals(targetInfo))
          return this;
-      else if(isLeaf())
+      else if(children.isEmpty())
       {
          return null;
       }

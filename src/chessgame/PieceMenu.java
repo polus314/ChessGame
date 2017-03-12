@@ -23,7 +23,7 @@ public class PieceMenu extends JPanel implements ActionListener
 {
    private JButton kButton, qButton, rButton, bButton, 
          nButton, pButton, eButton;
-   private PieceType type;
+   private ChessPiece piece;
    
    public PieceMenu()
    {
@@ -80,7 +80,7 @@ public class PieceMenu extends JPanel implements ActionListener
       pButton.addActionListener(this);
       eButton.addActionListener(this);
       
-      type = PieceType.EMPTY;
+      piece = new ChessPiece();
    }
    
    public void actionPerformed(ActionEvent event)
@@ -88,30 +88,30 @@ public class PieceMenu extends JPanel implements ActionListener
       String command = event.getActionCommand();
       switch(command)
       {
-         case ("king"): type = PieceType.KING;
+         case ("king"): piece = new King();
             break;
-         case ("queen"): type = PieceType.QUEEN;
+         case ("queen"): piece = new Queen();
             break;
-         case ("rook"): type = PieceType.ROOK;
+         case ("rook"): piece = new Rook();
             break;
-         case ("bishop"): type = PieceType.BISHOP;
+         case ("bishop"): piece = new Bishop();
             break;
-         case ("knight"): type = PieceType.KNIGHT;
+         case ("knight"): piece = new Knight();
             break;
-         case ("pawn"): type = PieceType.PAWN;
+         case ("pawn"): piece = new Pawn();
             break;
-         case ("empty"): type = PieceType.EMPTY;
+         case ("empty"): piece = new ChessPiece();
             break;
          default: System.out.println("Button clicked, maybe??");
       }
-      System.out.println(type);
+      System.out.println(piece.toString());
       repaint();
       
    }
    
-   public PieceType getPieceType()
+   public ChessPiece getPiece()
    {
-      return type;
+      return piece;
    }
    
    public String toString()

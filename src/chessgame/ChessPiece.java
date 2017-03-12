@@ -10,7 +10,6 @@ and create new chess pieces.
  */
 public class ChessPiece
 {
-   protected PieceType type;
    protected int value;
    protected int xCoord;
    protected int yCoord;
@@ -22,9 +21,7 @@ public class ChessPiece
    */
    public ChessPiece()
    {
-      type = PieceType.EMPTY;
       value = 0;
-      color = PieceColor.EMPTY;
       xCoord = 0;
       yCoord = 0;
       hasMoved = false;
@@ -36,7 +33,6 @@ public class ChessPiece
    */
    public ChessPiece(ChessPiece cp)
    {
-      type = cp.type;
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;
@@ -140,14 +136,6 @@ public class ChessPiece
          return new ChessPiece();
       }
    }
-   
-   /*
-   This returns the type of chess piece
-   */
-   public PieceType getType()
-   {
-      return type;
-   }
 
    /*
    This returns a string of the piece name
@@ -166,7 +154,9 @@ public class ChessPiece
       if (obj instanceof ChessPiece)
       {
          ChessPiece cp = (ChessPiece) obj;
-         return type == cp.type && color == cp.color;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
       }
       return false;
    }

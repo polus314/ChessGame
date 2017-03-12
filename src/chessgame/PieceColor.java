@@ -11,26 +11,14 @@ The two colors that a piece can be, or an empty piece
  */
 public enum PieceColor
 {
-   WHITE, BLACK, EMPTY;
-   
-   public PieceColor next()
-   {
-      if (this == WHITE)
-         return BLACK;
-      if (this == BLACK)
-         return EMPTY;
-      if (this == EMPTY)
-         return WHITE;
-      return EMPTY;
-   }
+   WHITE, BLACK;
    
    public PieceColor opposite()
    {
       if (this == WHITE)
          return BLACK;
-      if (this == BLACK)
+      else //if (this == BLACK)
          return WHITE;
-      return EMPTY;
    }
    
    @Override
@@ -38,8 +26,7 @@ public enum PieceColor
    {
       if(this == WHITE)
          return "White";
-      if(this == BLACK)
+      else //(this == BLACK)
          return "Black";
-      return "Empty";
    }
 }

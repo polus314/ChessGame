@@ -15,7 +15,7 @@ public class Queen extends ChessPiece
 
    public Queen()
    {
-      type = PieceType.QUEEN;
+      super();
    }
 
    /*
@@ -24,7 +24,7 @@ public class Queen extends ChessPiece
     */
    public Queen(PieceColor c, int xC, int yC)
    {
-      type = PieceType.QUEEN;
+      super();
       value = 9;
       color = c;
       xCoord = xC;
@@ -37,7 +37,7 @@ public class Queen extends ChessPiece
     */
    public Queen(PieceColor c)
    {
-      type = PieceType.QUEEN;
+      super();
       value = 9;
       color = c;
    }
@@ -48,7 +48,7 @@ public class Queen extends ChessPiece
     */
    public Queen(Queen cp)
    {
-      type = cp.type;
+      super();
       color = cp.color;
       hasMoved = cp.hasMoved;
       value = cp.value;
