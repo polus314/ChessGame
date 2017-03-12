@@ -6,61 +6,40 @@ and open the template in the editor.
 
 package chessgame;
 
+import java.util.ArrayList;
+
 /**
  
 @author jppolecat
 */
-public class Queue 
+public class Queue<T>
 {
-   private Node<Tree> front;
-   private Node<Tree> rear;
+   private final ArrayList<T> list;
    
    public Queue()
    {
-      front = rear = null;
+      list = new ArrayList<>();
    }
    
-   public void enqueue(Tree tree)
+   public void enqueue(T element)
    {
-      if (front == null)
-      {
-         front = new Node(tree, null, null);
-      }
-      else if (front.next == null)
-      {
-         front.next = new Node(tree, front, null);
-         rear = front.next;
-      }
-      else
-      {
-         rear.next = new Node(tree, rear, null);
-         rear = rear.next;
-      }
+      list.add(element);
    }
    
-   public Tree dequeue()
+   public T dequeue()
    {
-      if (front == null)
-      {
+      if(list.isEmpty())
          return null;
-      }
-      else if (front.next == null)
-      {
-         Tree tree = front.info;
-         front = rear = null;
-         return tree;
-      }
-      else
-      {
-         Tree tree = front.info;
-         front.next.prev = null;
-         front = front.next;
-         return tree;
-      }
+      return list.remove(0);
    }
    
    public boolean isEmpty()
    {
-      return front == null;
+      return list.isEmpty();
+   }
+   
+   public int size()
+   {
+      return list.size();
    }
 }
