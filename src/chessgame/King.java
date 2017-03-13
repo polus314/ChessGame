@@ -70,6 +70,18 @@ public class King extends ChessPiece
       return color.toString() + " King";
    }
    
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this as a king
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "K";
+   }
+   
    /*
    This method determines if this king can move to a selected 
    square. If the king can move to the selected square the method returns

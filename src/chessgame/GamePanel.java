@@ -20,12 +20,11 @@ public class GamePanel extends JPanel
    // TODO - improve abstraction
    public Checkerboard myBoard;
    public ArrayList<ChessMove> moveList;
-   //public AI deepBlue;
    public PieceColor humanPlayer;
    public GameMode mode;
    public ChessPiece pieceToAdd;
    public boolean moveFinished = false;
-   private GameController controller;
+   public GameController controller;
 
    /**
     This creates the game panel. The game panel receives mouse events and 
@@ -58,6 +57,7 @@ public class GamePanel extends JPanel
 //                  return;
 
                myBoard.setSelectedPiece(controller.getSelectedPiece());
+               myBoard.setPieces(controller.board.getPiecesList());
                repaint();
             }
          }
@@ -95,13 +95,14 @@ public class GamePanel extends JPanel
    */
    public void printMoveList(Graphics g)
    {
+      if(!(mode == GameMode.SINGLE || mode == GameMode.VERSUS))
+      {
+         return;
+      }
       Font myFont = new Font("Arial", Font.PLAIN, 15);
       g.setFont(myFont);
       g.setColor(Color.BLACK);
-      if(mode == GameMode.SINGLE || mode == GameMode.VERSUS)
-      {
-         g.drawString("Move List", 425, 15);
-      }
+      g.drawString("Move List", 425, 15);
       int start = 0;
       
       
@@ -127,6 +128,8 @@ public class GamePanel extends JPanel
    */
    private void printEndMessage(Graphics g)
    {
+      if(!controller.isGameOver())
+         return;
       Font myFont = new Font("Arial", Font.BOLD, 100);
       g.setFont(myFont);
       g.setColor(Color.blue);

@@ -66,6 +66,18 @@ public class Queen extends ChessPiece
    {
       return color.toString() + " Queen";
    }
+   
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this as a queen
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "Q";
+   }
 
    /*
     This method determines if this queen can move to a selected 

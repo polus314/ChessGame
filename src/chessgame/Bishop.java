@@ -68,6 +68,18 @@ public class Bishop extends ChessPiece
       return color.toString() + " Bishop";
    }
    
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this as a bishop
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "B";
+   }
+   
    /*
    This method determines if this bishop can move to a selected 
    square. If the bishop can move to the selected square the method returns

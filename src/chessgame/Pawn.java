@@ -68,6 +68,19 @@ public class Pawn extends ChessPiece
       return color.toString() + " Pawn";
    }
    
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 0, pawns are only referenced by their
+   position
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "";
+   }
+   
    /*
    This method determines if this Pawn can move to a selected 
    square. If the pawn can move to the selected square the method returns

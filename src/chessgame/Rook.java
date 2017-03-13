@@ -67,6 +67,18 @@ public class Rook extends ChessPiece
       return color.toString() + " Rook";
    }
    
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this as a rook
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "R";
+   }
+   
    /*
    This method determines if a selected Rook can move to a selected 
    square. If the rook can move to the selected square the method returns

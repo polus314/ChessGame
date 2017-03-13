@@ -21,22 +21,33 @@ public class GameController
    
    /**
    Default constructor, sets board to standard starting position and
-   playerToMove is White.
+   human player is White.
    */
    public GameController()
    {
       board = new ChessBoard();
-      playerToMove = PieceColor.WHITE;
       humanPlayer = PieceColor.WHITE;
-      deepBlue = new AI(board);
+      playerToMove = PieceColor.WHITE;
+      deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
       mode = GameMode.UNDECIDED;
       moveFinished = false;
    }
    
+   public void setGameMode(GameMode m)
+   {
+      mode = m;
+   }
+   
+   
    public ChessPiece getSelectedPiece()
    {
       return selectedPiece;
+   }
+   
+   public void setPieceToAdd(ChessPiece cp)
+   {
+      pieceToAdd = cp;
    }
    
    /**
@@ -53,8 +64,17 @@ public class GameController
       switch(mode)
       {
          case SINGLE:
-            return doHumanTurn(x,y);
+            if(isGameOver())
+               return false;
+             if(doHumanTurn(x,y) && playerToMove != humanPlayer)
+             {
+                doCPUTurn();
+                return true;
+             }
+            return false;
          case VERSUS:
+            if(isGameOver())
+               return false;
             return doHumanTurn(x,y);
          case SET_UP:
             return doSetUp(x,y);
@@ -71,7 +91,7 @@ public class GameController
    */
    public boolean isGameOver()
    {
-      return false;
+      return deepBlue.isGameOver();
    }
    
    /**
@@ -91,178 +111,164 @@ public class GameController
    */
    private boolean doCPUTurn()
    {
-      ChessPiece queen;
       ChessMove move = deepBlue.findBestMove(humanPlayer.opposite());
       //checking for checkmate
       if(move == null)
       {
-         board.gameOver = true;
-         moveList.get(moveList.size() - 1).givesMate = true;
+         //board.gameOver = true;
+         //moveList.get(moveList.size() - 1).givesMate = true;
          return false;
       }
+      
+      int x = move.piece.getX();
+      int y = move.piece.getY();
       //check for "type" of best move, if unoccupied simply move, else try to 
       //capture
-      if (move.getMoveType() == MoveType.UNOCCUPIED)
+      if (!move.captures)
       {
-         ChessPiece cp = board.getPieceAt(move.piece.getX(), move.piece.getY());
+         ChessPiece cp = board.getPieceAt(x,y);
          board.movePiece(cp, move.getXDest(), move.getYDest());
       }
-      else if (move.getMoveType() == MoveType.CAPTURE)
+      else// if (move.getMoveType() == MoveType.CAPTURE)
       {
-         selectedPiece = board.getPieceAt(move.piece.getX(), move.piece.getY());
+         selectedPiece = board.getPieceAt(x,y);
          board.capturePiece(selectedPiece, move.getXDest(), move.getYDest());
       }
-      queen = board.needPromotion();
-      //promote pawns as necessary
-      if (queen != null)
-      {
-         int x = queen.getX(), y = queen.getY();
-         queen = new Queen(queen.getColor(), x, y);
-         board.setPieceAt(queen, x, y);
-         move.setMoveType(MoveType.PROMOTION);
-      }
-      //introduces concept of check, not implemented logically yet for human
-      if (board.checkForCheck(humanPlayer))
-      {
-         move.givesCheck = true;
-      }
-      //GUI list of moves is updated
-      moveList.add(move);
-      //unless the game is over
-      if (deepBlue.isGameOver())
-         return false;
-      //allow human to make next move
-      board.setPlayerToMove(humanPlayer);
+      advanceTurn(move);
       return true;
    }
+
+   /**
+   Determines the appropriate action to take and attempts to execute that 
+   action at the coordinates x and y. If the action is successful, that is,
+   the game state has in any way changed (player has made a move, selected
+   piece has changed, etc.), returns true.
    
-   
-   private boolean doHumanTurn(int a, int b)
+   @param x - x coordinate at which to take action
+   @param y - y coordinate at which to take action
+   @return boolean - whether the appropriate action was successful
+   */
+   private boolean doHumanTurn(int x, int y)
    {
-      
-      //need to declare a piece for possible promotion
-      ChessPiece queen;
-      //declare a possible move
-      ChessMove move = new ChessMove(selectedPiece, a, b);
-      //if no piece is selected, select the piece clicked on
+      boolean moveSuccessful = false;
+      ChessMove move = new ChessMove(selectedPiece, x, y);
       if (selectedPiece == null)
       {
-         if(board.getPieceAt(a,b).getColor() == board.getPlayerToMove())
-            selectedPiece = board.getPieceAt(a,b);
+         return trySelect(x,y);
       }
-      //if clicked piece is selected, unselect the piece
-      else if (selectedPiece.equals(board.getPieceAt(a,b)))
-      {
+      else if (selectedPiece.equals(board.getPieceAt(x,y)))
+      {  //if clicked piece is selected, unselect the piece
          selectedPiece = null;
+         return true;
       }
       // if piece is selected and space clicked on is empty, try to 
-      // move to that space, will only work if piece moves that direction
-      // and the path is clear
-      else if (board.spaceIsEmpty(a, b))
+      // move to that space
+      else if (board.spaceIsEmpty(x, y))
       {
-         if(move.piece instanceof King)
+         if(selectedPiece instanceof King) // try to castle
          {
-            if(board.canCastleKS(humanPlayer)
-                  || board.canCastleQS(humanPlayer))
+            if(tryCastling(move))
             {
-               if(board.castle(move))
-               {
-                  moveList.add(move);
-                  if (!deepBlue.isGameOver() && mode == GameMode.SINGLE)
-                  {
-                     board.setPlayerToMove(board.getPlayerToMove().opposite());
-                     selectedPiece = null;
-                     moveFinished = true;
-                  }
-               }
+               moveSuccessful = true;
             }
          }
-         ChessPiece selected = selectedPiece;
-         if (board.movePiece(selected, a, b))
+         if (board.movePiece(selectedPiece, x, y)) // else try to move normally
          {
-            //if a pawn is on the last rank, places a queen there
-            queen = board.needPromotion();
-            if (queen != null)
-            {
-               int xCoord = queen.getX(), yCoord = queen.getY();
-               queen = new Queen(queen.getColor(), xCoord, yCoord);
-               board.setPieceAt(queen, xCoord, yCoord);
-               move.setMoveType(MoveType.PROMOTION);
-            }
-            if(board.checkForCheck(humanPlayer.opposite()))
-               move.givesCheck = true;
-            //end game if a king is missing, set CPU to move so no
-            //more mouse events are processed on the checker board
-            if (!deepBlue.isGameOver() && mode == GameMode.SINGLE)
-            {
-               moveList.add(move);
-               board.setPlayerToMove(board.getPlayerToMove().opposite());       
-               moveFinished = true;
-            }
-            else if(deepBlue.isGameOver())
-            {
-               move.givesMate = true;
-               moveList.add(move);
-            }
-            selectedPiece = null;
+            moveSuccessful = true;
          }
       }
-      else
+      else //capture the piece at the coordinates
       {
-         //capture the piece that was clicked on, which might fail
-         if(board.capturePiece(selectedPiece, a, b))
+         if(board.capturePiece(selectedPiece, x, y))
          {
-            move.setMoveType(MoveType.CAPTURE);
-            if(board.checkForCheck(humanPlayer.opposite()))
-               move.givesCheck = true;
-            queen = board.needPromotion();
-            if (board.needPromotion() != null)
-            {
-               int xCoord = queen.getX(), yCoord = queen.getY();
-               queen = new Queen(queen.getColor(), xCoord, yCoord);
-               board.setPieceAt(queen, xCoord, yCoord);  
-               move.setMoveType(MoveType.PROMOTION);
-            }
-            if (!deepBlue.isGameOver())
-            {
-               moveList.add(move);
-               moveFinished = true;
-            }
-            else
-            {
-               move.givesMate = true;
-               moveList.add(move);
-            }
-            selectedPiece = null;
+            moveSuccessful = true;
+            move.captures = true;
          }
       }
-      return true;
+      if(moveSuccessful)
+      {
+         advanceTurn(move);
+         return true;
+      }
+      return false;
    }
    
+   private boolean tryToPromote()
+   {
+      ChessPiece pawn = board.needPromotion();
+      if (pawn != null)
+      {
+         int xCoord = pawn.getX(), yCoord = pawn.getY();
+         ChessPiece queen = new Queen(pawn.getColor(), xCoord, yCoord);
+         board.setPieceAt(queen, xCoord, yCoord);
+         return true;
+      }
+      return false;
+   }
+   
+   /**
+   Attempts to select the piece at the given coordinates. If the space does 
+   not contain a piece of the playerToMove's color, returns false.
+   
+   @param x - x coordinate of square of piece to select
+   @param y - y coordinate of square of piece to select
+   @return boolean - whether piece was successfully selected
+   */
+   private boolean trySelect(int x, int y)
+   {
+      if(board.getPieceAt(x,y) != null && 
+         board.getPieceAt(x,y).getColor() == playerToMove)
+      {
+         selectedPiece = board.getPieceAt(x,y);
+         return true;
+      }
+      return false;
+   }
    
    private boolean doSetUp(int a, int b)
    {
-      if(pieceToAdd == null)
+      if(pieceToAdd != null)
       {
-         board.setPieceAt(null, a, b);
-      }
-      if(selectedPiece == null
-            && board.getPieceAt(a,b) != null)
-      {
-         selectedPiece = board.getPieceAt(a,b);
-      }
-      else if(selectedPiece == null)
-      {
-         board.setPieceAt(pieceToAdd, a, b);
-      }
-      else if(selectedPiece.equals(board.getPieceAt(a,b)))
-      {
-         selectedPiece = null;
+         pieceToAdd.xCoord = a;
+         pieceToAdd.yCoord = b;
+         board.setPieceAt(pieceToAdd.copyOfThis(), a, b);
       }
       else
       {
-         board.movePiece(selectedPiece, a, b);
+         board.setPieceAt(null, a, b);
       }
       return true;
+   }
+   
+   /**
+   Attempts to castle using the given move
+   
+   @param move - move used to attempt castling
+   @return boolean - whether castling was successful or not
+   */
+   private boolean tryCastling(ChessMove move)
+   {
+      return board.castle(move);
+   }
+   
+   private void advanceTurn(ChessMove move)
+   {
+      if(tryToPromote())
+      {
+         move.promotes = true;
+      }
+      if(board.checkForCheck(humanPlayer.opposite()))
+      {
+         move.givesCheck = true;
+      }
+      if (deepBlue.isGameOver())
+      {
+         move.givesMate = true;
+      }
+      moveList.add(move);
+      selectedPiece = null;
+      playerToMove = playerToMove.opposite();
+      moveFinished = true;
+      deepBlue = new AI(board, playerToMove);
    }
 }

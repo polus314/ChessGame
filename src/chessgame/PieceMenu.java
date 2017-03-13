@@ -27,7 +27,7 @@ public class PieceMenu extends JPanel implements ActionListener
    private static final String AC_PAWN = "pawn";
    private static final String AC_EMPTY = "empty";
    
-   private final JButton kButton, qButton, rButton, bButton, 
+   public final JButton kButton, qButton, rButton, bButton, 
          nButton, pButton, eButton;
    private ChessPiece piece;
    

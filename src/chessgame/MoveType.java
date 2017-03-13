@@ -11,5 +11,5 @@ package chessgame;
  */
 public enum MoveType
 {
-   UNOCCUPIED, CAPTURE, CASTLE_KS, CASTLE_QS, PROMOTION, EN_PASSANT;
+   NORMAL, CASTLE_KS, CASTLE_QS;
 }

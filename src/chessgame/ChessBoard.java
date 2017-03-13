@@ -5,7 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- This class creates a 64 square board that holds ChessPieces
+ This class creates a 64 square board that holds ChessPieces and enforces that
+ only legal moves are made.
 
  @author jppolecat
  */
@@ -17,8 +18,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    private ChessPiece[][] pieceArray;
    
    // TODO - move this up to AI?
-   public boolean gameOver;
-   private PieceColor playerToMove;
+   // public boolean gameOver;
+   // private PieceColor playerToMove;
    private ArrayList<ChessMove> wMoveList;
    private ArrayList<ChessMove> bMoveList;
    private int numWMoves;
@@ -68,8 +69,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
       wMoveList = new ArrayList<>();
       bMoveList = new ArrayList<>();
-      gameOver = false;
-      playerToMove = PieceColor.WHITE;
+      //gameOver = false;
+      //playerToMove = PieceColor.WHITE;
    }
 
    /**
@@ -173,24 +174,24 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       return -1;
    }
+//   
+//   /**
+//   Returns which color will move next
+//   @return - color to move next, EMPTY if game is over
+//   */
+//   public PieceColor getPlayerToMove()
+//   {
+//      return playerToMove;
+//   }
    
-   /**
-   Returns which color will move next
-   @return - color to move next, EMPTY if game is over
-   */
-   public PieceColor getPlayerToMove()
-   {
-      return playerToMove;
-   }
-   
-   /**
-   Returns true if game is over, false otherwise
-   @return boolean - whether or not game is over
-   */
-   public boolean isGameOver()
-   {
-      return gameOver;
-   }
+//   /**
+//   Returns true if game is over, false otherwise
+//   @return boolean - whether or not game is over
+//   */
+//   public boolean isGameOver()
+//   {
+//      return gameOver;
+//   }
    
    /**
    Returns the piece at the given board coordinates
@@ -227,8 +228,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     */
    public boolean canCapture(ChessPiece cp, int xDest, int yDest)
    {
-      if(cp == null)
-         return false;
+      if(cp == null || pieceArray[xDest][yDest] == null) // this might not be
+         return false;                                   // correct logically
       
       if (cp instanceof Pawn
             && pieceArray[xDest][yDest].getColor() == cp.getColor().opposite())
@@ -296,6 +297,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
+            if(spaceIsEmpty(i,j))
+               continue;
             cp = getPieceAt(i,j);
             if (cp.getColor() == color.opposite()
                   && (canCapture(cp, 4, y)
@@ -343,6 +346,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
+            if(spaceIsEmpty(i,j))
+               continue;
+            
             cp = getPieceAt(i,j);
             if (cp.getColor() == color.opposite()
                   && (canCapture(cp, 2, y)
@@ -370,7 +376,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             if (xSel + 1 == x || xSel - 1 == x)
             {
                replacePiece(xSel, ySel, x, y);
-               playerToMove = playerToMove.opposite();
+               //playerToMove = playerToMove.opposite();
                return true;
             }
          }
@@ -379,7 +385,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             if (xSel + 1 == x || xSel - 1 == x)
             {
                replacePiece(xSel, ySel, x, y);
-               playerToMove = playerToMove.opposite();
+               //playerToMove = playerToMove.opposite();
                return true;
             }
          }
@@ -400,7 +406,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                {
                   getPieceAt(x,y).hasMoved = true;
                }
-               playerToMove = playerToMove.opposite();
+               //playerToMove = playerToMove.opposite();
                return true;
             }
             return false;
@@ -409,6 +415,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       return false;
    }
 
+   /**
+   Attempts to castle according to the given move. Checks to make sure
+   castling is legal from this position.
+   
+   @param move - move that is trying to castle
+   @return boolean - whether castling was successful or not
+   */
    public boolean castle(ChessMove move)
    {
       ChessPiece castler = move.piece;
@@ -423,7 +436,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             replacePiece(7, y, 5, y);
             return true;
          }
-         if (canCastleQS(castler.getColor()) && move.getXDest() == 2)
+         else if (canCastleQS(castler.getColor()) && move.getXDest() == 2)
          {
             move.setMoveType(MoveType.CASTLE_QS);
             replacePiece(4, y, 2, y);
@@ -703,7 +716,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             {
                mover.hasMoved = true;
             }
-            playerToMove = playerToMove.opposite();
+            //playerToMove = playerToMove.opposite();
             return true;
          }
          return false;
@@ -804,15 +817,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    public void replacePiece(int xi, int yi, int xf, int yf)
    {
       if(getPieceAt(xi, yi) != null)
-         getPieceAt(xi, yi).movePieceShape(xf, yf);//graphical position
+         getPieceAt(xi, yi).movePiece(xf, yf);     //graphical position
       setPieceAt(getPieceAt(xi, yi), xf, yf);      //logical position
       pieceArray[xi][yi] = null;
    }
-
-   public void setPlayerToMove(PieceColor player)
-   {
-      playerToMove = player;
-   }
+//
+//   public void setPlayerToMove(PieceColor player)
+//   {
+//      playerToMove = player;
+//   }
 
    public void copy(ChessBoard cb)
    {
@@ -821,13 +834,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          for (int j = 0; j < 8; j++)
          {
-            current = getPieceAt(i,j);
+            current = cb.getPieceAt(i,j);
             if(current != null)
                pieceArray[i][j] = current.copyOfThis();
          }
       }
-      gameOver = cb.gameOver;
-      playerToMove = cb.playerToMove;
+      //gameOver = cb.gameOver;
+      //playerToMove = cb.playerToMove;
    }
 
    public String toString()
@@ -844,13 +857,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       return string;
    }
 
-   /**
-    This method tells you whose turn it is to make the next move.
-
-    @return PieceColor of player whose turn it is
-    */
-   public PieceColor whoseTurn()
-   {
-      return playerToMove;
-   }
+//   /**
+//    This method tells you whose turn it is to make the next move.
+//
+//    @return PieceColor of player whose turn it is
+//    */
+//   public PieceColor whoseTurn()
+//   {
+//      return playerToMove;
+//   }
 }

@@ -4,9 +4,10 @@ package chessgame;
 
  @author jppolecat
  */
-public class ChessMove
+public class ChessMove implements Comparable<ChessMove>
 {
-
+   // TODO - don't associate ratings with a move should be associated with
+   // the board position
    public ChessPiece piece;
    private int xDest;
    private int yDest;
@@ -14,14 +15,22 @@ public class ChessMove
    private float materialRating;
    private float mobilityRating;
    private int hangRating;
+   
    public boolean givesCheck = false;
    public boolean givesMate = false;
+   public boolean captures = false;
+   public boolean promotes = false;
+   public boolean takesWithEP = false;
+   
+   // used when more than one piece of this type can make this move
+   public boolean specifyOriginRow = false;
+   public boolean specifyOriginCol = false;
 
    public ChessMove()
    {
       xDest = 7;
       yDest = 7;
-      moveType = MoveType.UNOCCUPIED;
+      moveType = MoveType.NORMAL;
       materialRating = 0.0f;
       mobilityRating = 0.0f;
    }
@@ -31,7 +40,7 @@ public class ChessMove
       piece = cp;
       xDest = xD;
       yDest = yD;
-      moveType = MoveType.UNOCCUPIED;
+      moveType = MoveType.NORMAL;
    }
 
    public ChessMove(int xD, int yD, MoveType mt)
@@ -201,99 +210,54 @@ public class ChessMove
 
    private String intToRow(int yCoord)
    {
-      String row;
-      switch (yCoord)
-      {
-         case 0:
-            row = "8";
-            break;
-         case 1:
-            row = "7";
-            break;
-         case 2:
-            row = "6";
-            break;
-         case 3:
-            row = "5";
-            break;
-         case 4:
-            row = "4";
-            break;
-         case 5:
-            row = "3";
-            break;
-         case 6:
-            row = "2";
-            break;
-         case 7:
-            row = "1";
-            break;
-         default:
-            row = "ZZZ";
-      }
-      return row;
+      return Integer.toString(8 - yCoord);
    }
 
    private String pieceToString()
    {
-      if(piece instanceof King)
-         return "K";
-      else if(piece instanceof Queen)
-         return "Q";
-      else if(piece instanceof Bishop)
-         return "B";
-      else if(piece instanceof Rook)
-         return "R";
-      else if(piece instanceof Knight)
-         return "N";
-      else if(piece instanceof Pawn)
-         return "";
+      if(piece != null)
+         return piece.oneLetterIdentifier();
       else
          return "???";
    }
 
    public String toString()
    {
-      String moveName;
+      String moveName = "";
       switch (moveType)
       {
-         case UNOCCUPIED:
-            moveName = unoccupiedMoveToString();
-            break;
-         case CAPTURE:
-            moveName = captureMoveToString();
-            break;
          case CASTLE_QS:
             moveName = "O-O-O";
             break;
          case CASTLE_KS:
             moveName = "O-O";
-            break;
-         case PROMOTION:
-            if (piece.xCoord != xDest)
+            break;  
+         case NORMAL:
+            if(!captures)
             {
-               moveName = intToColumn(piece.xCoord) + "x" + intToColumn(xDest)
-                     + "" + intToRow(yDest) + "=Q";
+               moveName = pieceToString() + intToColumn(xDest) + "" + intToRow(yDest);
             }
             else
             {
-               moveName = intToColumn(xDest) + "" + intToRow(yDest)
-                     + "=Q";
+               moveName = captureMoveToString();
             }
-            break;
-         case EN_PASSANT:
-            moveName = captureMoveToString() + "e.p.";
-            break;
-         default:
-            moveName = "Error in ChessMove toString()";
+         break; 
+      }
+      if(takesWithEP)
+      {
+         moveName += "e.p.";
+      }
+      if(promotes)
+      {
+         moveName += "=Q";
       }
       if (givesMate)
       {
-         moveName = moveName + "#";
+         moveName += "#";
       }
       else if (givesCheck)
       {
-         moveName = moveName + "+";
+         moveName += "+";
       }
       return moveName;
    }

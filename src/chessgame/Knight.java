@@ -68,6 +68,18 @@ public class Knight extends ChessPiece
       return color.toString() + " Knight";
    }
    
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this as a knight
+   */
+   @Override
+   public String oneLetterIdentifier()
+   {
+      return "N";
+   }
+   
    /*
    This method determines if this Knight can move to a selected 
    square. If the Knight can move to the selected square the method returns

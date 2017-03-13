@@ -45,10 +45,10 @@ public abstract class ChessPiece
    This method inputs an new x index and a new y index and sets them as the
    new x coordinate and new y coordinate
    */
-   public void movePieceShape(int xIndex, int yIndex)
+   public void movePiece(int x, int y)
    {
-      xCoord = xIndex;
-      yCoord = yIndex;
+      xCoord = x;
+      yCoord = y;
    }
 
    /*
@@ -99,8 +99,10 @@ public abstract class ChessPiece
       yCoord = cp.yCoord;
    }
 
-   /*
-   This method will create a copy of whatever chess piece calls the method
+   /**
+   This method will create and return a copy of this (basically clone())
+   
+   @return ChessPiece - copy of this chess piece
    */
    public abstract ChessPiece copyOfThis();
 
@@ -112,6 +114,14 @@ public abstract class ChessPiece
    {
       return color.toString() + " ChessPiece";
    }
+   
+   /**
+   Returns the one letter used in identifying this piece when recording chess
+   moves
+   
+   @return String - string of length 1, identifies this specific type of piece
+   */
+   public abstract String oneLetterIdentifier();
 
    /*
    This method checks to see if two chess pieces are the same.
