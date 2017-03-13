@@ -19,7 +19,15 @@ import javax.swing.JPanel;
 */
 public class PieceMenu extends JPanel implements ActionListener
 {
-   private JButton kButton, qButton, rButton, bButton, 
+   private static final String AC_KING = "king";
+   private static final String AC_QUEEN = "queen";
+   private static final String AC_ROOK = "rook";
+   private static final String AC_BISHOP = "bishop";
+   private static final String AC_KNIGHT = "knight";
+   private static final String AC_PAWN = "pawn";
+   private static final String AC_EMPTY = "empty";
+   
+   private final JButton kButton, qButton, rButton, bButton, 
          nButton, pButton, eButton;
    private ChessPiece piece;
    
@@ -27,44 +35,38 @@ public class PieceMenu extends JPanel implements ActionListener
    {
       kButton = new JButton("King");
       kButton.setMnemonic(KeyEvent.VK_K);
-      kButton.setActionCommand("king");
+      kButton.setActionCommand(AC_KING);
 
       qButton = new JButton("Queen");
       qButton.setMnemonic(KeyEvent.VK_Q);
-      qButton.setActionCommand("queen");
+      qButton.setActionCommand(AC_QUEEN);
       
       rButton = new JButton("Rook");
       rButton.setMnemonic(KeyEvent.VK_R);
-      rButton.setActionCommand("rook");
+      rButton.setActionCommand(AC_ROOK);
       
       bButton = new JButton("Bishop");
       bButton.setMnemonic(KeyEvent.VK_B);
-      bButton.setActionCommand("bishop");
+      bButton.setActionCommand(AC_BISHOP);
       
       nButton = new JButton("Knight");
       nButton.setMnemonic(KeyEvent.VK_N);
-      nButton.setActionCommand("knight");
+      nButton.setActionCommand(AC_KNIGHT);
       
       pButton = new JButton("Pawn");
       pButton.setMnemonic(KeyEvent.VK_P);
-      pButton.setActionCommand("pawn");
+      pButton.setActionCommand(AC_PAWN);
       
       eButton = new JButton("Empty");
       eButton.setMnemonic(KeyEvent.VK_E);
-      eButton.setActionCommand("empty");
+      eButton.setActionCommand(AC_EMPTY);
       
       add(kButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(qButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(rButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(bButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(nButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(pButton);
-//      add(Box.createRigidArea(new Dimension(0, 10)));
       add(eButton);
       
       
@@ -84,23 +86,22 @@ public class PieceMenu extends JPanel implements ActionListener
       String command = event.getActionCommand();
       switch(command)
       {
-         case ("king"): piece = new King();
+         case AC_KING: piece = new King();
             break;
-         case ("queen"): piece = new Queen();
+         case AC_QUEEN: piece = new Queen();
             break;
-         case ("rook"): piece = new Rook();
+         case AC_ROOK: piece = new Rook();
             break;
-         case ("bishop"): piece = new Bishop();
+         case AC_BISHOP: piece = new Bishop();
             break;
-         case ("knight"): piece = new Knight();
+         case AC_KNIGHT: piece = new Knight();
             break;
-         case ("pawn"): piece = new Pawn();
+         case AC_PAWN: piece = new Pawn();
             break;
-         case ("empty"): piece = null;
+         case AC_EMPTY: piece = null;
             break;
          default: System.out.println("Button clicked, maybe??");
       }
-      System.out.println(piece.toString());
       repaint();
       
    }

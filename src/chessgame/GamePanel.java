@@ -231,7 +231,7 @@ public class GamePanel extends JPanel
       System.out.println("It is black's turn");
       ChessMove move = deepBlue.findBestMove(humanPlayer.opposite());
       //checking for checkmate
-      if(move.equals(new ChessMove()))
+      if(move == null)
       {
          myBoard.gameBoard.gameOver = true;
          moveList[length(moveList) - 1].givesMate = true;
