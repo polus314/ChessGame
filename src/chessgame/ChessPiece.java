@@ -74,6 +74,11 @@ public abstract class ChessPiece
    {
       return color;
    }
+   
+   public void setColor(PieceColor c)
+   {
+      color = c;
+   }
 
    /*
    This method takes an x and y coordinate as input and returns whether or not
@@ -102,6 +107,7 @@ public abstract class ChessPiece
    /*
    This returns a string of the piece name
    */
+   @Override
    public String toString()
    {
       return color.toString() + " ChessPiece";
@@ -111,6 +117,7 @@ public abstract class ChessPiece
    This method checks to see if two chess pieces are the same.
    If they are the same it will return true, false otherwise.
    */
+   @Override
    public boolean equals(Object obj)
    {
       if (obj instanceof ChessPiece)

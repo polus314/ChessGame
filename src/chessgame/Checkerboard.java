@@ -9,43 +9,57 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 import javax.imageio.ImageIO;
 
-class Checkerboard
-{
-   public final int CENTERING_AMT_Y = 25;
-   public final int CENTERING_AMT_X = 12;
-   public final int SQUARE_WIDTH = 50;
-   public final int SQUARE_HEIGHT = 50;
-   public final int FONT_SIZE = 40;
-
+public class Checkerboard
+{   
+   public static final int NUM_ROWS = ChessBoard.NUM_ROWS;
+   public static final int NUM_COLS = ChessBoard.NUM_COLS;
+   
+   public static final int CENTERING_AMT_Y = 25;
+   public static final int CENTERING_AMT_X = 12;
+   public static final int SQUARE_WIDTH = 50;
+   public static final int SQUARE_HEIGHT = 50;
+   public static final int FONT_SIZE = 40;
+   public static final int BOARD_WIDTH = SQUARE_WIDTH * NUM_COLS;
+   public static final int BOARD_HEIGHT = SQUARE_HEIGHT * NUM_ROWS;
+   
    // used for accessing piece images
-   private final int IMG_WHITE = 0;
-   private final int IMG_BLACK = 1;
-   private final int IMG_RED = 2;
-   private final int NUM_COLORS = 3;
+   private static final int IMG_WHITE = 0;
+   private static final int IMG_BLACK = 1;
+   private static final int IMG_RED = 2;
+   private static final int NUM_COLORS = 3;
 
-   private final int IMG_KING = 0;
-   private final int IMG_QUEEN = 1;
-   private final int IMG_ROOK = 2;
-   private final int IMG_BISHOP = 3;
-   private final int IMG_KNIGHT = 4;
-   private final int IMG_PAWN = 5;  
-   private final int NUM_PIECE_TYPES = 6;
+   private static final int IMG_KING = 0;
+   private static final int IMG_QUEEN = 1;
+   private static final int IMG_ROOK = 2;
+   private static final int IMG_BISHOP = 3;
+   private static final int IMG_KNIGHT = 4;
+   private static final int IMG_PAWN = 5;  
+   private static final int NUM_PIECE_TYPES = 6;
+   
+   private static final int IMG_WIDTH = 30;
+   private static final int IMG_HEIGHT = 30;
+   
+   private Color lightSquareColor = Color.white;
+   private Color darkSquareColor = Color.gray;
+   private Color selectedPieceColor = Color.red;
+   private Color darkPieceColor = Color.black;
+   private Color lightPieceColor = Color.white;
    
    private final BufferedImage[] pieceImages;
 
-   public PieceColor humanPlayer = PieceColor.WHITE;
    private int xPos;
    private int yPos;
-   public ChessBoard gameBoard;
+   private ChessPiece[][] pieces;
    public ChessPiece selectedPiece;
 
    public Checkerboard()
    {
+      pieces = new ChessPiece[NUM_COLS][NUM_ROWS];
       xPos = 0;
       yPos = 0;
-      gameBoard = new ChessBoard();
       pieceImages = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
       initializeImages();
    }
@@ -81,6 +95,19 @@ class Checkerboard
             }
          }
       }
+   }
+   
+   public void setPieces(List<ChessPiece> pieces)
+   {
+      for(ChessPiece piece : pieces)
+      {
+         this.pieces[piece.getX()][piece.getY()] = piece;
+      }
+   }
+   
+   public void setSelectedPiece(ChessPiece cp)
+   {
+      selectedPiece = cp;
    }
 
    /**
@@ -128,24 +155,11 @@ class Checkerboard
    public void paintBoard(Graphics g)
    {
       //paints the light squares
-      g.setColor(Color.white);
-      for (int j = 0; j < 8; j += 2)
-      {
-         for (int i = 0; i < 8; i += 2)
-         {
-            g.fillRect((xPos + (i * SQUARE_WIDTH)), (yPos + (j * SQUARE_HEIGHT)), SQUARE_WIDTH, SQUARE_HEIGHT);
-         }
-      }
-      for (int j = 1; j < 9; j += 2)
-      {
-         for (int i = 1; i < 9; i += 2)
-         {
-            g.fillRect(xPos + (i * SQUARE_WIDTH), yPos + (j * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
-         }
-      }
+      g.setColor(lightSquareColor);
+      g.fillRect(0,0, BOARD_WIDTH, BOARD_HEIGHT);
 
       //paints the dark squares
-      g.setColor(Color.gray);
+      g.setColor(darkSquareColor);
       for (int j = 1; j < 9; j += 2)
       {
          for (int i = 0; i < 8; i += 2)
@@ -164,28 +178,26 @@ class Checkerboard
       //paints all the pieces, checking if they are white, black or currently
       //selected
       ChessPiece thisPiece;
-      for (int i = 0; i < 8; i++)
+      for (int i = 0; i < NUM_COLS; i++)
       {
-         for (int j = 0; j < 8; j++)
+         for (int j = 0; j < NUM_ROWS; j++)
          {
-            thisPiece = gameBoard.getPieceAt(i, j);
+            thisPiece = pieces[i][j];
             if(thisPiece == null)
                continue;
             if (thisPiece.getColor() == PieceColor.BLACK)
             {
-               g.setColor(Color.black);
+               g.setColor(darkPieceColor);
             }
-            else if (thisPiece.getColor() == PieceColor.WHITE)
+            else //if (thisPiece.getColor() == PieceColor.WHITE)
             {
-               g.setColor(Color.white);
-            }
-            if (thisPiece == selectedPiece)
-            {
-               g.setColor(Color.red);
+               g.setColor(lightPieceColor);
             }
             paintPiece(g, thisPiece);
          }
       }
+      g.setColor(selectedPieceColor);
+      paintPiece(g, selectedPiece);
    }
 
    /**
@@ -207,20 +219,12 @@ class Checkerboard
          return;
       }
 
-      if (humanPlayer == PieceColor.BLACK)
-      {
-         pieceXPos = xPos + SQUARE_WIDTH * flipCoords(cp.getX()) + CENTERING_AMT_X;
-         pieceYPos = yPos + SQUARE_HEIGHT * flipCoords(cp.getY()) + CENTERING_AMT_X;
-      }
-      else
-      {
-         pieceXPos = xPos + SQUARE_WIDTH * cp.getX() + CENTERING_AMT_X;
-         pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_X;
-      }
+      pieceXPos = xPos + SQUARE_WIDTH * cp.getX() + CENTERING_AMT_X;
+      pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_X;
       
       int imageIndex = getImageIndex(cp, g.getColor());
       img = pieceImages[imageIndex];
-      g.drawImage(img, pieceXPos, pieceYPos, 30, 30, null);
+      g.drawImage(img, pieceXPos, pieceYPos, IMG_WIDTH, IMG_HEIGHT, null);
    }
    
    /**
@@ -293,10 +297,5 @@ class Checkerboard
       {
          return IMG_WHITE;
       }
-   }
-
-   private int flipCoords(int x)
-   {
-      return 7 - x;
    }
 }

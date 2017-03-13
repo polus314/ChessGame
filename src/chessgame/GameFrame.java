@@ -93,7 +93,6 @@ public class GameFrame extends JFrame implements ActionListener
             break;
          case "Black": colorMenu.setColor(PieceColor.BLACK);
             refresh();
-            gamePanel.flipFirstTurn();
             break;
       }
    }
@@ -149,18 +148,10 @@ public class GameFrame extends JFrame implements ActionListener
    
    private ChessPiece determinePieceToAdd()
    {
-      ChessPiece piece = pieceMenu.getPiece();
-      if(piece instanceof King)
-         return new King(colorMenu.getColor());
-      else if(piece instanceof Queen)
-         return new Queen(colorMenu.getColor());
-      else if(piece instanceof Rook)
-         return new Rook(colorMenu.getColor());
-      else if(piece instanceof Bishop)
-         return new Bishop(colorMenu.getColor());
-      else if(piece instanceof Knight)
-         return new Knight(colorMenu.getColor());
-      else //if(piece instanceof Pawn)
-         return new Pawn(colorMenu.getColor());
+      if(pieceMenu.getPiece() == null)
+         return null;
+      ChessPiece piece = pieceMenu.getPiece().copyOfThis();
+      piece.setColor(colorMenu.getColor());
+      return piece;
    }
 }

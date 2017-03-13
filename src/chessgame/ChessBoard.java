@@ -2,6 +2,7 @@ package chessgame;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  This class creates a 64 square board that holds ChessPieces
@@ -10,7 +11,11 @@ import java.util.Comparator;
  */
 public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard>
 {
+   public static final int NUM_ROWS = 8;
+   public static final int NUM_COLS = 8;
+   
    private ChessPiece[][] pieceArray;
+   
    // TODO - move this up to AI?
    public boolean gameOver;
    private PieceColor playerToMove;
@@ -18,6 +23,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    private ArrayList<ChessMove> bMoveList;
    private int numWMoves;
    private int numBMoves;
+   
    // TODO - move this up to AI as well?
    public float mobilityRating;
    public float materialRating;
@@ -75,6 +81,76 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    {
       pieceArray = new ChessPiece[8][8];
       copy(template);
+   }
+   
+   /**
+   Constructor that takes a 2D array of pieces and places them accordingly on
+   this chessboard. The first index specifies the 'x' position on the board
+   and the second index specifies the 'y' position on the board.
+   
+   @param pieces - array of pieces to place on board
+   */
+   public ChessBoard(ChessPiece[][] pieces)
+   {
+      pieceArray = new ChessPiece[8][8];
+      for(int i = 0; i < 8; i++)
+         for(int j = 0; j < 8; j++)
+            setPieceAt(pieces[i][j], i,j);
+   }
+   
+   /**
+   Constructor that takes a list of pieces and places them on the board in the
+   position specified by each piece's x and y values.
+   
+   @param pieces - list of pieces to place on board
+   */
+   public ChessBoard(List<ChessPiece> pieces)
+   {
+      pieceArray = new ChessPiece[8][8];
+      for(ChessPiece piece : pieces)
+      {
+         setPieceAt(piece, piece.getX(), piece.getY());
+      }
+   }
+   
+   /**
+   Returns all the pieces on the board in a 2D array. The first index 
+   specifies the 'x' position on the board and the second index specifies the 
+   'y' position on the board.
+   
+   @return ChessPiece[][] - array of pieces
+   */
+   public ChessPiece[][] getPiecesArray()
+   {
+      ChessPiece[][] copy = new ChessPiece[8][8];
+      for(int i = 0; i < 8; i++)
+      {
+         for(int j = 0; j < 8; j++)
+         {
+            if(getPieceAt(i,j) != null)
+               copy[i][j] = getPieceAt(i,j);
+         }
+      }
+      return copy;
+   }
+   
+   /**
+   Returns all the pieces on the board in a list.
+   
+   @return List - list of pieces
+   */
+   public List<ChessPiece> getPiecesList()
+   {
+      ArrayList<ChessPiece> tempList = new ArrayList<>();
+      for(int i = 0; i < 8; i++)
+      {
+         for(int j = 0; j < 8; j++)
+         {
+            if(getPieceAt(i,j) != null)
+               tempList.add(getPieceAt(i,j));
+         }
+      }
+      return tempList;
    }
    
    @Override
