@@ -95,4 +95,20 @@ public class Rook extends ChessPiece
    {
       return new Rook(this);
    }
+   
+   /**
+   This method checks to see if two rooks are the same.
+   */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof Rook)
+      {
+         Rook cp = (Rook) obj;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
+      }
+      return false;
+   }  
 }

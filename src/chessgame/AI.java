@@ -20,7 +20,7 @@ public class AI
 
    private final ChessBoard gameBoard;
    private final PieceColor playerToMove;
-   private boolean gameOver;
+   private final boolean gameOver;
 
    /**
     Default constructor, initializes the chessboard to the start of a new game
@@ -29,7 +29,7 @@ public class AI
    {
       gameBoard = new ChessBoard();
       playerToMove = PieceColor.WHITE;
-      gameOver = checkGameOver();
+      gameOver = gameBoard.checkForMate(playerToMove);
    }
 
    /**
@@ -42,36 +42,7 @@ public class AI
    {
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
-      gameOver = checkGameOver();
-   }
-
-   /**
-    This method makes the given move on the given board and returns a copy of
-    the resulting board.
-
-    @param cb - chess board on which to execute the move
-    @param cm - move to execute
-    @return ChessBoard - resulting board position after the move
-    */
-   private ChessBoard advancePosition(ChessBoard cb, ChessMove cm)
-   {
-      // TODO - all of this should be a method in ChessBoard
-
-      ChessBoard nextNode = new ChessBoard(cb);
-      int xi, xf, yi, yf;
-      xi = cm.piece.xCoord;
-      yi = cm.piece.yCoord;
-      xf = cm.getXDest();
-      yf = cm.getYDest();
-      nextNode.replacePiece(xi, yi, xf, yf);
-      if (nextNode.getPieceAt(xf, yf) instanceof King // castling concerns
-            || nextNode.getPieceAt(xf, yf) instanceof Rook)
-      {
-         nextNode.getPieceAt(xf, yf).hasMoved = true;
-      }
-      nextNode.mobilityRating = cm.getMobilityRating();
-      nextNode.materialRating = cm.getMaterialRating();
-      return nextNode;
+      gameOver = gameBoard.checkForMate(playerToMove);
    }
 
    /**
@@ -82,9 +53,9 @@ public class AI
     @param yDest - y position of target square
     @return array of all chess pieces that can attack this square
     */
-   private ChessPiece[] aimedHere(ChessBoard cb, int xDest, int yDest)
+   private ArrayList<ChessPiece> aimedHere(ChessBoard cb, int xDest, int yDest)
    {
-      ChessPiece[] defenders = new ChessPiece[32];
+      ArrayList<ChessPiece> defenders = new ArrayList<>();
       for (int i = 0; i < 8; i++)
       {
          for (int j = 0; j < 8; j++)
@@ -120,7 +91,7 @@ public class AI
 
             if (isADefender)
             {
-               defenders[length(defenders)] = cp;
+               defenders.add(cp);
             }
          }
       }
@@ -136,29 +107,6 @@ public class AI
    public boolean isGameOver()
    {
       return gameOver;
-   }
-   
-   /**
-   Called once, when board is initialized, to set the boolean member gameOver
-   
-   @return boolean - whether the game on the board is over
-   */
-   private boolean checkGameOver()
-   {
-      // don't want to change the instance variable gameBoard, so make a copy
-      ChessBoard gammyBoard = new ChessBoard(gameBoard);
-      // TODO - isn't there a method that returns number of moves?
-      int numWMoves = findAllMoves(PieceColor.WHITE, gammyBoard).size();
-      int numBMoves = findAllMoves(PieceColor.BLACK, gammyBoard).size();
-
-      if ((numBMoves == 0 && playerToMove == PieceColor.BLACK) ||
-          (numWMoves == 0 && playerToMove == PieceColor.WHITE))
-      {
-         return true;
-      }
- 
-      //gameBoard.gameOver = false;
-      return false;
    }
    
    /**
@@ -226,33 +174,6 @@ public class AI
    }
 
    /**
-    This method finds all possible moves for the given color and updates that
-    count in cb
-
-    @param color
-    @param cb
-    @return list of moves
-    */
-   private ArrayList<ChessMove>findAllMoves(PieceColor color, ChessBoard cb)
-   {
-      ArrayList<ChessMove> moveList = new ArrayList<>();
-      for (int i = 0; i < 8; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            ChessPiece current = cb.getPieceAt(i,j);
-            if(current == null)
-               continue;
-            if (current.getColor() == color)
-            {
-               moveList.addAll(findMoves(cb, current));
-            }
-         }
-      }
-      return moveList;
-   }
-
-   /**
     This method tests all moves and evaluate the positions that result. The
     moves are then ranked and the best one is chosen.
 
@@ -266,11 +187,11 @@ public class AI
       PieceColor oppositeColor = color.opposite();
 
       //Checking for Checkmate, if no legal moves, then game is over
-      ArrayList<ChessMove> moveList = findAllMoves(color, gammyBoard);
+      ArrayList<ChessMove> moveList = gammyBoard.findAllMoves(color);
       int legalMoves = moveList.size();
       if (legalMoves == 0)
       {
-         return new ChessMove();
+         return null;
       }
       rateMoves(gammyBoard, moveList);
       sortMovesD(moveList);
@@ -293,7 +214,7 @@ public class AI
 
       for (int i = 0; i < counter1; i++)
       {
-         moveTree.addChild(advancePosition(gammyBoard, moveList.get(i)));
+         moveTree.addChild(gammyBoard.advancePosition(moveList.get(i)));
       }
 
       //Checking for Checkmate, if no legal moves, then game is over
@@ -401,73 +322,12 @@ public class AI
       return -1;
    }
 
-   /**
-    This method finds all legal moves for this piece on this board
-
-    @param cb
-    @param cp
-    @return
-    */
-   private ArrayList<ChessMove> findMoves(ChessBoard cb, ChessPiece cp)
-   {
-      ArrayList<ChessMove> moveList = new ArrayList<>();
-      int numMoves = 0;
-      PieceColor color = cp.getColor();
-      int xi = cp.xCoord;
-      int yi = cp.yCoord;
-      for (int xf = 0; xf < 8; xf++)
-      {
-         for (int yf = 0; yf < 8; yf++)
-         {
-            
-            ChessMove possMove = new ChessMove(cp, xf, yf);
-            //if move puts mover in check, disregard it
-            if (leadsToCheck(cb, possMove))
-            {
-               ;
-            }
-            else if (cp.canMove(xf, yf) //piece moves this way
-                  && cb.pathIsClear(cp, xf, yf) //no pieces in the way
-                  && cb.spaceIsEmpty(xf, yf))      //space is empty
-            {
-               moveList.add(possMove);
-            }
-            else if (cp.canMove(xf, yf)
-                  && cb.pathIsClear(cp, xf, yf)
-                  && cb.spaceIsOpen(xf, yf, cp.getColor()) //piece is opposite color
-                  && !(cp instanceof Pawn))                 //pawns capture differently
-            {                                               //than they move
-               possMove.captures = true;
-               moveList.add(possMove);
-            }
-            else if (cp instanceof Pawn)
-            {
-               //this is how pawns capture
-               if (color == PieceColor.WHITE && yi - yf == 1
-                     && (xi - xf == 1 || xf - xi == 1)
-                     && cb.getPieceAt(xf, yf) != null
-                     && cb.getPieceAt(xf, yf).getColor() == PieceColor.BLACK)
-               {
-                  possMove.captures = true;
-                  moveList.add(possMove);
-               }
-               if (color == PieceColor.BLACK && yf - yi == 1
-                     && (xi - xf == 1 || xf - xi == 1)
-                     && cb.getPieceAt(xf, yf) != null
-                     && cb.getPieceAt(xf, yf).getColor() == PieceColor.WHITE)
-               {
-                  possMove.captures = true;
-                  moveList.add(possMove);
-               }
-            }
-         }
-      }
-      return moveList;
-   }
-
    private int generateMoveTree(Tree<ChessBoard> parentTree, PieceColor color)
    {
-      ArrayList<ChessMove> moveList = findAllMoves(color, parentTree.info);
+      if(parentTree == null || parentTree.info == null)
+         return 0;
+      
+      ArrayList<ChessMove> moveList = parentTree.info.findAllMoves(color);
       int legalMoves = moveList.size();
       if (legalMoves == 0)
       {
@@ -483,7 +343,7 @@ public class AI
       }
       for (int i = 0; i < counter1; i++)
       {
-         parentTree.addChild(advancePosition(parentTree.info, moveList.get(i)));
+         parentTree.addChild(parentTree.info.advancePosition(moveList.get(i)));
       }
 
       return legalMoves;
@@ -534,40 +394,41 @@ public class AI
             }
             //case 2: piece's attackers are worth less than the defenders
          }
-         ChessPiece[] piecesInAction = aimedHere(cb, goodCP.xCoord, goodCP.yCoord);
+         ArrayList<ChessPiece> piecesInAction = aimedHere(cb, goodCP.xCoord, goodCP.yCoord);
          if (!isHanging)
          {
-            ChessPiece[] attackers = new ChessPiece[16];
-            ChessPiece[] defenders = new ChessPiece[16];
-            for (int k = 0; k < length(piecesInAction); k++)
+            ArrayList<ChessPiece> attackers = new ArrayList<>();
+            ArrayList<ChessPiece> defenders = new ArrayList<>();
+            for (int k = 0; k < piecesInAction.size(); k++)
             {
-               if (piecesInAction[k].color == color)
+               if (piecesInAction.get(k).color == color)
                {
-                  defenders[length(defenders)] = piecesInAction[k];
+                  defenders.add(piecesInAction.get(k));
                }
                else
                {
-                  attackers[length(attackers)] = piecesInAction[k];
+                  attackers.add(piecesInAction.get(k));
                }
             }
-            if (length(attackers) == 0)
+            
+            if (attackers.isEmpty())
             {
                isHanging = false;
             }
-            else if (length(defenders) < length(attackers))
+            else if (defenders.size() < attackers.size())
             {
                isHanging = true;
             }
             //this is rather confusing, but I think it works
-            else if (length(defenders) == length(attackers))
+            else if (defenders.size() == attackers.size())
             {
-               if (sumValue(defenders, length(attackers) - 1) + goodCP.value
-                     >= sumValue(attackers, length(attackers)))
+               if (sumValue(defenders, attackers.size() - 1) + goodCP.value
+                     >= sumValue(attackers, attackers.size()))
                {
                   isHanging = true;
                }
             }
-            else if (length(defenders) > length(attackers))
+            else if (defenders.size() > attackers.size())
             {
                isHanging = false;
             }
@@ -644,20 +505,6 @@ public class AI
    }
 
    /**
-    This method determines whether a move will result in the moving player
-    being in check.
-
-    @param cb - chess board to execute move on
-    @param cm - move to execute
-    @return   - whether or not check is a result of this move
-    */
-   public boolean leadsToCheck(ChessBoard cb, ChessMove cm)
-   {
-      ChessBoard temp = advancePosition(cb, cm);
-      return temp.checkForCheck(cm.piece.getColor());
-   }
-
-   /**
     This method finds how many objects are in a list. Assumes a contiguous
     list
 
@@ -731,7 +578,7 @@ public class AI
       PieceColor color = moveList.get(0).piece.getColor();
       for (int i = 0; i < moveList.size(); i++)
       {
-         temp = advancePosition(cb, moveList.get(i));
+         temp = cb.advancePosition(moveList.get(i));
          moveList.get(i).setMatRating(matRating(temp, color));
          moveList.get(i).setMobRating(mobRating(temp, color));
          moveList.get(i).setHangRating(hangRating(temp, color));
@@ -788,29 +635,29 @@ public class AI
     @param num
     @return
     */
-   private int sumValue(ChessPiece[] pieces, int num)
+   private int sumValue(ArrayList<ChessPiece> pieces, int num)
    {
       int sum = 0;
-      if (num > length(pieces))
+      if (num > pieces.size())
       {
-         num = length(pieces);
+         num = pieces.size();
       }
       // TODO - G-Dang it, can I stop using BUBBLE SORT??
-      for (int i = 0; i < length(pieces) - 1; i++)
+      for (int i = 0; i < pieces.size() - 1; i++)
       {
-         for (int j = length(pieces) - 1; j > i; j--)
+         for (int j = pieces.size() - 1; j > i; j--)
          {
-            if (pieces[j].value < pieces[j - 1].value)
+            if (pieces.get(j).value < pieces.get(j - 1).value)
             {
-               ChessPiece temp = pieces[j - 1];
-               pieces[j - 1] = pieces[j];
-               pieces[j] = temp;
+               ChessPiece temp = pieces.get(j - 1);
+               pieces.set(j - 1, pieces.get(j));
+               pieces.set(j, temp);
             }
          }
       }
       for (int i = 0; i < num; i++)
       {
-         sum += pieces[i].value;
+         sum += pieces.get(i).value;
       }
       return sum;
    }

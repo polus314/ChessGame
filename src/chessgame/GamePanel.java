@@ -19,7 +19,6 @@ public class GamePanel extends JPanel
 {
    // TODO - improve abstraction
    public Checkerboard myBoard;
-   public ArrayList<ChessMove> moveList;
    public PieceColor humanPlayer;
    public GameMode mode;
    public ChessPiece pieceToAdd;
@@ -33,11 +32,9 @@ public class GamePanel extends JPanel
    public GamePanel()
    {
       controller = new GameController();
-      moveList = new ArrayList<>();
       humanPlayer = PieceColor.WHITE;
       myBoard = new Checkerboard();
-      myBoard.setPieces(controller.board.getPiecesList());
-      //deepBlue = new AI(controller.board);      
+      myBoard.setPieces(controller.board.getPiecesList());  
       mode = GameMode.UNDECIDED;
       setBorder(BorderFactory.createLineBorder(Color.black));
       setMinimumSize(new Dimension(425, 425));
@@ -53,12 +50,23 @@ public class GamePanel extends JPanel
                int a = x / Checkerboard.SQUARE_WIDTH;
                int b = y / Checkerboard.SQUARE_HEIGHT;
                boolean success = controller.takeAction(a,b);
-//               if(!success)
-//                  return;
+               if(!success)
+                  return;
 
                myBoard.setSelectedPiece(controller.getSelectedPiece());
                myBoard.setPieces(controller.board.getPiecesList());
                repaint();
+               if(mode == GameMode.SINGLE && 
+                  controller.getPlayerToMove() != humanPlayer &&
+                  !controller.isGameOver())
+               {
+                  if(controller.doCPUTurn())
+                  {
+                     myBoard.setSelectedPiece(controller.getSelectedPiece());
+                     myBoard.setPieces(controller.board.getPiecesList());
+                     repaint();
+                  }
+               }
             }
          }
       });
@@ -105,7 +113,7 @@ public class GamePanel extends JPanel
       g.drawString("Move List", 425, 15);
       int start = 0;
       
-      
+      ArrayList<ChessMove> moveList = controller.getMoveList();
       if (moveList.size() > 40)
          start = moveList.size() - 40;
       for (int i = start; i < moveList.size(); i++)
@@ -141,7 +149,7 @@ public class GamePanel extends JPanel
       else if(controller.getWinningSide() == humanPlayer.opposite())
       {
          g.drawString("YOU", 50, 500);
-         g.drawString("STINK", 50, 500);
+         g.drawString("LOSE", 300, 500);
       }
       else if(controller.getWinningSide() == null)
       {

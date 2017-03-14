@@ -99,6 +99,7 @@ public class Checkerboard
    
    public void setPieces(List<ChessPiece> pieces)
    {
+      this.pieces = new ChessPiece[NUM_COLS][NUM_ROWS];
       for(ChessPiece piece : pieces)
       {
          this.pieces[piece.getX()][piece.getY()] = piece;

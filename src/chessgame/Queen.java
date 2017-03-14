@@ -109,4 +109,20 @@ public class Queen extends ChessPiece
    {
       return new Queen(this);
    }
+   
+   /**
+   This method checks to see if two queens are the same.
+   */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof Queen)
+      {
+         Queen cp = (Queen) obj;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
+      }
+      return false;
+   }  
 }

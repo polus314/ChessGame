@@ -101,4 +101,20 @@ public class King extends ChessPiece
    {
       return new King(this);
    }
+   
+   /**
+   This method checks to see if two kings are the same.
+   */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof King)
+      {
+         King cp = (King) obj;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
+      }
+      return false;
+   }
 }

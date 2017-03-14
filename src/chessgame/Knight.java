@@ -112,4 +112,20 @@ public class Knight extends ChessPiece
    {
       return new Knight(this);
    }
+   
+   /**
+   This method checks to see if two knights are the same.
+   */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof Knight)
+      {
+         Knight cp = (Knight) obj;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
+      }
+      return false;
+   }
 }

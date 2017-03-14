@@ -39,6 +39,10 @@ public class GameController
       mode = m;
    }
    
+   public PieceColor getPlayerToMove()
+   {
+      return playerToMove;
+   }
    
    public ChessPiece getSelectedPiece()
    {
@@ -48,6 +52,11 @@ public class GameController
    public void setPieceToAdd(ChessPiece cp)
    {
       pieceToAdd = cp;
+   }
+   
+   public ArrayList<ChessMove> getMoveList()
+   {
+      return moveList;
    }
    
    /**
@@ -66,12 +75,7 @@ public class GameController
          case SINGLE:
             if(isGameOver())
                return false;
-             if(doHumanTurn(x,y) && playerToMove != humanPlayer)
-             {
-                doCPUTurn();
-                return true;
-             }
-            return false;
+             return doHumanTurn(x,y);
          case VERSUS:
             if(isGameOver())
                return false;
@@ -108,8 +112,9 @@ public class GameController
    /**
    This method does most of the things done in the main GUI method, but for
    the computer player
+   @return boolean - whether CPU was successful in making a move
    */
-   private boolean doCPUTurn()
+   public boolean doCPUTurn()
    {
       ChessMove move = deepBlue.findBestMove(humanPlayer.opposite());
       //checking for checkmate
@@ -172,7 +177,7 @@ public class GameController
                moveSuccessful = true;
             }
          }
-         if (board.movePiece(selectedPiece, x, y)) // else try to move normally
+         if (!moveSuccessful && board.movePiece(selectedPiece, x, y)) // else try to move normally
          {
             moveSuccessful = true;
          }
@@ -257,18 +262,18 @@ public class GameController
       {
          move.promotes = true;
       }
-      if(board.checkForCheck(humanPlayer.opposite()))
+      if(board.checkForCheck(playerToMove.opposite()))
       {
          move.givesCheck = true;
       }
-      if (deepBlue.isGameOver())
+      if (board.checkForMate(playerToMove.opposite()))
       {
          move.givesMate = true;
       }
-      moveList.add(move);
       selectedPiece = null;
       playerToMove = playerToMove.opposite();
       moveFinished = true;
       deepBlue = new AI(board, playerToMove);
+      moveList.add(move);
    }
 }

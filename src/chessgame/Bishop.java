@@ -102,4 +102,20 @@ public class Bishop extends ChessPiece
    {
       return new Bishop(this);
    }
+   
+   /**
+   This method checks to see if two bishops are the same.
+   */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof Bishop)
+      {
+         Bishop cp = (Bishop) obj;
+         return xCoord == cp.xCoord && 
+                yCoord == cp.yCoord && 
+                color == cp.color;
+      }
+      return false;
+   }
 }
