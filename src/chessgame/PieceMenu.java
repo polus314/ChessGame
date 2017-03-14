@@ -27,6 +27,7 @@ public class PieceMenu extends JPanel implements ActionListener
    private static final String AC_PAWN = "pawn";
    private static final String AC_EMPTY = "empty";
    
+   // TODO - change to btn_king etc.
    public final JButton kButton, qButton, rButton, bButton, 
          nButton, pButton, eButton;
    private ChessPiece piece;
@@ -81,8 +82,10 @@ public class PieceMenu extends JPanel implements ActionListener
       eButton.addActionListener(this);
    }
    
+   @Override
    public void actionPerformed(ActionEvent event)
    {
+      ChessPiece oldPiece = piece;
       String command = event.getActionCommand();
       switch(command)
       {
@@ -100,10 +103,11 @@ public class PieceMenu extends JPanel implements ActionListener
             break;
          case AC_EMPTY: piece = null;
             break;
-         default: System.out.println("Button clicked, maybe??");
+         default:
+            return;
       }
       repaint();
-      
+      this.firePropertyChange("piece", oldPiece, piece);
    }
    
    public ChessPiece getPiece()

@@ -1,9 +1,3 @@
-/**
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
-*/
-
 package chessgame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,27 +10,49 @@ import javax.swing.BoxLayout;
  
 @author jppolecat
 */
-public class ColorMenu extends JPanel
+public class ColorMenu extends JPanel implements ActionListener
 {
-   private JButton b1, b2;
+   private JButton btn_black, btn_white;
    private PieceColor chosenColor;
    
    public ColorMenu()
    {
-      b1 = new JButton("Choose Black Pieces");
-      b1.setMnemonic(KeyEvent.VK_B);
-      b1.setActionCommand("Black");
+      btn_black = new JButton("Choose Black Pieces");
+      btn_black.setMnemonic(KeyEvent.VK_B);
+      btn_black.setActionCommand("Black");
       
-      b2 = new JButton("Choose White Pieces");
-      b2.setMnemonic(KeyEvent.VK_W);
-      b2.setActionCommand("White");
+      btn_white = new JButton("Choose White Pieces");
+      btn_white.setMnemonic(KeyEvent.VK_W);
+      btn_white.setActionCommand("White");
       
-      add(b1);
-      add(b2); 
+      add(btn_black);
+      add(btn_white);
+      
+      btn_black.addActionListener(this);
+      btn_white.addActionListener(this);
       
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
       
       chosenColor = PieceColor.WHITE;
+   }
+   
+   @Override
+   public void actionPerformed(ActionEvent event)
+   {
+      PieceColor oldColor = chosenColor;
+      String command = event.getActionCommand();
+      switch(command)
+      {
+         case "Black" : 
+            chosenColor = PieceColor.BLACK;
+            break;
+         case "White" :
+            chosenColor = PieceColor.WHITE;
+            break;
+         default :
+            return;
+      }
+      firePropertyChange("color", oldColor, chosenColor);
    }
    
    public PieceColor getColor()
@@ -44,18 +60,8 @@ public class ColorMenu extends JPanel
       return chosenColor;
    }
    
-   public JButton getWhite()
-   {
-       return b2;
-   }
-   
-   public JButton getBlack()
-   {
-       return b1;
-   }
-   
    public void setColor(PieceColor pc)
    {
-       this.chosenColor = pc;
+       chosenColor = pc;
    }
 }

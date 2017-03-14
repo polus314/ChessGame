@@ -1,18 +1,13 @@
-/**
- To change this license header, choose License Headers in Project Properties.
- To change this template file, choose Tools | Templates and open the template
- in the editor.
- */
 package chessgame;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -21,14 +16,14 @@ import javax.swing.SwingUtilities;
 
  @author jppolecat
  */
-public class GameFrame extends JFrame implements ActionListener
+public class GameFrame extends JFrame implements ActionListener, PropertyChangeListener
 {
 
    protected ModeMenu modeMenu;
    protected GamePanel gamePanel;
    protected ColorMenu colorMenu;
    protected PieceMenu pieceMenu;
-   protected JButton b2;
+   protected JButton btn_mainMenu;
    
    public PieceColor humanPlayer;
    public GameMode mode;
@@ -71,30 +66,20 @@ public class GameFrame extends JFrame implements ActionListener
       controller = new GameController();
       gamePanel.myBoard.setPieces(controller.getPiecesList());
 
-      b2 = new JButton("Main Menu");
-      b2.setMnemonic(KeyEvent.VK_M);
-      b2.setActionCommand("Main Menu");
-      b2.addActionListener(this);
+      btn_mainMenu = new JButton("Main Menu");
+      btn_mainMenu.setMnemonic(KeyEvent.VK_M);
+      btn_mainMenu.setActionCommand("Main Menu");
+      btn_mainMenu.addActionListener(this);
 
-      modeMenu.getSingle().addActionListener(this);
-      modeMenu.getVersus().addActionListener(this);
-      modeMenu.getSetup().addActionListener(this);
-      colorMenu.getWhite().addActionListener(this);
-      colorMenu.getBlack().addActionListener(this);
+      pieceMenu.addPropertyChangeListener(this);
+      modeMenu.addPropertyChangeListener(this);
+      colorMenu.addPropertyChangeListener(this);
       
-      pieceMenu.bButton.addActionListener(this);
-      pieceMenu.eButton.addActionListener(this);
-      pieceMenu.qButton.addActionListener(this);
-      pieceMenu.rButton.addActionListener(this);
-      pieceMenu.pButton.addActionListener(this);
-      pieceMenu.nButton.addActionListener(this);
-      pieceMenu.kButton.addActionListener(this);
-
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
-      add(b2, BorderLayout.WEST);
+      add(btn_mainMenu, BorderLayout.WEST);
 
       addMouseListener(new MouseAdapter()
       {
@@ -102,15 +87,10 @@ public class GameFrame extends JFrame implements ActionListener
          {
             int x = e.getX() - (gamePanel.getX() + leftBorderWidth);
             int y = e.getY() - (gamePanel.getY() + topBorderHeight);
-            System.out.println("x: " + x);
-            System.out.println("y: " + y);
             if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
             {
                int a = x / Checkerboard.SQUARE_WIDTH;
                int b = y / Checkerboard.SQUARE_HEIGHT;
-               System.out.println("a: " + a);
-               System.out.println("b: " + b);
-               System.out.println("");
                boolean success = controller.takeAction(a,b);
                if(!success)
                   return;
@@ -133,10 +113,28 @@ public class GameFrame extends JFrame implements ActionListener
          }
       });
    }
-
-   public void paintComponent(Graphics g)
+   
+   @Override
+   public void propertyChange(PropertyChangeEvent event)
    {
-      
+      String property = event.getPropertyName();
+      switch(property)
+      {
+         case "piece" :
+            pieceToAdd = determinePieceToAdd();
+            controller.setPieceToAdd(pieceToAdd);
+            break;
+         case "mode" :
+            controller.setGameMode((GameMode)event.getNewValue());
+            break;
+         case "color" :
+            pieceToAdd = determinePieceToAdd();
+            controller.setPieceToAdd(pieceToAdd);
+            break;
+         default:
+            return;
+      }
+      refresh();
    }
    
    public void actionPerformed(ActionEvent event)
@@ -160,12 +158,6 @@ public class GameFrame extends JFrame implements ActionListener
             modeMenu.setGameMode(GameMode.SET_UP);
             controller.setGameMode(GameMode.SET_UP);
             break;
-         case "White":
-            colorMenu.setColor(PieceColor.WHITE);
-            break;
-         case "Black":
-            colorMenu.setColor(PieceColor.BLACK);
-            break;
       }
       refresh();
    }
@@ -176,7 +168,7 @@ public class GameFrame extends JFrame implements ActionListener
       remove(colorMenu);
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
-      add(b2, BorderLayout.WEST);
+      add(btn_mainMenu, BorderLayout.WEST);
       mode = GameMode.UNDECIDED;
       modeMenu.setMode(GameMode.UNDECIDED);
 
@@ -195,7 +187,6 @@ public class GameFrame extends JFrame implements ActionListener
 
    private void refresh()
    {
-      System.out.println("In refresh method in GameFrame");
       mode = modeMenu.getMode();
       humanPlayer = colorMenu.getColor();
       pieceToAdd = determinePieceToAdd();
