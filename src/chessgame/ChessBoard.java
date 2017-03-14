@@ -18,16 +18,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    private ChessPiece[][] pieceArray;
 
-   // TODO - move this up to AI?
-   private ArrayList<ChessMove> wMoveList;
-   private ArrayList<ChessMove> bMoveList;
-   private int numWMoves;
-   private int numBMoves;
-
-   // TODO - move this up to AI as well?
    public float mobilityRating;
    public float materialRating;
-   private int hangingPieces;
 
    /**
     This constructor sets up a standard chess game on the board
@@ -65,9 +57,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
       pieceArray[3][0] = new Queen(PieceColor.BLACK, 3, 0);
       pieceArray[4][0] = new King(PieceColor.BLACK, 4, 0);
-
-      wMoveList = new ArrayList<>();
-      bMoveList = new ArrayList<>();
+      
+      materialRating = 0;
    }
 
    /**
@@ -143,7 +134,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
     @return List - list of pieces
     */
-   public List<ChessPiece> getPiecesList()
+   public ArrayList<ChessPiece> getPiecesList()
    {
       ArrayList<ChessPiece> tempList = new ArrayList<>();
       for (int i = 0; i < 8; i++)
@@ -558,7 +549,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     This method determines whether a move will result in the moving player
     being in check.
 
-    @param cb - chess board to execute move on
     @param cm - move to execute
     @return   - whether or not check is a result of this move
     */
@@ -602,17 +592,27 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    */
    public boolean checkForMate(PieceColor playerToMove)
    {
-      // don't want to change the instance variable gameBoard, so make a copy
-      ChessBoard gammyBoard = new ChessBoard(this);
-      // TODO - isn't there a method that returns number of moves?
-      int numMoves = gammyBoard.findAllMoves(playerToMove).size();
-//      int numBMoves = gammyBoard.findAllMoves(PieceColor.BLACK).size();
-
-      if (numMoves == 0 && checkForCheck(playerToMove))
+      int numMoves = findAllMoves(playerToMove).size();
+      return numMoves == 0 && checkForCheck(playerToMove);
+   }
+   
+   
+   public ArrayList<ChessPiece> getPieces(PieceColor color)
+   {
+      ArrayList<ChessPiece> pieces = new ArrayList<>();
+      for (int i = 0; i < 8; i++)
       {
-         return true;
+         for (int j = 0; j < 8; j++)
+         {
+            if(getPieceAt(i,j) == null)
+               continue;
+            if (getPieceAt(i, j).getColor() == color)
+            {
+               pieces.add(getPieceAt(i,j));
+            }
+         }
       }
-      return false;
+      return pieces;
    }
 
    /**

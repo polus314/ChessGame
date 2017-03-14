@@ -22,7 +22,6 @@ public class GamePanel extends JPanel
    public PieceColor humanPlayer;
    public GameMode mode;
    public ChessPiece pieceToAdd;
-   public boolean moveFinished = false;
    public GameController controller;
 
    /**
@@ -34,7 +33,7 @@ public class GamePanel extends JPanel
       controller = new GameController();
       humanPlayer = PieceColor.WHITE;
       myBoard = new Checkerboard();
-      myBoard.setPieces(controller.board.getPiecesList());  
+      myBoard.setPieces(controller.getPiecesList());  
       mode = GameMode.UNDECIDED;
       setBorder(BorderFactory.createLineBorder(Color.black));
       setMinimumSize(new Dimension(425, 425));
@@ -54,7 +53,7 @@ public class GamePanel extends JPanel
                   return;
 
                myBoard.setSelectedPiece(controller.getSelectedPiece());
-               myBoard.setPieces(controller.board.getPiecesList());
+               myBoard.setPieces(controller.getPiecesList());
                repaint();
                if(mode == GameMode.SINGLE && 
                   controller.getPlayerToMove() != humanPlayer &&
@@ -63,7 +62,7 @@ public class GamePanel extends JPanel
                   if(controller.doCPUTurn())
                   {
                      myBoard.setSelectedPiece(controller.getSelectedPiece());
-                     myBoard.setPieces(controller.board.getPiecesList());
+                     myBoard.setPieces(controller.getPiecesList());
                      repaint();
                   }
                }
@@ -155,20 +154,6 @@ public class GamePanel extends JPanel
       {
          g.drawString("STALEMATE", 0, 285);
       }
-   }
-   
-   /**
-   This method should NOT be used for actual gameplay, because it doesn't 
-   check to see if move is legal, etc. Should be used for setting up a position
-   
-   @param xi
-   @param yi
-   @param xf
-   @param yf 
-   */
-   private void movePiece(int xi, int yi, int xf, int yf)
-   {
-      controller.board.replacePiece(xi, yi, xf, yf);
    }
    
    public void setMode(GameMode gameMode)

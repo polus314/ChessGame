@@ -10,8 +10,7 @@ for capturing, castling, and promotion.
 */
 public class GameController 
 {
-   // TODO - make this private
-   public ChessBoard board;
+   private ChessBoard board;
    private ChessPiece selectedPiece, pieceToAdd;
    private PieceColor playerToMove, humanPlayer;
    private AI deepBlue;
@@ -37,6 +36,11 @@ public class GameController
    public void setGameMode(GameMode m)
    {
       mode = m;
+   }
+   
+   public ArrayList<ChessPiece> getPiecesList()
+   {
+      return board.getPiecesList();
    }
    
    public PieceColor getPlayerToMove()

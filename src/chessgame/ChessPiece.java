@@ -8,7 +8,7 @@ and create new chess pieces.
 /**
  @author jppolecat
  */
-public abstract class ChessPiece
+public abstract class ChessPiece implements Comparable<ChessPiece>
 {
    protected int value;
    protected int xCoord;
@@ -138,5 +138,28 @@ public abstract class ChessPiece
                 color == cp.color;
       }
       return false;
+   }
+   
+   /**
+    This method compares two Chess Pieces, useful for sorting
+
+    @param cp - piece to compare this to
+    @return -1 if this is worth less, 0 if equal, 1 if worth more than param
+    */
+   @Override
+   public int compareTo(ChessPiece cp)
+   {
+      if(value < cp.value)
+      {
+         return -1;
+      }
+      else if(value == cp.value)
+      {
+         return 0;
+      }
+      else //if(value > cp.value)
+      {
+         return 1;
+      }
    }
 }

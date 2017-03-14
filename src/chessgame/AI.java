@@ -137,43 +137,6 @@ public class AI
    }
 
    /**
-    This method adds tempList to the end of mainList, assumes that mainList
-    has enough space
-
-    @param mainList
-    @param tempList
-    */
-   private void concatenateMoveLists(ChessMove[] mainList, ChessMove[] tempList)
-   {
-      int start = length(mainList);
-      int end = start + length(tempList);
-      if (end > start)
-      {
-         for (int i = start; i < end; i++)
-         {
-            mainList[i] = tempList[i - start];
-         }
-      }
-   }
-
-   /**
-    This method copies an array of ChessBoards and returns that copy
-
-    @param moveTree
-    @return
-    */
-   private ChessBoard[] copyBoards(ChessBoard[] moveTree)
-   {
-      ChessBoard[] copyTree = new ChessBoard[length(moveTree)];
-      for (int i = 0; i < length(moveTree); i++)
-      {
-         copyTree[i] = new ChessBoard();
-         copyTree[i].copy(moveTree[i]);
-      }
-      return copyTree;
-   }
-
-   /**
     This method tests all moves and evaluate the positions that result. The
     moves are then ranked and the best one is chosen.
 
@@ -302,26 +265,6 @@ public class AI
       //Sorting the positions given by the white moves, picking the worst one
    }
 
-   /**
-    This method takes an array of ChessBoards and finds the one that is equal
-    to cb, NOTE: Currently, moveTree is always full
-
-    @param moveTree
-    @param cb
-    @return
-    */
-   private int findBoard(ChessBoard[] moveTree, ChessBoard cb)
-   {
-      for (int i = 0; i < moveTree.length; i++)
-      {
-         if (moveTree[i].equals(cb))
-         {
-            return i;
-         }
-      }
-      return -1;
-   }
-
    private int generateMoveTree(Tree<ChessBoard> parentTree, PieceColor color)
    {
       if(parentTree == null || parentTree.info == null)
@@ -349,24 +292,6 @@ public class AI
       return legalMoves;
    }
 
-   private ChessPiece[] getPieces(ChessBoard cb, PieceColor color)
-   {
-      ChessPiece[] pieces = new ChessPiece[64];
-      for (int i = 0; i < 8; i++)
-      {
-         for (int j = 0; j < 8; j++)
-         {
-            if(cb.getPieceAt(i,j) == null)
-               continue;
-            if (cb.getPieceAt(i, j).getColor() == color)
-            {
-               pieces[length(pieces)] = cb.getPieceAt(i, j);
-            }
-         }
-      }
-      return pieces;
-   }
-
    /**
     This method will return the number of pieces this color has "hanging" or
     insufficiently defended
@@ -378,17 +303,17 @@ public class AI
    private int hangRating(ChessBoard cb, PieceColor color)
    {
       int valueOfHanging = 0;
-      ChessPiece[] goodPieces = getPieces(cb, color);
-      ChessPiece[] badPieces = getPieces(cb, color.opposite());
-      for (int i = 0; i < length(goodPieces); i++)
+      ArrayList<ChessPiece> goodPieces = cb.getPieces(color);
+      ArrayList<ChessPiece> badPieces = cb.getPieces(color.opposite());
+      for (int i = 0; i < goodPieces.size(); i++)
       {
          boolean isHanging = false;
-         ChessPiece goodCP = goodPieces[i];
-         for (int j = 0; j < length(badPieces); j++)
+         ChessPiece goodCP = goodPieces.get(i);
+         for (int j = 0; j < badPieces.size(); j++)
          {
             //case 1: piece is attacked by a lower valued piece
-            if (cb.canCapture(badPieces[j], goodCP.xCoord, goodCP.yCoord)
-                  && badPieces[j].value < goodCP.value)
+            if (cb.canCapture(badPieces.get(j), goodCP.xCoord, goodCP.yCoord)
+                  && badPieces.get(j).value < goodCP.value)
             {
                isHanging = true;
             }
@@ -435,7 +360,7 @@ public class AI
          }
          if (isHanging)
          {
-            valueOfHanging += goodPieces[i].value;
+            valueOfHanging += goodPieces.get(i).value;
          }
       }
       return valueOfHanging;
@@ -452,6 +377,11 @@ public class AI
    private int howManyMoves(PieceColor color, ChessBoard cb)
    {
       // TODO - make this more efficient somehow, quadruple for loops is bad
+      // Big Picture: using vectors instead of checking every square will make
+      // checking a piece's moves faster, but would require re-doing a large
+      // chunk of the code.
+      // Similarly, storing the pieces in a list, rather than an array could
+      // also speed this up, might slow other things down though
       int numMoves = 0;
       for (int i = 0; i < 8; i++)
       {
@@ -642,19 +572,7 @@ public class AI
       {
          num = pieces.size();
       }
-      // TODO - G-Dang it, can I stop using BUBBLE SORT??
-      for (int i = 0; i < pieces.size() - 1; i++)
-      {
-         for (int j = pieces.size() - 1; j > i; j--)
-         {
-            if (pieces.get(j).value < pieces.get(j - 1).value)
-            {
-               ChessPiece temp = pieces.get(j - 1);
-               pieces.set(j - 1, pieces.get(j));
-               pieces.set(j, temp);
-            }
-         }
-      }
+      Collections.sort(pieces);
       for (int i = 0; i < num; i++)
       {
          sum += pieces.get(i).value;

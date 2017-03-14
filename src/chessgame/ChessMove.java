@@ -8,6 +8,8 @@ public class ChessMove implements Comparable<ChessMove>
 {
    // TODO - don't associate ratings with a move should be associated with
    // the board position
+   // Big project: will have to do while refactoring findBestMove in AI
+   //   A lot of the calculating done there uses moves and their ratings
    public ChessPiece piece;
    private int xDest;
    private int yDest;

@@ -78,14 +78,6 @@ public class GameFrame extends JFrame implements ActionListener
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
       add(b2, BorderLayout.WEST);
-      
-//      addMouseListener(new MouseAdapter()
-//      {
-//         public void mousePressed(MouseEvent e)
-//         {
-//            refresh();
-//         }
-//      });
    }
 
    public void actionPerformed(ActionEvent event)
