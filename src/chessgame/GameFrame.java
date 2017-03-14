@@ -6,6 +6,8 @@
 package chessgame;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -27,6 +29,16 @@ public class GameFrame extends JFrame implements ActionListener
    protected ColorMenu colorMenu;
    protected PieceMenu pieceMenu;
    protected JButton b2;
+   
+   public PieceColor humanPlayer;
+   public GameMode mode;
+   public ChessPiece pieceToAdd;
+   public GameController controller;
+   
+   private static final int FRAME_HEIGHT = 650;
+   private static final int FRAME_WIDTH = 750;
+   private int topBorderHeight = 32;
+   private int leftBorderWidth = 8;
 
    public static void main(String[] args)
    {
@@ -53,6 +65,11 @@ public class GameFrame extends JFrame implements ActionListener
       gamePanel = new GamePanel();
       colorMenu = new ColorMenu();
       pieceMenu = new PieceMenu();
+      
+      mode = GameMode.UNDECIDED;
+      humanPlayer = PieceColor.WHITE;
+      controller = new GameController();
+      gamePanel.myBoard.setPieces(controller.getPiecesList());
 
       b2 = new JButton("Main Menu");
       b2.setMnemonic(KeyEvent.VK_M);
@@ -73,13 +90,55 @@ public class GameFrame extends JFrame implements ActionListener
       pieceMenu.nButton.addActionListener(this);
       pieceMenu.kButton.addActionListener(this);
 
-      setSize(750, 650);
+      setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
       add(b2, BorderLayout.WEST);
+
+      addMouseListener(new MouseAdapter()
+      {
+         public void mousePressed(MouseEvent e)
+         {
+            int x = e.getX() - (gamePanel.getX() + leftBorderWidth);
+            int y = e.getY() - (gamePanel.getY() + topBorderHeight);
+            System.out.println("x: " + x);
+            System.out.println("y: " + y);
+            if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
+            {
+               int a = x / Checkerboard.SQUARE_WIDTH;
+               int b = y / Checkerboard.SQUARE_HEIGHT;
+               System.out.println("a: " + a);
+               System.out.println("b: " + b);
+               System.out.println("");
+               boolean success = controller.takeAction(a,b);
+               if(!success)
+                  return;
+
+               gamePanel.myBoard.setSelectedPiece(controller.getSelectedPiece());
+               gamePanel.myBoard.setPieces(controller.getPiecesList());
+               repaint();
+               if(mode == GameMode.SINGLE && 
+                  controller.getPlayerToMove() != humanPlayer &&
+                  !controller.isGameOver())
+               {
+                  if(controller.doCPUTurn())
+                  {
+                     gamePanel.myBoard.setSelectedPiece(controller.getSelectedPiece());
+                     gamePanel.myBoard.setPieces(controller.getPiecesList());
+                     repaint();
+                  }
+               }
+            }
+         }
+      });
    }
 
+   public void paintComponent(Graphics g)
+   {
+      
+   }
+   
    public void actionPerformed(ActionEvent event)
    {
       String command = event.getActionCommand();
@@ -90,16 +149,16 @@ public class GameFrame extends JFrame implements ActionListener
             break;
          case "Single":
             modeMenu.setGameMode(GameMode.SINGLE);
-            gamePanel.controller.setGameMode(GameMode.SINGLE);
+            controller.setGameMode(GameMode.SINGLE);
             break;
          case "Versus":
             modeMenu.setGameMode(GameMode.VERSUS);
-            gamePanel.controller.setGameMode(GameMode.VERSUS);
+            controller.setGameMode(GameMode.VERSUS);
             colorMenu.setColor(PieceColor.WHITE);
             break;
          case "Setup":
             modeMenu.setGameMode(GameMode.SET_UP);
-            gamePanel.controller.setGameMode(GameMode.SET_UP);
+            controller.setGameMode(GameMode.SET_UP);
             break;
          case "White":
             colorMenu.setColor(PieceColor.WHITE);
@@ -118,7 +177,7 @@ public class GameFrame extends JFrame implements ActionListener
       add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
       add(b2, BorderLayout.WEST);
-      gamePanel.mode = GameMode.UNDECIDED;
+      mode = GameMode.UNDECIDED;
       modeMenu.setMode(GameMode.UNDECIDED);
 
       int resize = getHeight();
@@ -137,23 +196,23 @@ public class GameFrame extends JFrame implements ActionListener
    private void refresh()
    {
       System.out.println("In refresh method in GameFrame");
-      gamePanel.mode = modeMenu.getMode();
-      gamePanel.humanPlayer = colorMenu.getColor();
-      gamePanel.pieceToAdd = determinePieceToAdd();
-      gamePanel.controller.setPieceToAdd(gamePanel.pieceToAdd);
-      if (gamePanel.mode != GameMode.UNDECIDED)
+      mode = modeMenu.getMode();
+      humanPlayer = colorMenu.getColor();
+      pieceToAdd = determinePieceToAdd();
+      controller.setPieceToAdd(pieceToAdd);
+      if (mode != GameMode.UNDECIDED)
       {
          remove(modeMenu);
-         if (gamePanel.mode != GameMode.VERSUS)
+         if (mode != GameMode.VERSUS)
          {
             add(colorMenu, BorderLayout.EAST);
          }
       }
-      if (gamePanel.mode == GameMode.SET_UP)
+      if (mode == GameMode.SET_UP)
       {
          add(pieceMenu, BorderLayout.SOUTH);
       }
-      else if (gamePanel.mode == GameMode.SINGLE)
+      else if (mode == GameMode.SINGLE)
       {
          remove(colorMenu);
       }
