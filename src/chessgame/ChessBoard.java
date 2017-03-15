@@ -12,8 +12,9 @@ import java.util.List;
  */
 public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard>
 {
-
+   // Length of board along x - axis, in number of squares
    public static final int WIDTH = 8;
+   // Length of board along y - axis, in number of squares
    public static final int HEIGHT = 8;
    
    private static final int HOME_ROW_B = 0;
@@ -132,153 +133,30 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-    Returns all the pieces on the board in a 2D array. The first index
-    specifies the 'x' position on the board and the second index specifies the
-    'y' position on the board.
+    This method makes the given move and returns a copy of the resulting
+    board.
 
-    @return ChessPiece[][] - array of pieces
+    @param cm move to execute
+    @return ChessBoard - resulting board position after the move
     */
-   public ChessPiece[][] getPiecesArray()
+   public ChessBoard advancePosition(ChessMove cm)
    {
-      ChessPiece[][] copy = new ChessPiece[WIDTH][HEIGHT];
-      for (int i = 0; i < WIDTH; i++)
+      ChessBoard nextNode = new ChessBoard(this);
+      int xi, xf, yi, yf;
+      xi = cm.piece.xCoord;
+      yi = cm.piece.yCoord;
+      xf = cm.getXDest();
+      yf = cm.getYDest();
+      nextNode.replacePiece(xi, yi, xf, yf);
+      //TODO - consider castling, where two pieces are moved
+      if (nextNode.getPieceAt(xf, yf) instanceof King // castling concerns
+            || nextNode.getPieceAt(xf, yf) instanceof Rook)
       {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            if (getPieceAt(i, j) != null)
-            {
-               copy[i][j] = getPieceAt(i, j);
-            }
-         }
+         nextNode.getPieceAt(xf, yf).hasMoved = true;
       }
-      return copy;
-   }
-
-   /**
-    Returns all the pieces on the board in a list.
-
-    @return List - list of pieces that are on this board
-    */
-   public ArrayList<ChessPiece> getPiecesList()
-   {
-      ArrayList<ChessPiece> tempList = new ArrayList<>();
-      for (int i = 0; i < WIDTH; i++)
-      {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            if (getPieceAt(i, j) != null)
-            {
-               tempList.add(getPieceAt(i, j));
-            }
-         }
-      }
-      return tempList;
-   }
-
-   /**
-    Compares two chessboards to see which one is greater. Compares first both
-    boards' material rating, then if those are equal looks at both boards'
-    mobility rating.
-
-    @param cb1 first board to be compared
-    @param cb2 second board to be compared
-    @return int - 1 if second board is greater, 0 if both are equal, -1
-    otherwise
-    */
-   @Override
-   public int compare(ChessBoard cb1, ChessBoard cb2)
-   {
-      if (cb1.materialRating > cb2.materialRating)
-      {
-         return 1;
-      }
-      if (cb1.materialRating == cb2.materialRating)
-      {
-         if (cb1.mobilityRating > cb2.mobilityRating)
-         {
-            return 1;
-         }
-         if (cb1.mobilityRating == cb2.mobilityRating)
-         {
-            return 0;
-         }
-      }
-      return -1;
-   }
-
-   /**
-    Checks to see that board position is legal. Ensures the following: each
-    color has exactly one king, kings are not both in check
-
-    @return boolean - whether position is legal as described above
-    */
-   public boolean checkPositionIsLegal()
-   {
-      if (!(checkSingleKing(PieceColor.WHITE)
-            && checkSingleKing(PieceColor.BLACK)))
-      {
-         return false;
-      }
-
-      if (checkForCheck(PieceColor.WHITE) && checkForCheck(PieceColor.BLACK))
-      {
-         return false;
-      }
-
-      return true;
-   }
-
-   /**
-    Checks to see if the given color has exactly one king on the board.
-
-    @param c color whose pieces should be checked
-    @return boolean - true if c has exactly one king, false otherwise
-    */
-   private boolean checkSingleKing(PieceColor c)
-   {
-      int numKings = 0;
-      for (int i = 0; i < WIDTH; i++)
-      {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            ChessPiece current = getPieceAt(i, j);
-            if (current == null)
-            {
-               continue;
-            }
-            if (current instanceof King && current.getColor() == c)
-            {
-               numKings++;
-            }
-         }
-      }
-      return numKings == 1;
-   }
-
-   /**
-    Returns the piece at the given board coordinates
-
-    @param row row of piece, rows start at 0
-    @param col column of piece, columns start at 0
-    @return ChessPiece - chess piece that is at the given coordinates
-    */
-   public final ChessPiece getPieceAt(int row, int col)
-   {
-      return pieceArray[row][col];
-   }
-
-   /**
-    Sets the piece at the given board coordinates
-
-    @param cp chess piece to place at these coordinates
-    @param x column piece is in, columns start at 0
-    @param y row piece is in, rows start at 0
-    */
-   public final void setPieceAt(ChessPiece cp, int x, int y)
-   {
-      pieceArray[x][y] = cp;
-      if(cp != null)
-         cp.movePiece(x, y);
+      nextNode.mobilityRating = cm.getMobilityRating();
+      nextNode.materialRating = cm.getMaterialRating();
+      return nextNode;
    }
 
    /**
@@ -468,7 +346,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       return false;        // piece can't move to there, path is blocked, or
    }                       // space is empty or piece of same color
-
+   
    /**
     Attempts to castle according to the given move. Checks to make sure
     castling is legal from this position.
@@ -532,115 +410,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-    This method finds all legal moves for this piece on this board.
-    Doesn't consider castling or en passant.
-
-    @param cp piece whose moves are being generated
-    @return ArrayList - list of all moves that cp can legally take
-    */
-   public ArrayList<ChessMove> findMoves(ChessPiece cp)
-   {
-      ArrayList<ChessMove> moveList = new ArrayList<>();
-      PieceColor color = cp.getColor();
-      int xi = cp.xCoord;
-      int yi = cp.yCoord;
-      for (int xf = 0; xf < WIDTH; xf++)
-      {
-         for (int yf = 0; yf < HEIGHT; yf++)
-         {
-
-            ChessMove possMove = new ChessMove(cp, xf, yf);
-            if (leadsToCheck(possMove)) //if it puts mover in check, disregard
-            {
-               continue;
-            }
-            if (cp.canMove(xf, yf)           // piece moves this way
-                  && pathIsClear(cp, xf, yf) // no pieces in the way
-                  && spaceIsEmpty(xf, yf))   // space is empty
-            {
-               moveList.add(possMove);
-            }
-            else if (canCapture(cp, xf, yf)
-                  && !spaceIsEmpty(xf, yf)
-                  && spaceIsOpen(xf, yf, cp.getColor()))
-            {
-               possMove.captures = true;
-               moveList.add(possMove);
-            }
-         }
-      }
-      return moveList;
-   }
-
-   /**
-    This method finds all possible moves for all pieces of the given color.
-    Doesn't consider castling or en passant.
-
-    @param color color that is moving
-    @return ArrayList - list of all moves
-    */
-   public ArrayList<ChessMove> findAllMoves(PieceColor color)
-   {
-      ArrayList<ChessMove> moveList = new ArrayList<>();
-      for (int i = 0; i < WIDTH; i++)
-      {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            ChessPiece current = getPieceAt(i, j);
-            if (current == null)
-            {
-               continue;
-            }
-            if (current.getColor() == color)
-            {
-               moveList.addAll(findMoves(current));
-            }
-         }
-      }
-      return moveList;
-   }
-
-   /**
-    This method determines whether a move will result in the moving player
-    being in check.
-
-    @param cm move to execute
-    @return - whether or not check is a result of this move
-    */
-   public boolean leadsToCheck(ChessMove cm)
-   {
-      ChessBoard temp = advancePosition(cm);
-      return temp.checkForCheck(cm.piece.getColor());
-   }
-
-   /**
-    This method makes the given move and returns a copy of the resulting
-    board.
-
-    @param cm move to execute
-    @return ChessBoard - resulting board position after the move
-    */
-   public ChessBoard advancePosition(ChessMove cm)
-   {
-      ChessBoard nextNode = new ChessBoard(this);
-      int xi, xf, yi, yf;
-      xi = cm.piece.xCoord;
-      yi = cm.piece.yCoord;
-      xf = cm.getXDest();
-      yf = cm.getYDest();
-      nextNode.replacePiece(xi, yi, xf, yf);
-      //TODO - consider castling, where two pieces are moved
-      if (nextNode.getPieceAt(xf, yf) instanceof King // castling concerns
-            || nextNode.getPieceAt(xf, yf) instanceof Rook)
-      {
-         nextNode.getPieceAt(xf, yf).hasMoved = true;
-      }
-      nextNode.mobilityRating = cm.getMobilityRating();
-      nextNode.materialRating = cm.getMaterialRating();
-      return nextNode;
-   }
-
-   /**
     Checks the current board position to see if one side is checkmated
 
     @param playerToMove color whose move is next and who could be mated
@@ -653,40 +422,36 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Returns all the pieces of the given color in a list.
-   
-   @param color color whose pieces should be included
-   @return ArrayList - list of pieces for this color
-   */
-   public ArrayList<ChessPiece> getPieces(PieceColor color)
+    Checks to see that board position is legal. Ensures the following: each
+    color has exactly one king, kings are not both in check
+
+    @return boolean - whether position is legal as described above
+    */
+   public boolean checkPositionIsLegal()
    {
-      ArrayList<ChessPiece> pieces = new ArrayList<>();
-      for (int i = 0; i < WIDTH; i++)
+      if (!(checkSingleKing(PieceColor.WHITE)
+            && checkSingleKing(PieceColor.BLACK)))
       {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            if (getPieceAt(i, j) == null)
-            {
-               continue;
-            }
-            if (getPieceAt(i, j).getColor() == color)
-            {
-               pieces.add(getPieceAt(i, j));
-            }
-         }
+         return false;
       }
-      return pieces;
+
+      if (checkForCheck(PieceColor.WHITE) && checkForCheck(PieceColor.BLACK))
+      {
+         return false;
+      }
+
+      return true;
    }
 
    /**
-    Custom find method because using .equals won't work if you don't know the
-    coordinates ahead of time
+    Checks to see if the given color has exactly one king on the board.
 
-    @param c color of King to find
-    @return King - king of this color or null if not found
+    @param c color whose pieces should be checked
+    @return boolean - true if c has exactly one king, false otherwise
     */
-   private King findKing(PieceColor c)
+   private boolean checkSingleKing(PieceColor c)
    {
+      int numKings = 0;
       for (int i = 0; i < WIDTH; i++)
       {
          for (int j = 0; j < HEIGHT; j++)
@@ -698,11 +463,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             }
             if (current instanceof King && current.getColor() == c)
             {
-               return (King) current;
+               numKings++;
             }
          }
       }
-      return null;
+      return numKings == 1;
    }
 
    /**
@@ -819,6 +584,37 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
+    Compares two chessboards to see which one is greater. Compares first both
+    boards' material rating, then if those are equal looks at both boards'
+    mobility rating.
+
+    @param cb1 first board to be compared
+    @param cb2 second board to be compared
+    @return int - 1 if second board is greater, 0 if both are equal, -1
+    otherwise
+    */
+   @Override
+   public int compare(ChessBoard cb1, ChessBoard cb2)
+   {
+      if (cb1.materialRating > cb2.materialRating)
+      {
+         return 1;
+      }
+      if (cb1.materialRating == cb2.materialRating)
+      {
+         if (cb1.mobilityRating > cb2.mobilityRating)
+         {
+            return 1;
+         }
+         if (cb1.mobilityRating == cb2.mobilityRating)
+         {
+            return 0;
+         }
+      }
+      return -1;
+   }
+
+   /**
     This method compares this to a given Chess Board cb to see which is
     greater. Compares first the material rating, if both boards' are equal,
     checks their mobility rating.
@@ -912,6 +708,197 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          }
       }
       return null;
+   }
+
+   /**
+    This method finds all possible moves for all pieces of the given color.
+    Doesn't consider castling or en passant.
+
+    @param color color that is moving
+    @return ArrayList - list of all moves
+    */
+   public ArrayList<ChessMove> findAllMoves(PieceColor color)
+   {
+      ArrayList<ChessMove> moveList = new ArrayList<>();
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            ChessPiece current = getPieceAt(i, j);
+            if (current == null)
+            {
+               continue;
+            }
+            if (current.getColor() == color)
+            {
+               moveList.addAll(findMoves(current));
+            }
+         }
+      }
+      return moveList;
+   }
+
+   /**
+    This method finds all legal moves for this piece on this board.
+    Doesn't consider castling or en passant.
+
+    @param cp piece whose moves are being generated
+    @return ArrayList - list of all moves that cp can legally take
+    */
+   public ArrayList<ChessMove> findMoves(ChessPiece cp)
+   {
+      ArrayList<ChessMove> moveList = new ArrayList<>();
+      PieceColor color = cp.getColor();
+      int xi = cp.xCoord;
+      int yi = cp.yCoord;
+      for (int xf = 0; xf < WIDTH; xf++)
+      {
+         for (int yf = 0; yf < HEIGHT; yf++)
+         {
+
+            ChessMove possMove = new ChessMove(cp, xf, yf);
+            if (leadsToCheck(possMove)) //if it puts mover in check, disregard
+            {
+               continue;
+            }
+            if (cp.canMove(xf, yf)           // piece moves this way
+                  && pathIsClear(cp, xf, yf) // no pieces in the way
+                  && spaceIsEmpty(xf, yf))   // space is empty
+            {
+               moveList.add(possMove);
+            }
+            else if (canCapture(cp, xf, yf)
+                  && !spaceIsEmpty(xf, yf)
+                  && spaceIsOpen(xf, yf, cp.getColor()))
+            {
+               possMove.captures = true;
+               moveList.add(possMove);
+            }
+         }
+      }
+      return moveList;
+   }
+
+   /**
+    Custom find method because using .equals won't work if you don't know the
+    coordinates ahead of time
+
+    @param c color of King to find
+    @return King - king of this color or null if not found
+    */
+   private King findKing(PieceColor c)
+   {
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            ChessPiece current = getPieceAt(i, j);
+            if (current == null)
+            {
+               continue;
+            }
+            if (current instanceof King && current.getColor() == c)
+            {
+               return (King) current;
+            }
+         }
+      }
+      return null;
+   }
+
+   /**
+    Returns the piece at the given board coordinates
+
+    @param row row of piece, rows start at 0
+    @param col column of piece, columns start at 0
+    @return ChessPiece - chess piece that is at the given coordinates
+    */
+   public final ChessPiece getPieceAt(int row, int col)
+   {
+      return pieceArray[row][col];
+   }
+
+   /**
+   Returns all the pieces of the given color in a list.
+   
+   @param color color whose pieces should be included
+   @return ArrayList - list of pieces for this color
+   */
+   public ArrayList<ChessPiece> getPieces(PieceColor color)
+   {
+      ArrayList<ChessPiece> pieces = new ArrayList<>();
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            if (getPieceAt(i, j) == null)
+            {
+               continue;
+            }
+            if (getPieceAt(i, j).getColor() == color)
+            {
+               pieces.add(getPieceAt(i, j));
+            }
+         }
+      }
+      return pieces;
+   }
+
+   /**
+    Returns all the pieces on the board in a 2D array. The first index
+    specifies the 'x' position on the board and the second index specifies the
+    'y' position on the board.
+
+    @return ChessPiece[][] - array of pieces
+    */
+   public ChessPiece[][] getPiecesArray()
+   {
+      ChessPiece[][] copy = new ChessPiece[WIDTH][HEIGHT];
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            if (getPieceAt(i, j) != null)
+            {
+               copy[i][j] = getPieceAt(i, j);
+            }
+         }
+      }
+      return copy;
+   }
+
+   /**
+    Returns all the pieces on the board in a list.
+
+    @return List - list of pieces that are on this board
+    */
+   public ArrayList<ChessPiece> getPiecesList()
+   {
+      ArrayList<ChessPiece> tempList = new ArrayList<>();
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            if (getPieceAt(i, j) != null)
+            {
+               tempList.add(getPieceAt(i, j));
+            }
+         }
+      }
+      return tempList;
+   }
+
+   /**
+    This method determines whether a move will result in the moving player
+    being in check.
+
+    @param cm move to execute
+    @return - whether or not check is a result of this move
+    */
+   public boolean leadsToCheck(ChessMove cm)
+   {
+      ChessBoard temp = advancePosition(cm);
+      return temp.checkForCheck(cm.piece.getColor());
    }
 
    /**
@@ -1022,34 +1009,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Returns whether there is a piece present at the given coordinates
-   
-   @param x x coordinate to be checked for a piece
-   @param y y coordinate to be checked for a piece
-   @return boolean - true if a piece is present, false otherwise
-   */
-   public boolean spaceIsEmpty(int x, int y)
-   {
-      return pieceArray[x][y] == null;
-   }
-
-   /**
-    Like spaceIsEmpty but also allows a piece of the opposite color to be on
-    the square
-
-    @param x x coordinate to be checked for a piece
-    @param y y coordinate to be checked for a piece
-    @param color color of piece moving to this space, so opposite colored
-    piece can be present
-    @return boolean - true if no piece or piece of opposite color, false
-    otherwise
-    */
-   public boolean spaceIsOpen(int x, int y, PieceColor color)
-   {
-      return spaceIsEmpty(x, y) || pieceArray[x][y].getColor() != color;
-   }
-
-   /**
    Places the piece currently at (xi, yi) at (xf, yf) and makes (xi, yi) empty.
    
    @param xi initial x coordinate
@@ -1065,6 +1024,48 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       setPieceAt(getPieceAt(xi, yi), xf, yf);
       setPieceAt(null, xi, yi);
+   }
+
+   /**
+    Sets the piece at the given board coordinates
+
+    @param cp chess piece to place at these coordinates
+    @param x column piece is in, columns start at 0
+    @param y row piece is in, rows start at 0
+    */
+   public final void setPieceAt(ChessPiece cp, int x, int y)
+   {
+      pieceArray[x][y] = cp;
+      if(cp != null)
+         cp.movePiece(x, y);
+   }
+   
+   /**
+   Returns whether there is a piece present at the given coordinates
+   
+   @param x x coordinate to be checked for a piece
+   @param y y coordinate to be checked for a piece
+   @return boolean - true if a piece is present, false otherwise
+   */
+   public boolean spaceIsEmpty(int x, int y)
+   {
+      return pieceArray[x][y] == null;
+   }
+   
+   /**
+    Like spaceIsEmpty but also allows a piece of the opposite color to be on
+    the square
+
+    @param x x coordinate to be checked for a piece
+    @param y y coordinate to be checked for a piece
+    @param color color of piece moving to this space, so opposite colored
+    piece can be present
+    @return boolean - true if no piece or piece of opposite color, false
+    otherwise
+    */
+   public boolean spaceIsOpen(int x, int y, PieceColor color)
+   {
+      return spaceIsEmpty(x, y) || pieceArray[x][y].getColor() != color;
    }
 
    /**
