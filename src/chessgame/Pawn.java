@@ -118,13 +118,16 @@ public class Pawn extends ChessPiece
    
    /**
    This method checks to see if two pawns are the same.
+   
+   @param obj - 
+   @return whether obj is equal to this
    */
    @Override
    public boolean equals(Object obj)
    {
-      if (obj instanceof Knight)
+      if (obj instanceof Pawn)
       {
-         Knight cp = (Knight) obj;
+         Pawn cp = (Pawn) obj;
          return xCoord == cp.xCoord && 
                 yCoord == cp.yCoord && 
                 color == cp.color;

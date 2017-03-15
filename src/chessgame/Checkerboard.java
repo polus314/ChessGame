@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 
@@ -109,6 +110,22 @@ public class Checkerboard
    public void setSelectedPiece(ChessPiece cp)
    {
       selectedPiece = cp;
+   }
+   
+   public ArrayList<ChessPiece> getPiecesList()
+   {
+      ArrayList<ChessPiece> piecesList = new ArrayList<>();
+      for(int i = 0; i < NUM_COLS; i++)
+      {
+         for(int j = 0; j < NUM_ROWS; j++)
+         {
+            ChessPiece current = pieces[i][j];
+            if(current == null)
+               continue;
+            piecesList.add(current);
+         }
+      }
+      return piecesList;
    }
 
    /**

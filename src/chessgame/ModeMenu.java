@@ -1,10 +1,8 @@
 package chessgame;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -20,13 +18,17 @@ public class ModeMenu extends JPanel implements ActionListener
    
    public ModeMenu()
    {
-      init();
+      initComponents();
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+      
+      add(btn_singlePlayer);
+      add(btn_versus);
+      add(btn_setUp);  
       
       mode = GameMode.UNDECIDED;
    }
    
-   private void init()
+   private void initComponents()
    {
       btn_singlePlayer = new JButton("Single Player");
       btn_singlePlayer.setMnemonic(KeyEvent.VK_S);
@@ -42,12 +44,6 @@ public class ModeMenu extends JPanel implements ActionListener
       btn_setUp.setMnemonic(KeyEvent.VK_U);
       btn_setUp.setActionCommand("Setup");
       btn_setUp.addActionListener(this);
-      
-      add(btn_singlePlayer);
-      add(Box.createRigidArea(new Dimension(0, 10)));
-      add(btn_versus);
-      add(Box.createRigidArea(new Dimension(0, 10)));
-      add(btn_setUp);  
    }
    
    @Override
@@ -58,21 +54,22 @@ public class ModeMenu extends JPanel implements ActionListener
       switch(command)
       {
          case "Single" : 
-            mode = GameMode.SINGLE;
+            setGameMode(GameMode.SINGLE);
             break;
          case "Versus" :
-            mode = GameMode.VERSUS;
+           setGameMode(GameMode.VERSUS);
             break;
          case "Setup" :
-            mode = GameMode.SET_UP;
+            setGameMode(GameMode.SET_UP);
             break;
       }
-      this.firePropertyChange("mode", oldMode, mode);
    }
    
    public void setGameMode(GameMode gm)
    {
-       this.mode = gm;
+      GameMode oldMode = mode;
+       mode = gm;
+       firePropertyChange("mode", oldMode, mode);
    }
    
    public GameMode getMode()

@@ -170,6 +170,49 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       return -1;
    }
+   
+   /**
+   Checks to see that board position is legal. Ensures the following:
+      - Each color has exactly one king
+      - Kings are not both in check
+   
+   @return boolean - if position is legal as described above
+   */
+   public boolean checkPositionIsLegal()
+   {
+      if(!(checkSingleKing(PieceColor.WHITE) && 
+           checkSingleKing(PieceColor.BLACK)))
+            return false;
+      
+      if(checkForCheck(PieceColor.WHITE) && checkForCheck(PieceColor.BLACK))
+         return false;
+      
+      return true;
+   }
+   
+   /**
+   Checks to see if the given color has exactly one king on the board.
+   
+   @param c - color whose pieces should be checked
+   @return true if c has exactly one king, false otherwise
+   */
+   private boolean checkSingleKing(PieceColor c)
+   {
+      int numKings = 0;
+      for(int i = 0; i < 8; i++)
+      {
+         for(int j = 0; j < 8; j++)
+         {
+            ChessPiece current = getPieceAt(i,j);
+            if(current == null)
+               continue;
+            if(current instanceof King && current.getColor() == c)
+               numKings++;
+         }
+      }
+      return numKings == 1;
+   }
+   
    /**
     Returns the piece at the given board coordinates
 

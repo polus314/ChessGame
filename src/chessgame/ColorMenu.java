@@ -33,7 +33,7 @@ public class ColorMenu extends JPanel implements ActionListener
       
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
       
-      chosenColor = PieceColor.WHITE;
+      chosenColor = null;
    }
    
    @Override

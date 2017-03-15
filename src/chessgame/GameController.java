@@ -16,7 +16,6 @@ public class GameController
    private AI deepBlue;
    private ArrayList<ChessMove> moveList;
    private GameMode mode;
-   private boolean moveFinished;
    
    /**
    Default constructor, sets board to standard starting position and
@@ -30,12 +29,16 @@ public class GameController
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
       mode = GameMode.UNDECIDED;
-      moveFinished = false;
    }
    
    public void setGameMode(GameMode m)
    {
       mode = m;
+   }
+   
+   public GameMode getGameMode()
+   {
+      return mode;
    }
    
    public ArrayList<ChessPiece> getPiecesList()
@@ -61,6 +64,25 @@ public class GameController
    public ArrayList<ChessMove> getMoveList()
    {
       return moveList;
+   }
+   
+   /**
+   Sets the board with the given list of pieces IF the resulting position is
+   legal. If position is illegal, does nothing. Criteria for legality are 
+   listed in ChessBoard.checkPositionIsLegal()
+   
+   @param pieces - list of pieces specifying the board position to set up
+   @return whether board was legal and position was updated
+   */
+   public boolean setBoardPosition(ArrayList<ChessPiece> pieces)
+   {
+      ChessBoard temp = new ChessBoard(pieces);
+      if(temp.checkPositionIsLegal())
+      {
+         board = temp;
+         return true;
+      }
+      return false;
    }
    
    /**
@@ -276,7 +298,6 @@ public class GameController
       }
       selectedPiece = null;
       playerToMove = playerToMove.opposite();
-      moveFinished = true;
       deepBlue = new AI(board, playerToMove);
       moveList.add(move);
    }
