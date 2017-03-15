@@ -15,8 +15,9 @@ import javax.imageio.ImageIO;
 
 public class Checkerboard
 {   
-   public static final int NUM_ROWS = ChessBoard.NUM_ROWS;
-   public static final int NUM_COLS = ChessBoard.NUM_COLS;
+   // TODO - change this to width and height as well
+   public static final int NUM_ROWS = ChessBoard.HEIGHT;
+   public static final int NUM_COLS = ChessBoard.WIDTH;
    
    public static final int CENTERING_AMT_Y = 25;
    public static final int CENTERING_AMT_X = 12;

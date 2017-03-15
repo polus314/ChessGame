@@ -29,4 +29,12 @@ public enum PieceColor
       else //(this == BLACK)
          return "Black";
    }
+   
+   public String oneLetter()
+   {
+      if(this == WHITE)
+         return "W";
+      else //(this == BLACK)
+         return "B";
+   }
 }

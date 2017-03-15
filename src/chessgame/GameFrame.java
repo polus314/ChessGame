@@ -336,6 +336,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       System.out.println("color from ColorMenu: " + colorMenu.getColor() + "\n");
       
       System.out.println("MoveList:" + controller.getMoveList().toString());
+      System.out.println("Board: \n" + new ChessBoard().toString());
    }
    
 //*/ // DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
