@@ -8,26 +8,29 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 /**
- 
-@author jppolecat
-*/
+ This panel implements a menu where the user can choose which mode they would
+ like to the game to be in. See GameMode.java for descriptions of each mode.
+
+ @author John Polus
+ */
 public class ModeMenu extends JPanel implements ActionListener
 {
+
    private JButton btn_singlePlayer, btn_versus, btn_setUp;
    private GameMode mode;
-   
+
    public ModeMenu()
    {
       initComponents();
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-      
+
       add(btn_singlePlayer);
       add(btn_versus);
-      add(btn_setUp);  
-      
+      add(btn_setUp);
+
       mode = GameMode.UNDECIDED;
    }
-   
+
    private void initComponents()
    {
       btn_singlePlayer = new JButton("Single Player");
@@ -39,39 +42,39 @@ public class ModeMenu extends JPanel implements ActionListener
       btn_versus.setMnemonic(KeyEvent.VK_V);
       btn_versus.setActionCommand("Versus");
       btn_versus.addActionListener(this);
-      
+
       btn_setUp = new JButton("Set-Up Mode");
       btn_setUp.setMnemonic(KeyEvent.VK_U);
       btn_setUp.setActionCommand("Setup");
       btn_setUp.addActionListener(this);
    }
-   
+
    @Override
    public void actionPerformed(ActionEvent event)
    {
       GameMode oldMode = mode;
       String command = event.getActionCommand();
-      switch(command)
+      switch (command)
       {
-         case "Single" : 
+         case "Single":
             setGameMode(GameMode.SINGLE);
             break;
-         case "Versus" :
-           setGameMode(GameMode.VERSUS);
+         case "Versus":
+            setGameMode(GameMode.VERSUS);
             break;
-         case "Setup" :
+         case "Setup":
             setGameMode(GameMode.SET_UP);
             break;
       }
    }
-   
+
    public void setGameMode(GameMode gm)
    {
       GameMode oldMode = mode;
-       mode = gm;
-       firePropertyChange("mode", oldMode, mode);
+      mode = gm;
+      firePropertyChange("mode", oldMode, mode);
    }
-   
+
    public GameMode getMode()
    {
       return mode;
@@ -81,7 +84,7 @@ public class ModeMenu extends JPanel implements ActionListener
    {
       mode = m;
    }
-   
+
    public String toString()
    {
       return "Mode Menu";

@@ -1,8 +1,11 @@
 package chessgame;
 
 /**
+ This class represents a move that is taken in chess. It has an associated
+ piece that is moving, where that piece is moving to, and what type of move
+ it is, e.g. castling, moving to an empty square, capturing an enemy piece, etc.
 
- @author jppolecat
+ @author John Polus
  */
 public class ChessMove implements Comparable<ChessMove>
 {

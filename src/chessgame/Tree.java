@@ -3,8 +3,12 @@ package chessgame;
 import java.util.ArrayList;
 
 /**
+ Implements a basic tree structure that takes a type parameter T for the data
+ stored in the Tree. Allows an arbitrary number of children, contrasted with
+ just two for a binary tree.
 
- @author jppolecat
+ @param <T> type of the information stored in the Tree
+ @author John Polus
  */
 public class Tree<T>
 {

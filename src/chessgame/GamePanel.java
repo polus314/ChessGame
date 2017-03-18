@@ -1,10 +1,10 @@
 package chessgame;
 
 /**
+ This panel is responsible for drawing the chess game on the JFrame.
 
- @author: jppolecat
+ @author John Polus
  */
-
 import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import java.awt.Color;
@@ -13,11 +13,11 @@ import java.awt.Graphics;
 
 public class GamePanel extends JPanel
 {
+
    public Checkerboard myBoard;
 
    /**
-    This creates the game panel which is responsible for drawing the chess
-    board
+    Default constructor, initializes the Checkerboard
     */
    public GamePanel()
    {
@@ -25,26 +25,28 @@ public class GamePanel extends JPanel
       setBorder(BorderFactory.createLineBorder(Color.black));
       setMinimumSize(new Dimension(425, 425));
    }
-   
+
    @Override
    public Dimension getPreferredSize()
    {
       return new Dimension(250, 200);
    }
-   
+
    /**
-   This method is used for painting the panel, calls super as well as the
-   paintBoard() method from Checkerboard class, which does most of the actual
-   work
-   @param g 
-   */
+    This method is used for painting the panel, calls super as well as the
+    paintBoard() method from Checkerboard class, which does most of the actual
+    work
+
+    @param g
+    */
+   @Override
    public void paintComponent(Graphics g)
    {
       super.paintComponent(g);
-      
+
       myBoard.paintBoard(g);
    }
-   
+
    // KEPT FOR REFERENCE FOR WHEN I IMPLEMENT THIS SOMEWHERE ELSE ON THE FRAME
 //
 //   /**

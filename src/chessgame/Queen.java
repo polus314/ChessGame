@@ -1,11 +1,12 @@
 package chessgame;
 
 /**
- This class is for the movements of the Queen piece
- */
-/**
+ This class represents the Queen chess piece. The Queen is the most powerful
+ piece, combining the movements of the Rook and Bishop, and as a result is the
+ (second) most valuable piece (behind the King). The Queen is one of the
+ "major" pieces along with the Rook.
 
- @author jppolecat
+ @author John Polus
  */
 public class Queen extends ChessPiece
 {
@@ -66,13 +67,13 @@ public class Queen extends ChessPiece
    {
       return color.toString() + " Queen";
    }
-   
+
    /**
-   Returns the one letter used in identifying this piece when recording chess
-   moves
-   
-   @return String - string of length 1, identifies this as a queen
-   */
+    Returns the one letter used in identifying this piece when recording chess
+    moves
+
+    @return String - string of length 1, identifies this as a queen
+    */
    @Override
    public String oneLetterIdentifier()
    {
@@ -103,26 +104,26 @@ public class Queen extends ChessPiece
       }
       return true;
    }
-   
+
    @Override
    public ChessPiece copyOfThis()
    {
       return new Queen(this);
    }
-   
+
    /**
-   This method checks to see if two queens are the same.
-   */
+    This method checks to see if two queens are the same.
+    */
    @Override
    public boolean equals(Object obj)
    {
       if (obj instanceof Queen)
       {
          Queen cp = (Queen) obj;
-         return xCoord == cp.xCoord && 
-                yCoord == cp.yCoord && 
-                color == cp.color;
+         return xCoord == cp.xCoord
+               && yCoord == cp.yCoord
+               && color == cp.color;
       }
       return false;
-   }  
+   }
 }

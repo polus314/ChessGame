@@ -1,9 +1,3 @@
-/**
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
-*/
-
 package chessgame;
 
 import java.awt.event.ActionEvent;
@@ -14,11 +8,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 /**
- 
-@author jppolecat
-*/
+ This class implements a menu where a certain type of chess piece can be
+ selected.
+
+ @author John Polus
+ */
 public class PieceMenu extends JPanel implements ActionListener
 {
+
    private static final String AC_KING = "king";
    private static final String AC_QUEEN = "queen";
    private static final String AC_ROOK = "rook";
@@ -26,12 +23,12 @@ public class PieceMenu extends JPanel implements ActionListener
    private static final String AC_KNIGHT = "knight";
    private static final String AC_PAWN = "pawn";
    private static final String AC_EMPTY = "empty";
-   
+
    // TODO - change to btn_king etc.
-   public final JButton kButton, qButton, rButton, bButton, 
+   public final JButton kButton, qButton, rButton, bButton,
          nButton, pButton, eButton;
    private ChessPiece piece;
-   
+
    public PieceMenu()
    {
       kButton = new JButton("King");
@@ -41,27 +38,27 @@ public class PieceMenu extends JPanel implements ActionListener
       qButton = new JButton("Queen");
       qButton.setMnemonic(KeyEvent.VK_Q);
       qButton.setActionCommand(AC_QUEEN);
-      
+
       rButton = new JButton("Rook");
       rButton.setMnemonic(KeyEvent.VK_R);
       rButton.setActionCommand(AC_ROOK);
-      
+
       bButton = new JButton("Bishop");
       bButton.setMnemonic(KeyEvent.VK_B);
       bButton.setActionCommand(AC_BISHOP);
-      
+
       nButton = new JButton("Knight");
       nButton.setMnemonic(KeyEvent.VK_N);
       nButton.setActionCommand(AC_KNIGHT);
-      
+
       pButton = new JButton("Pawn");
       pButton.setMnemonic(KeyEvent.VK_P);
       pButton.setActionCommand(AC_PAWN);
-      
+
       eButton = new JButton("Empty");
       eButton.setMnemonic(KeyEvent.VK_E);
       eButton.setActionCommand(AC_EMPTY);
-      
+
       add(kButton);
       add(qButton);
       add(rButton);
@@ -69,10 +66,9 @@ public class PieceMenu extends JPanel implements ActionListener
       add(nButton);
       add(pButton);
       add(eButton);
-      
-      
+
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-      
+
       kButton.addActionListener(this);
       qButton.addActionListener(this);
       rButton.addActionListener(this);
@@ -81,27 +77,34 @@ public class PieceMenu extends JPanel implements ActionListener
       pButton.addActionListener(this);
       eButton.addActionListener(this);
    }
-   
+
    @Override
    public void actionPerformed(ActionEvent event)
    {
       ChessPiece oldPiece = piece;
       String command = event.getActionCommand();
-      switch(command)
+      switch (command)
       {
-         case AC_KING: piece = new King();
+         case AC_KING:
+            piece = new King();
             break;
-         case AC_QUEEN: piece = new Queen();
+         case AC_QUEEN:
+            piece = new Queen();
             break;
-         case AC_ROOK: piece = new Rook();
+         case AC_ROOK:
+            piece = new Rook();
             break;
-         case AC_BISHOP: piece = new Bishop();
+         case AC_BISHOP:
+            piece = new Bishop();
             break;
-         case AC_KNIGHT: piece = new Knight();
+         case AC_KNIGHT:
+            piece = new Knight();
             break;
-         case AC_PAWN: piece = new Pawn();
+         case AC_PAWN:
+            piece = new Pawn();
             break;
-         case AC_EMPTY: piece = null;
+         case AC_EMPTY:
+            piece = null;
             break;
          default:
             return;
@@ -109,12 +112,12 @@ public class PieceMenu extends JPanel implements ActionListener
       repaint();
       this.firePropertyChange("piece", oldPiece, piece);
    }
-   
+
    public ChessPiece getPiece()
    {
       return piece;
    }
-   
+
    public String toString()
    {
       return "Piece Menu";

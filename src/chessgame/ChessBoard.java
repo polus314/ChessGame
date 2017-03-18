@@ -6,22 +6,25 @@ import java.util.List;
 
 /**
  This class creates a 64 square board that holds ChessPieces and enforces that
- only legal moves are made.
+ only legal moves are made, e.g. pawns cannot move backwards, a player does
+ not move into check, or a player doesn't castling after moving their king.
 
- @author jppolecat
+ @author John Polus
  */
 public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard>
 {
+
    // Length of board along x - axis, in number of squares
+
    public static final int WIDTH = 8;
    // Length of board along y - axis, in number of squares
    public static final int HEIGHT = 8;
-   
+
    private static final int HOME_ROW_B = 0;
    private static final int HOME_ROW_W = 7;
    private static final int PAWN_ROW_B = 1;
    private static final int PAWN_ROW_W = 6;
-   
+
    private static final int K_ROOK_X = 7;
    private static final int K_BISHOP_X = 6;
    private static final int K_KNIGHT_X = 5;
@@ -31,7 +34,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    private static final int Q_KNIGHT_X = 1;
    private static final int Q_ROOK_X = 0;
 
-   private ChessPiece[][] pieceArray;
+   private final ChessPiece[][] pieceArray;
 
    public float mobilityRating;
    public float materialRating;
@@ -162,7 +165,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    /**
     This method determines whether a piece can capture another piece at the
     given coordinates, i.e., whether the piece can move there, except for
-    pawns. Does not check if piece is present at (xDest, yDest) or  is of the 
+    pawns. Does not check if piece is present at (xDest, yDest) or is of the
     opposite color. Does check that path is clear though.
 
     @param cp piece that is potentially capturing
@@ -208,8 +211,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    /**
     Determines if the King of the given color is able to castle king-side.
-    Factors considered are: open path, king and rook have not moved, king
-    is not in check
+    Factors considered are: open path, king and rook have not moved, king is
+    not in check
 
     @param color player who is trying to castle
     @return boolean - true if castling is legal, false otherwise
@@ -259,8 +262,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    /**
     Determines if the King of the given color is able to castle queen-side.
-    Factors considered are: open path, king and rook have not moved, king
-    is not in check
+    Factors considered are: open path, king and rook have not moved, king is
+    not in check
 
     @param color player who is trying to castle
     @return boolean - true if castling is legal, false otherwise
@@ -282,8 +285,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          return false;
       }
 
-      if (!spaceIsEmpty(Q_KNIGHT_X, y) || !spaceIsEmpty(Q_BISHOP_X, y) || 
-          !spaceIsEmpty(QUEEN_X, y))
+      if (!spaceIsEmpty(Q_KNIGHT_X, y) || !spaceIsEmpty(Q_BISHOP_X, y)
+            || !spaceIsEmpty(QUEEN_X, y))
       {
          return false;
       }
@@ -310,33 +313,35 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Attempts to execute the capture of the piece at (x,y) by attacker. Checks 
-   to make sure capture is legal (piece can move to that square and move won't
-   put this player in check).
-   
-   @param attacker piece attempting the capture
-   @param x x coordinate of piece being attacked
-   @param y y coordinate of piece being attacked
-   @return boolean - whether attacker successfully captured
-   */
+    Attempts to execute the capture of the piece at (x,y) by attacker. Checks
+    to make sure capture is legal (piece can move to that square and move
+    won't put this player in check).
+
+    @param attacker piece attempting the capture
+    @param x x coordinate of piece being attacked
+    @param y y coordinate of piece being attacked
+    @return boolean - whether attacker successfully captured
+    */
    public boolean capturePiece(ChessPiece attacker, int x, int y)
    {
-      if(attacker == null)
+      if (attacker == null)
+      {
          return false;
-      
+      }
+
       int xAtt = attacker.getX();
       int yAtt = attacker.getY();
       ChessBoard movedBoard = new ChessBoard(this);
-      ChessPiece defender = movedBoard.getPieceAt(x,y);
-      if(movedBoard.canCapture(attacker, x, y) && defender != null &&
-            defender.getColor() != attacker.getColor())
+      ChessPiece defender = movedBoard.getPieceAt(x, y);
+      if (movedBoard.canCapture(attacker, x, y) && defender != null
+            && defender.getColor() != attacker.getColor())
       {
          movedBoard.replacePiece(xAtt, yAtt, x, y);
-         if(!movedBoard.checkForCheck(attacker.getColor()))
+         if (!movedBoard.checkForCheck(attacker.getColor()))
          {
             replacePiece(xAtt, yAtt, x, y);
-            if (getPieceAt(x, y) instanceof King || 
-                  getPieceAt(x, y) instanceof Rook)
+            if (getPieceAt(x, y) instanceof King
+                  || getPieceAt(x, y) instanceof Rook)
             {
                getPieceAt(x, y).hasMoved = true;
             }
@@ -346,7 +351,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       return false;        // piece can't move to there, path is blocked, or
    }                       // space is empty or piece of same color
-   
+
    /**
     Attempts to castle according to the given move. Checks to make sure
     castling is legal from this position.
@@ -384,7 +389,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     King is found, returns false
 
     @param color color whose king would be in check
-    @return boolean - true if opposing player can capture King from this position
+    @return boolean - true if opposing player can capture King from this
+    position
     */
    public boolean checkForCheck(PieceColor color)
    {
@@ -398,9 +404,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          for (int j = 0; j < HEIGHT; j++)
          {
-            if (!spaceIsEmpty(i,j) && 
-                  canCapture(getPieceAt(i, j), king.xCoord, king.yCoord) &&
-                  getPieceAt(i, j).getColor() != color)
+            if (!spaceIsEmpty(i, j)
+                  && canCapture(getPieceAt(i, j), king.xCoord, king.yCoord)
+                  && getPieceAt(i, j).getColor() != color)
             {
                return true;
             }
@@ -690,13 +696,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     "equal".
 
     @param cp piece to be found
-    @return ChessPiece first ChessPiece on the ChessBoard that matches cp, or 
+    @return ChessPiece first ChessPiece on the ChessBoard that matches cp, or
     null if piece is not found
     */
    public ChessPiece find(ChessPiece cp)
    {
-      if(cp == null)
+      if (cp == null)
+      {
          return null;
+      }
       for (int i = 0; i < WIDTH; i++)
       {
          for (int j = 0; j < HEIGHT; j++)
@@ -739,8 +747,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-    This method finds all legal moves for this piece on this board.
-    Doesn't consider castling or en passant.
+    This method finds all legal moves for this piece on this board. Doesn't
+    consider castling or en passant.
 
     @param cp piece whose moves are being generated
     @return ArrayList - list of all moves that cp can legally take
@@ -761,7 +769,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             {
                continue;
             }
-            if (cp.canMove(xf, yf)           // piece moves this way
+            if (cp.canMove(xf, yf) // piece moves this way
                   && pathIsClear(cp, xf, yf) // no pieces in the way
                   && spaceIsEmpty(xf, yf))   // space is empty
             {
@@ -819,11 +827,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Returns all the pieces of the given color in a list.
-   
-   @param color color whose pieces should be included
-   @return ArrayList - list of pieces for this color
-   */
+    Returns all the pieces of the given color in a list.
+
+    @param color color whose pieces should be included
+    @return ArrayList - list of pieces for this color
+    */
    public ArrayList<ChessPiece> getPieces(PieceColor color)
    {
       ArrayList<ChessPiece> pieces = new ArrayList<>();
@@ -915,8 +923,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       int xi = mover.getX();
       int yi = mover.getY();
       ChessBoard movedBoard = new ChessBoard(this);
-      if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf) &&
-            spaceIsEmpty(xf, yf))
+      if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf)
+            && spaceIsEmpty(xf, yf))
       {
          movedBoard.replacePiece(xi, yi, xf, yf);
          if (!movedBoard.checkForCheck(mover.getColor()))
@@ -945,14 +953,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       for (int i = 0; i < WIDTH; i++)
       {
          ChessPiece pawn = getPieceAt(i, HOME_ROW_B);
-         if (pawn instanceof Pawn &&
-               pawn.getColor() == PieceColor.WHITE)
+         if (pawn instanceof Pawn
+               && pawn.getColor() == PieceColor.WHITE)
          {
             return pawn;
          }
          pawn = getPieceAt(i, HOME_ROW_W);
-         if (pawn instanceof Pawn &&
-               pawn.getColor() == PieceColor.BLACK)
+         if (pawn instanceof Pawn
+               && pawn.getColor() == PieceColor.BLACK)
          {
             return pawn;
          }
@@ -967,7 +975,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param mover piece whose path is being examined
     @param x x coordinate of destination
     @param y y coordinate of destination
-    @return boolean - true if the piece has nothing blocking it, false otherwise
+    @return boolean - true if the piece has nothing blocking it, false
+    otherwise
     */
    public boolean pathIsClear(ChessPiece mover, int x, int y)
    {
@@ -1009,13 +1018,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Places the piece currently at (xi, yi) at (xf, yf) and makes (xi, yi) empty.
-   
-   @param xi initial x coordinate
-   @param yi initial y coordinate
-   @param xf final x coordinate
-   @param yf final y coordinate
-   */
+    Places the piece currently at (xi, yi) at (xf, yf) and makes (xi, yi)
+    empty.
+
+    @param xi initial x coordinate
+    @param yi initial y coordinate
+    @param xf final x coordinate
+    @param yf final y coordinate
+    */
    public void replacePiece(int xi, int yi, int xf, int yf)
    {
       if (getPieceAt(xi, yi) != null)
@@ -1036,22 +1046,24 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    public final void setPieceAt(ChessPiece cp, int x, int y)
    {
       pieceArray[x][y] = cp;
-      if(cp != null)
+      if (cp != null)
+      {
          cp.movePiece(x, y);
+      }
    }
-   
+
    /**
-   Returns whether there is a piece present at the given coordinates
-   
-   @param x x coordinate to be checked for a piece
-   @param y y coordinate to be checked for a piece
-   @return boolean - true if a piece is present, false otherwise
-   */
+    Returns whether there is a piece present at the given coordinates
+
+    @param x x coordinate to be checked for a piece
+    @param y y coordinate to be checked for a piece
+    @return boolean - true if a piece is present, false otherwise
+    */
    public boolean spaceIsEmpty(int x, int y)
    {
       return pieceArray[x][y] == null;
    }
-   
+
    /**
     Like spaceIsEmpty but also allows a piece of the opposite color to be on
     the square
@@ -1069,10 +1081,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-   Returns a string with each row of pieces on its own line.
-   
-   @return String - string representation of this ChessBoard
-   */
+    Returns a string with each row of pieces on its own line.
+
+    @return String - string representation of this ChessBoard
+    */
    @Override
    public String toString()
    {
@@ -1082,17 +1094,19 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          string += "\n";
          for (int j = 0; j < HEIGHT; j++)
          {
-            ChessPiece cp = getPieceAt(j,i);
-            if(cp == null)
+            ChessPiece cp = getPieceAt(j, i);
+            if (cp == null)
             {
                string = string + "  ";
             }
             else
             {
-               string = string + cp.getColor().oneLetter() + 
-                        cp.oneLetterIdentifier() + " ";
-               if(cp instanceof Pawn)
+               string = string + cp.getColor().oneLetter()
+                     + cp.oneLetterIdentifier() + " ";
+               if (cp instanceof Pawn)
+               {
                   string = string.trim() + "P ";
+               }
             }
          }
       }
