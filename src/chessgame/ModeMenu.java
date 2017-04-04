@@ -5,7 +5,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  This panel implements a menu where the user can choose which mode they would
@@ -13,40 +14,41 @@ import javax.swing.JPanel;
 
  @author John Polus
  */
-public class ModeMenu extends JPanel implements ActionListener
+public class ModeMenu extends JMenu implements ActionListener
 {
 
-   private JButton btn_singlePlayer, btn_versus, btn_setUp;
+   private JMenuItem item_singlePlayer, item_versus, item_setUp;
    private GameMode mode;
 
    public ModeMenu()
    {
+      super("Modes ");
       initComponents();
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-      add(btn_singlePlayer);
-      add(btn_versus);
-      add(btn_setUp);
+      add(item_singlePlayer);
+      add(item_versus);
+      add(item_setUp);
 
       mode = GameMode.UNDECIDED;
    }
 
    private void initComponents()
    {
-      btn_singlePlayer = new JButton("Single Player");
-      btn_singlePlayer.setMnemonic(KeyEvent.VK_S);
-      btn_singlePlayer.setActionCommand("Single");
-      btn_singlePlayer.addActionListener(this);
+      item_singlePlayer = new JMenuItem("Single Player");
+      item_singlePlayer.setMnemonic(KeyEvent.VK_S);
+      item_singlePlayer.setActionCommand("Single");
+      item_singlePlayer.addActionListener(this);
 
-      btn_versus = new JButton("Versus Mode");
-      btn_versus.setMnemonic(KeyEvent.VK_V);
-      btn_versus.setActionCommand("Versus");
-      btn_versus.addActionListener(this);
+      item_versus = new JMenuItem("Versus Mode");
+      item_versus.setMnemonic(KeyEvent.VK_V);
+      item_versus.setActionCommand("Versus");
+      item_versus.addActionListener(this);
 
-      btn_setUp = new JButton("Set-Up Mode");
-      btn_setUp.setMnemonic(KeyEvent.VK_U);
-      btn_setUp.setActionCommand("Setup");
-      btn_setUp.addActionListener(this);
+      item_setUp = new JMenuItem("Set-Up Mode");
+      item_setUp.setMnemonic(KeyEvent.VK_U);
+      item_setUp.setActionCommand("Setup");
+      item_setUp.addActionListener(this);
    }
 
    @Override
@@ -85,6 +87,7 @@ public class ModeMenu extends JPanel implements ActionListener
       mode = m;
    }
 
+   @Override
    public String toString()
    {
       return "Mode Menu";

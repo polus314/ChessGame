@@ -4,8 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  This class implements a menu where a certain type of chess piece can be
@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
  @author John Polus
  */
-public class PieceMenu extends JPanel implements ActionListener
+public class PieceMenu extends JMenu implements ActionListener
 {
 
    private static final String AC_KING = "king";
@@ -25,57 +25,58 @@ public class PieceMenu extends JPanel implements ActionListener
    private static final String AC_EMPTY = "empty";
 
    // TODO - change to btn_king etc.
-   public final JButton kButton, qButton, rButton, bButton,
-         nButton, pButton, eButton;
+   public final JMenuItem item_King, item_Queen, item_Rook, item_Bishop,
+         item_Knight, item_Pawn, item_Empty;
    private ChessPiece piece;
 
    public PieceMenu()
    {
-      kButton = new JButton("King");
-      kButton.setMnemonic(KeyEvent.VK_K);
-      kButton.setActionCommand(AC_KING);
+      super("Piece Types");
+      item_King = new JMenuItem("King");
+      item_King.setMnemonic(KeyEvent.VK_K);
+      item_King.setActionCommand(AC_KING);
 
-      qButton = new JButton("Queen");
-      qButton.setMnemonic(KeyEvent.VK_Q);
-      qButton.setActionCommand(AC_QUEEN);
+      item_Queen = new JMenuItem("Queen");
+      item_Queen.setMnemonic(KeyEvent.VK_Q);
+      item_Queen.setActionCommand(AC_QUEEN);
 
-      rButton = new JButton("Rook");
-      rButton.setMnemonic(KeyEvent.VK_R);
-      rButton.setActionCommand(AC_ROOK);
+      item_Rook = new JMenuItem("Rook");
+      item_Rook.setMnemonic(KeyEvent.VK_R);
+      item_Rook.setActionCommand(AC_ROOK);
 
-      bButton = new JButton("Bishop");
-      bButton.setMnemonic(KeyEvent.VK_B);
-      bButton.setActionCommand(AC_BISHOP);
+      item_Bishop = new JMenuItem("Bishop");
+      item_Bishop.setMnemonic(KeyEvent.VK_B);
+      item_Bishop.setActionCommand(AC_BISHOP);
 
-      nButton = new JButton("Knight");
-      nButton.setMnemonic(KeyEvent.VK_N);
-      nButton.setActionCommand(AC_KNIGHT);
+      item_Knight = new JMenuItem("Knight");
+      item_Knight.setMnemonic(KeyEvent.VK_N);
+      item_Knight.setActionCommand(AC_KNIGHT);
 
-      pButton = new JButton("Pawn");
-      pButton.setMnemonic(KeyEvent.VK_P);
-      pButton.setActionCommand(AC_PAWN);
+      item_Pawn = new JMenuItem("Pawn");
+      item_Pawn.setMnemonic(KeyEvent.VK_P);
+      item_Pawn.setActionCommand(AC_PAWN);
 
-      eButton = new JButton("Empty");
-      eButton.setMnemonic(KeyEvent.VK_E);
-      eButton.setActionCommand(AC_EMPTY);
+      item_Empty = new JMenuItem("Empty");
+      item_Empty.setMnemonic(KeyEvent.VK_E);
+      item_Empty.setActionCommand(AC_EMPTY);
 
-      add(kButton);
-      add(qButton);
-      add(rButton);
-      add(bButton);
-      add(nButton);
-      add(pButton);
-      add(eButton);
+      add(item_King);
+      add(item_Queen);
+      add(item_Rook);
+      add(item_Bishop);
+      add(item_Knight);
+      add(item_Pawn);
+      add(item_Empty);
 
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-      kButton.addActionListener(this);
-      qButton.addActionListener(this);
-      rButton.addActionListener(this);
-      bButton.addActionListener(this);
-      nButton.addActionListener(this);
-      pButton.addActionListener(this);
-      eButton.addActionListener(this);
+      item_King.addActionListener(this);
+      item_Queen.addActionListener(this);
+      item_Rook.addActionListener(this);
+      item_Bishop.addActionListener(this);
+      item_Knight.addActionListener(this);
+      item_Pawn.addActionListener(this);
+      item_Empty.addActionListener(this);
    }
 
    @Override
@@ -118,6 +119,7 @@ public class PieceMenu extends JPanel implements ActionListener
       return piece;
    }
 
+   @Override
    public String toString()
    {
       return "Piece Menu";

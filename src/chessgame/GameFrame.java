@@ -3,14 +3,17 @@ package chessgame;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
-import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -23,22 +26,22 @@ import javax.swing.SwingUtilities;
  */
 public class GameFrame extends JFrame implements ActionListener, PropertyChangeListener
 {
-
    private ModeMenu modeMenu;
    private GamePanel gamePanel;
    private ColorMenu colorMenu;
    private PieceMenu pieceMenu;
-   private JButton btn_mainMenu;
+   //private JButton btn_mainMenu;
    private boolean modeChanged;
+   private JMenuBar menuBar;
 
    private PieceColor humanPlayer;
    private PieceColor colorToAdd;
    private ChessPiece pieceToAdd;
    private GameController controller;
 
-   private static final int FRAME_HEIGHT = 650;
-   private static final int FRAME_WIDTH = 750;
-   private int topBorderHeight = 32;
+   private static final int FRAME_HEIGHT = 500;
+   private static final int FRAME_WIDTH = 500;
+   private int topBorderHeight = 58;
    private int leftBorderWidth = 8;
 
    public static final String WINDOW_TITLE = "John Polus's Chess Game";
@@ -88,10 +91,28 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       changeMode(GameMode.UNDECIDED);
       gamePanel.myBoard.setPieces(controller.getPiecesList());
 
-      btn_mainMenu = new JButton("Main Menu");
-      btn_mainMenu.setMnemonic(KeyEvent.VK_M);
-      btn_mainMenu.setActionCommand("Main Menu");
-      btn_mainMenu.addActionListener(this);
+//      btn_mainMenu = new JButton("Main Menu");
+//      btn_mainMenu.setMnemonic(KeyEvent.VK_M);
+//      btn_mainMenu.setActionCommand("Main Menu");
+//      btn_mainMenu.addActionListener(this);
+      
+      menuBar = new JMenuBar();
+      JMenu fileMenu = new JMenu(" File ");
+      menuBar.add(fileMenu);
+      
+      JMenuItem load = new JMenuItem("Load Position");
+      load.setActionCommand("Load");
+      load.addActionListener(this);
+      fileMenu.add(load);
+      
+      JMenuItem save = new JMenuItem("Save Position");
+      save.setActionCommand("Save");
+      save.addActionListener(this);
+      fileMenu.add(save);
+      
+      menuBar.add(modeMenu);
+      //menuBar.add(colorMenu);
+      //menuBar.add(pieceMenu);
 
       pieceMenu.addPropertyChangeListener(this);
       modeMenu.addPropertyChangeListener(this);
@@ -99,9 +120,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
-      add(modeMenu, BorderLayout.EAST);
+      //menuBar.add(btn_mainMenu, BorderLayout.EAST);
+      //add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
-      add(btn_mainMenu, BorderLayout.WEST);
+      this.setJMenuBar(menuBar);
 
       addMouseListener(new MouseAdapter()
       {
@@ -266,6 +288,36 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          case "Main Menu":
             changeMode(GameMode.UNDECIDED);
             break;
+         case "Save":
+            JFileChooser chooser = new JFileChooser();
+            File selectedFile;
+            if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
+            {
+               selectedFile = chooser.getSelectedFile();
+            }
+            else
+               return;
+            if(controller.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
+               System.out.println("Save Successful");
+            else
+               System.out.println("Save Failed");
+            break;
+         case "Load":
+            chooser = new JFileChooser();
+            if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
+            {
+               selectedFile = chooser.getSelectedFile();
+            }
+            else
+               return;
+            if(controller.loadPositionFromFile(selectedFile.getAbsolutePath()))
+            {
+               gamePanel.myBoard.setPieces(controller.getPiecesList());
+               System.out.println("Load Successful");
+            }
+            else
+               System.out.println("Load failed");
+            break;
       }
       refresh();
    }
@@ -303,19 +355,19 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       switch (controller.getGameMode())
       {
          case UNDECIDED:
-            add(modeMenu, BorderLayout.EAST);
+            menuBar.add(modeMenu, BorderLayout.EAST);
             break;
          case SINGLE:
             if (humanPlayer == null)
             {
-               add(colorMenu, BorderLayout.EAST);
+               menuBar.add(colorMenu, BorderLayout.EAST);
             }
             break;
          case VERSUS:
             break;
          case SET_UP:
-            add(pieceMenu, BorderLayout.SOUTH);
-            add(colorMenu, BorderLayout.EAST);
+            menuBar.add(colorMenu);
+            menuBar.add(pieceMenu);
             break;
       }
       modeChanged = false;

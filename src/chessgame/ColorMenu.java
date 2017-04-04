@@ -3,9 +3,10 @@ package chessgame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import java.awt.event.KeyEvent;
 import javax.swing.BoxLayout;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  This class implements a menu where the user can choose between black and
@@ -13,27 +14,28 @@ import javax.swing.BoxLayout;
 
  @author John Polus
  */
-public class ColorMenu extends JPanel implements ActionListener
+public class ColorMenu extends JMenu implements ActionListener
 {
 
-   private final JButton btn_black, btn_white;
+   private final JMenuItem item_black, item_white;
    private PieceColor chosenColor;
 
    public ColorMenu()
    {
-      btn_black = new JButton("Choose Black Pieces");
-      btn_black.setMnemonic(KeyEvent.VK_B);
-      btn_black.setActionCommand("Black");
+      super("Colors");
+      item_black = new JMenuItem("Choose Black Pieces");
+      item_black.setMnemonic(KeyEvent.VK_B);
+      item_black.setActionCommand("Black");
 
-      btn_white = new JButton("Choose White Pieces");
-      btn_white.setMnemonic(KeyEvent.VK_W);
-      btn_white.setActionCommand("White");
+      item_white = new JMenuItem("Choose White Pieces");
+      item_white.setMnemonic(KeyEvent.VK_W);
+      item_white.setActionCommand("White");
 
-      add(btn_black);
-      add(btn_white);
+      add(item_black);
+      add(item_white);
 
-      btn_black.addActionListener(this);
-      btn_white.addActionListener(this);
+      item_black.addActionListener(this);
+      item_white.addActionListener(this);
 
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 

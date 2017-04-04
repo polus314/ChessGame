@@ -2,6 +2,7 @@ package chessgame;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -312,14 +313,21 @@ public class GameController
       moveList.add(move);
    }
    
+   /**
+   Loads a board position from the given file. Returns true if the board is
+   able to be loaded successfully, false otherwise
+   
+   @param filename name of file to read from
+   @return whether board position was loaded successfully
+   */
    public boolean loadPositionFromFile(String filename)
    {
       FileInputStream file;
       byte [] buf;
       try {
          file = new FileInputStream(filename);
-         buf = new byte[64 + 8]; // 64 pieces plus 8 newlines
-         file.read(buf, 0, 64 + 8);
+         buf = new byte[1024];
+         file.read(buf, 0, 1024);
       }
       catch(FileNotFoundException fnfe)
       {
@@ -331,15 +339,89 @@ public class GameController
          System.out.println("File reading failed");
          return false;
       }
-      ArrayList<ChessPiece> position = new ArrayList<>();
+      
       String posString = new String(buf);
-      posString = posString.replace("\r\n", "");
-      for(int i = 0; i < 8; i++)
+      posString = posString.replace("\n", "");
+      posString = posString.replace(" ", "");
+      posString = posString.trim();
+      if(posString.length() != 64 * 2)
+         return false;
+      
+      for(int row = 0; row < 8; row++)
       {
-         for(int j = 0; j < 8; j++)
+         for(int col = 0; col < 8; col++)
          {
-            System.out.println(posString.charAt(i + j));
+            String nextPiece = posString.substring(0, 2);
+            if(!nextPiece.equals("--"))
+            {
+               ChessPiece cp = LoadPiece(nextPiece);
+               cp.xCoord = col;
+               cp.yCoord = row;
+               board.setPieceAt(cp, col, row);
+            }
+            else
+            {
+               board.setPieceAt(null, col, row);
+            }
+            posString = posString.substring(2);
          }
+      }
+      return true;
+   }
+   
+   /**
+   Creates a piece based on the given string input.
+   
+   @param loadString string that specifies what piece to create
+   @return new piece created based on loadString
+   */
+   private ChessPiece LoadPiece(String loadString)
+   {
+      PieceColor color;
+      if(loadString.charAt(0) == 'B')
+      {
+         color = PieceColor.BLACK;
+      }
+      else
+      {
+         color = PieceColor.WHITE;
+      }
+      switch(loadString.charAt(1))
+      {
+         case 'R': return new Rook(color);
+         case 'N': return new Knight(color);
+         case 'B': return new Bishop(color);
+         case 'K': return new King(color);
+         case 'Q': return new Queen(color);
+         default: return new Pawn(color);
+      }
+   }
+   
+   /**
+   Saves the given chess board's position to a file.
+   
+   @param cb board whose position should be saved
+   @param filename name of file to store position in
+   @return whether the position was saved successfully
+   */
+   public boolean savePositionToFile(ChessBoard cb, String filename)
+   {
+      FileOutputStream file;
+      byte buffer[] = cb.toString().getBytes();
+      try
+      {
+         if(!filename.endsWith(".txt"))
+            filename += ".txt";
+         file = new FileOutputStream(filename);
+         file.write(buffer);
+      }
+      catch(FileNotFoundException fnfe)
+      {
+         return false;
+      }
+      catch(IOException ioe)
+      {
+         return false;
       }
       return true;
    }
