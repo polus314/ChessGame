@@ -18,7 +18,7 @@ public class ColorMenu extends JMenu implements ActionListener
 {
 
    private final JMenuItem item_black, item_white;
-   private PieceColor chosenColor;
+   private ChessPiece.Color chosenColor;
 
    public ColorMenu()
    {
@@ -45,15 +45,15 @@ public class ColorMenu extends JMenu implements ActionListener
    @Override
    public void actionPerformed(ActionEvent event)
    {
-      PieceColor oldColor = chosenColor;
+      ChessPiece.Color oldColor = chosenColor;
       String command = event.getActionCommand();
       switch (command)
       {
          case "Black":
-            chosenColor = PieceColor.BLACK;
+            chosenColor = ChessPiece.Color.BLACK;
             break;
          case "White":
-            chosenColor = PieceColor.WHITE;
+            chosenColor = ChessPiece.Color.WHITE;
             break;
          default:
             return;
@@ -61,12 +61,12 @@ public class ColorMenu extends JMenu implements ActionListener
       firePropertyChange("color", oldColor, chosenColor);
    }
 
-   public PieceColor getColor()
+   public ChessPiece.Color getColor()
    {
       return chosenColor;
    }
 
-   public void setColor(PieceColor pc)
+   public void setColor(ChessPiece.Color pc)
    {
       chosenColor = pc;
    }

@@ -9,17 +9,25 @@ package chessgame;
  */
 public class ChessMove //implements Comparable<ChessMove>
 {
-   // TODO - don't associate ratings with a move should be associated with
-   // the board position
-   // Big project: will have to do while refactoring findBestMove in AI
-   //   A lot of the calculating done there uses moves and their ratings
+   /**
+   Enumerated type that describes the general type that a move is. 
+   NOTE: These types are mutually exclusive, unlike promotion, check, and
+     checkmate, which could be coincident with one or more of these. 
+   NORMAL - Covers most moves that are made
+   CASTLE_KS - King castles with the rook closer to him
+   CASTLE_QS - King castles with the rook further from him
+
+   @author John Polus
+   */
+  public enum Type
+  {
+     NORMAL, CASTLE_KS, CASTLE_QS;
+  }
+   
    public ChessPiece piece;
    private int xDest;
    private int yDest;
-   private MoveType moveType;
-//   private float materialRating;
-//   private float mobilityRating;
-//   private int hangRating;
+   private Type moveType;
    
    public boolean givesCheck = false;
    public boolean givesMate = false;
@@ -35,7 +43,7 @@ public class ChessMove //implements Comparable<ChessMove>
    {
       xDest = 7;
       yDest = 7;
-      moveType = MoveType.NORMAL;
+      moveType = Type.NORMAL;
    }
 
    public ChessMove(ChessPiece cp, int xD, int yD)
@@ -43,17 +51,17 @@ public class ChessMove //implements Comparable<ChessMove>
       piece = cp;
       xDest = xD;
       yDest = yD;
-      moveType = MoveType.NORMAL;
+      moveType = Type.NORMAL;
    }
 
-   public ChessMove(int xD, int yD, MoveType mt)
+   public ChessMove(int xD, int yD, Type mt)
    {
       xDest = xD;
       yDest = yD;
       moveType = mt;
    }
 
-   public void setMoveType(MoveType mt)
+   public void setMoveType(Type mt)
    {
       moveType = mt;
    }
@@ -108,7 +116,7 @@ public class ChessMove //implements Comparable<ChessMove>
 //      return mobilityRating;
 //   }
 
-   public MoveType getMoveType()
+   public Type getMoveType()
    {
       return moveType;
    }

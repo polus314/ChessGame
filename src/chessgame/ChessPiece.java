@@ -10,11 +10,38 @@ package chessgame;
  */
 public abstract class ChessPiece implements Comparable<ChessPiece>
 {
+   /**
+   Enumerated type for which player a piece belongs to. 
+   WHITE - player who moves first 
+   BLACK - player who moves second
 
+   @author John Polus
+   */
+   public enum Color
+   {
+      WHITE, BLACK;
+
+      public Color opposite()
+      {
+         return this == WHITE ? BLACK : WHITE;
+      }
+
+      @Override
+      public String toString()
+      {
+         return this == WHITE ? "White" : "Black";
+      }
+
+      public String oneLetter()
+      {
+         return this == WHITE ? "W" : "B";
+      }
+   }
+   
    protected int value;
    protected int xCoord;
    protected int yCoord;
-   protected PieceColor color;
+   protected Color color;
    protected boolean hasMoved;
 
    /*
@@ -26,7 +53,7 @@ public abstract class ChessPiece implements Comparable<ChessPiece>
       xCoord = 0;
       yCoord = 0;
       hasMoved = false;
-      color = PieceColor.WHITE;
+      color = Color.WHITE;
    }
 
    /*
@@ -71,12 +98,12 @@ public abstract class ChessPiece implements Comparable<ChessPiece>
    /*
     This geturns the color of the chess piece
     */
-   public PieceColor getColor()
+   public Color getColor()
    {
       return color;
    }
 
-   public void setColor(PieceColor c)
+   public void setColor(Color c)
    {
       color = c;
    }

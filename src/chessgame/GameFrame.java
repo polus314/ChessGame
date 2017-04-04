@@ -30,12 +30,11 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private GamePanel gamePanel;
    private ColorMenu colorMenu;
    private PieceMenu pieceMenu;
-   //private JButton btn_mainMenu;
    private boolean modeChanged;
    private JMenuBar menuBar;
 
-   private PieceColor humanPlayer;
-   private PieceColor colorToAdd;
+   private ChessPiece.Color humanPlayer;
+   private ChessPiece.Color colorToAdd;
    private ChessPiece pieceToAdd;
    private GameController controller;
 
@@ -85,16 +84,11 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       colorMenu = new ColorMenu();
       pieceMenu = new PieceMenu();
 
-      DEBUG = true;
+      DEBUG = false; //true;
       controller = new GameController();
-      colorToAdd = PieceColor.WHITE;
+      colorToAdd = ChessPiece.Color.WHITE;
       changeMode(GameMode.UNDECIDED);
       gamePanel.myBoard.setPieces(controller.getPiecesList());
-
-//      btn_mainMenu = new JButton("Main Menu");
-//      btn_mainMenu.setMnemonic(KeyEvent.VK_M);
-//      btn_mainMenu.setActionCommand("Main Menu");
-//      btn_mainMenu.addActionListener(this);
       
       menuBar = new JMenuBar();
       JMenu fileMenu = new JMenu(" File ");
@@ -110,9 +104,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       save.addActionListener(this);
       fileMenu.add(save);
       
+      JMenuItem solve = new JMenuItem("Solve for Mate");
+      solve.setActionCommand("Solve");
+      solve.addActionListener(this);
+      fileMenu.add(solve);
+      
       menuBar.add(modeMenu);
-      //menuBar.add(colorMenu);
-      //menuBar.add(pieceMenu);
 
       pieceMenu.addPropertyChangeListener(this);
       modeMenu.addPropertyChangeListener(this);
@@ -120,8 +117,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
-      //menuBar.add(btn_mainMenu, BorderLayout.EAST);
-      //add(modeMenu, BorderLayout.EAST);
       add(gamePanel, BorderLayout.CENTER);
       this.setJMenuBar(menuBar);
 
@@ -170,7 +165,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
    private void displayEndGameMessage()
    {
-      PieceColor winner = controller.getWinningSide();
+      ChessPiece.Color winner = controller.getWinningSide();
       String msg;
       if (winner == humanPlayer)
       {
@@ -289,9 +284,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             changeMode(GameMode.UNDECIDED);
             break;
          case "Save":
-            JFileChooser chooser = new JFileChooser();
+            JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
             File selectedFile;
-            if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
+            if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) 
             {
                selectedFile = chooser.getSelectedFile();
             }
@@ -303,7 +298,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                System.out.println("Save Failed");
             break;
          case "Load":
-            chooser = new JFileChooser();
+            chooser = new JFileChooser(System.getProperty("user.dir"));
             if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
             {
                selectedFile = chooser.getSelectedFile();
@@ -317,6 +312,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             }
             else
                System.out.println("Load failed");
+            break;
+         case "Solve":
+            String moves = JOptionPane.showInputDialog("How many moves?");
+            int x = Integer.parseInt(moves);
+            // use x in AI to solve for mate
+            System.out.println("Moves: " + x);
             break;
       }
       refresh();

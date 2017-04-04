@@ -21,7 +21,7 @@ public class Bishop extends ChessPiece
     This is the constructor that takes a color and the starting position 
     of the piece
     */
-   public Bishop(PieceColor c, int xC, int yC)
+   public Bishop(Color c, int xC, int yC)
    {
       super();
       value = 3;
@@ -34,7 +34,7 @@ public class Bishop extends ChessPiece
     This constructor sets the starting position to the default position of
     a bishop and takes a color
     */
-   public Bishop(PieceColor c)
+   public Bishop(Color c)
    {
       super();
       value = 3;

@@ -24,7 +24,7 @@ public class Rook extends ChessPiece
     This constructor takes an input of the piece color and the starting
     position for the Rook
     */
-   public Rook(PieceColor c, int xC, int yC)
+   public Rook(Color c, int xC, int yC)
    {
       super();
       value = 5;
@@ -37,7 +37,7 @@ public class Rook extends ChessPiece
     This constructor takes a piece color and sets the starting 
     position as the default Rook position
     */
-   public Rook(PieceColor c)
+   public Rook(Color c)
    {
       super();
       value = 5;

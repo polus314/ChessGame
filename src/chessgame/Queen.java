@@ -23,7 +23,7 @@ public class Queen extends ChessPiece
     This constructor takes an input of the piece color and the starting
     position for the Queen
     */
-   public Queen(PieceColor c, int xC, int yC)
+   public Queen(Color c, int xC, int yC)
    {
       super();
       value = 9;
@@ -36,7 +36,7 @@ public class Queen extends ChessPiece
     This constructor takes a piece color and sets the starting 
     position as the default Queen position
     */
-   public Queen(PieceColor c)
+   public Queen(Color c)
    {
       super();
       value = 9;

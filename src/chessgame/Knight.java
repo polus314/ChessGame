@@ -24,7 +24,7 @@ public class Knight extends ChessPiece
     This is the constructor that takes a piece color and a starting 
     position for inputs
     */
-   public Knight(PieceColor c, int xC, int yC)
+   public Knight(Color c, int xC, int yC)
    {
       super();
       value = 3;
@@ -37,7 +37,7 @@ public class Knight extends ChessPiece
     This constructor takes a piece color and sets the starting 
     position as the default position for the knight piece
     */
-   public Knight(PieceColor c)
+   public Knight(Color c)
    {
       super();
       value = 3;

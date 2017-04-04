@@ -216,11 +216,11 @@ public class Checkerboard
             {
                continue;
             }
-            if (thisPiece.getColor() == PieceColor.BLACK)
+            if (thisPiece.getColor() == ChessPiece.Color.BLACK)
             {
                g.setColor(darkPieceColor);
             }
-            else //if (thisPiece.getColor() == PieceColor.WHITE)
+            else //if (thisPiece.getColor() == Color.WHITE)
             {
                g.setColor(lightPieceColor);
             }

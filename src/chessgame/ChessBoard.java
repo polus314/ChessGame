@@ -7,7 +7,7 @@ import java.util.List;
 /**
  This class creates a 64 square board that holds ChessPieces and enforces that
  only legal moves are made, e.g. pawns cannot move backwards, a player does
- not move into check, or a player doesn't castling after moving their king.
+ not move into check, or a player doesn't castle after moving their king.
 
  @author John Polus
  */
@@ -49,33 +49,33 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       //set up pieces on each side
       for (int i = 0; i < WIDTH; i++)
       {
-         pieceArray[i][PAWN_ROW_W] = new Pawn(PieceColor.WHITE, i, 6);
-         pieceArray[i][PAWN_ROW_B] = new Pawn(PieceColor.BLACK, i, 1);
+         pieceArray[i][PAWN_ROW_W] = new Pawn(ChessPiece.Color.WHITE, i, 6);
+         pieceArray[i][PAWN_ROW_B] = new Pawn(ChessPiece.Color.BLACK, i, 1);
       }
 
       for (int i = 0; i < 8; i += 7)
       {
-         pieceArray[i][7] = new Rook(PieceColor.WHITE, i, 7);
-         pieceArray[i][0] = new Rook(PieceColor.BLACK, i, 0);
+         pieceArray[i][7] = new Rook(ChessPiece.Color.WHITE, i, 7);
+         pieceArray[i][0] = new Rook(ChessPiece.Color.BLACK, i, 0);
       }
 
       for (int i = 1; i < 7; i += 5)
       {
-         pieceArray[i][7] = new Knight(PieceColor.WHITE, i, 7);
-         pieceArray[i][0] = new Knight(PieceColor.BLACK, i, 0);
+         pieceArray[i][7] = new Knight(ChessPiece.Color.WHITE, i, 7);
+         pieceArray[i][0] = new Knight(ChessPiece.Color.BLACK, i, 0);
       }
 
       for (int i = 2; i < 6; i += 3)
       {
-         pieceArray[i][7] = new Bishop(PieceColor.WHITE, i, 7);
-         pieceArray[i][0] = new Bishop(PieceColor.BLACK, i, 0);
+         pieceArray[i][7] = new Bishop(ChessPiece.Color.WHITE, i, 7);
+         pieceArray[i][0] = new Bishop(ChessPiece.Color.BLACK, i, 0);
       }
 
-      pieceArray[3][7] = new Queen(PieceColor.WHITE, 3, 7);
-      pieceArray[4][7] = new King(PieceColor.WHITE, 4, 7);
+      pieceArray[3][7] = new Queen(ChessPiece.Color.WHITE, 3, 7);
+      pieceArray[4][7] = new King(ChessPiece.Color.WHITE, 4, 7);
 
-      pieceArray[3][0] = new Queen(PieceColor.BLACK, 3, 0);
-      pieceArray[4][0] = new King(PieceColor.BLACK, 4, 0);
+      pieceArray[3][0] = new Queen(ChessPiece.Color.BLACK, 3, 0);
+      pieceArray[4][0] = new King(ChessPiece.Color.BLACK, 4, 0);
 
       materialRating = 0;
    }
@@ -181,14 +181,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       if (cp instanceof Pawn)
       {
-         if (cp.yCoord + 1 == yDest && cp.color == PieceColor.BLACK)
+         if (cp.yCoord + 1 == yDest && cp.color == ChessPiece.Color.BLACK)
          {
             if (cp.xCoord + 1 == xDest || cp.xCoord - 1 == xDest)
             {
                return true;
             }
          }
-         if (cp.yCoord - 1 == yDest && cp.color == PieceColor.WHITE)
+         if (cp.yCoord - 1 == yDest && cp.color == ChessPiece.Color.WHITE)
          {
             if (cp.xCoord + 1 == xDest || cp.xCoord - 1 == xDest)
             {
@@ -216,9 +216,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param color player who is trying to castle
     @return boolean - true if castling is legal, false otherwise
     */
-   public boolean canCastleKS(PieceColor color)
+   public boolean canCastleKS(ChessPiece.Color color)
    {
-      int y = color == PieceColor.BLACK ? HOME_ROW_B : HOME_ROW_W;
+      int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
       //check to see if King and Rook are present and unmoved
       ChessPiece cp = getPieceAt(KING_X, y);
@@ -267,9 +267,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param color player who is trying to castle
     @return boolean - true if castling is legal, false otherwise
     */
-   public boolean canCastleQS(PieceColor color)
+   public boolean canCastleQS(ChessPiece.Color color)
    {
-      int y = color == PieceColor.BLACK ? HOME_ROW_B : HOME_ROW_W;
+      int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
       //check to see if King and Rook are present and unmoved
       ChessPiece cp = getPieceAt(KING_X, y);
@@ -363,18 +363,18 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       ChessPiece castler = move.piece;
       if (castler instanceof King)
       {
-         int y = castler.getColor() == PieceColor.BLACK ? HOME_ROW_B : HOME_ROW_W;
+         int y = castler.getColor() == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
          if (canCastleKS(castler.getColor()) && move.getXDest() == K_KNIGHT_X)
          {
-            move.setMoveType(MoveType.CASTLE_KS);
+            move.setMoveType(ChessMove.Type.CASTLE_KS);
             replacePiece(KING_X, y, K_KNIGHT_X, y);
             replacePiece(K_ROOK_X, y, K_BISHOP_X, y);
             return true;
          }
          else if (canCastleQS(castler.getColor()) && move.getXDest() == Q_BISHOP_X)
          {
-            move.setMoveType(MoveType.CASTLE_QS);
+            move.setMoveType(ChessMove.Type.CASTLE_QS);
             replacePiece(KING_X, y, Q_BISHOP_X, y);
             replacePiece(Q_ROOK_X, y, QUEEN_X, y);
             return true;
@@ -391,7 +391,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @return boolean - true if opposing player can capture King from this
     position
     */
-   public boolean checkForCheck(PieceColor color)
+   public boolean checkForCheck(ChessPiece.Color color)
    {
       King king = findKing(color);
       if (king == null)
@@ -420,7 +420,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param playerToMove color whose move is next and who could be mated
     @return boolean - whether the game on the board is over
     */
-   public boolean checkForMate(PieceColor playerToMove)
+   public boolean checkForMate(ChessPiece.Color playerToMove)
    {
       int numMoves = findAllMoves(playerToMove).size();
       return numMoves == 0 && checkForCheck(playerToMove);
@@ -434,13 +434,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     */
    public boolean checkPositionIsLegal()
    {
-      if (!(checkSingleKing(PieceColor.WHITE)
-            && checkSingleKing(PieceColor.BLACK)))
+      if (!(checkSingleKing(ChessPiece.Color.WHITE)
+            && checkSingleKing(ChessPiece.Color.BLACK)))
       {
          return false;
       }
 
-      if (checkForCheck(PieceColor.WHITE) && checkForCheck(PieceColor.BLACK))
+      if (checkForCheck(ChessPiece.Color.WHITE) && checkForCheck(ChessPiece.Color.BLACK))
       {
          return false;
       }
@@ -454,7 +454,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param c color whose pieces should be checked
     @return boolean - true if c has exactly one king, false otherwise
     */
-   private boolean checkSingleKing(PieceColor c)
+   private boolean checkSingleKing(ChessPiece.Color c)
    {
       int numKings = 0;
       for (int i = 0; i < WIDTH; i++)
@@ -724,7 +724,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param color color that is moving
     @return ArrayList - list of all moves
     */
-   public ArrayList<ChessMove> findAllMoves(PieceColor color)
+   public ArrayList<ChessMove> findAllMoves(ChessPiece.Color color)
    {
       ArrayList<ChessMove> moveList = new ArrayList<>();
       for (int i = 0; i < WIDTH; i++)
@@ -755,7 +755,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    public ArrayList<ChessMove> findMoves(ChessPiece cp)
    {
       ArrayList<ChessMove> moveList = new ArrayList<>();
-      PieceColor color = cp.getColor();
+      ChessPiece.Color color = cp.getColor();
       int xi = cp.xCoord;
       int yi = cp.yCoord;
       for (int xf = 0; xf < WIDTH; xf++)
@@ -793,7 +793,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param c color of King to find
     @return King - king of this color or null if not found
     */
-   private King findKing(PieceColor c)
+   private King findKing(ChessPiece.Color c)
    {
       for (int i = 0; i < WIDTH; i++)
       {
@@ -831,7 +831,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @param color color whose pieces should be included
     @return ArrayList - list of pieces for this color
     */
-   public ArrayList<ChessPiece> getPieces(PieceColor color)
+   public ArrayList<ChessPiece> getPieces(ChessPiece.Color color)
    {
       ArrayList<ChessPiece> pieces = new ArrayList<>();
       for (int i = 0; i < WIDTH; i++)
@@ -953,13 +953,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          ChessPiece pawn = getPieceAt(i, HOME_ROW_B);
          if (pawn instanceof Pawn
-               && pawn.getColor() == PieceColor.WHITE)
+               && pawn.getColor() == ChessPiece.Color.WHITE)
          {
             return pawn;
          }
          pawn = getPieceAt(i, HOME_ROW_W);
          if (pawn instanceof Pawn
-               && pawn.getColor() == PieceColor.BLACK)
+               && pawn.getColor() == ChessPiece.Color.BLACK)
          {
             return pawn;
          }
@@ -986,11 +986,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       if (mover instanceof Pawn)
       {
          // check to make sure initial 2-space move is unobstructed
-         if (mover.getColor() == PieceColor.WHITE && yi == 6 && y == 4)
+         if (mover.getColor() == ChessPiece.Color.WHITE && yi == 6 && y == 4)
          {
             clear = spaceIsEmpty(xi, yi - 1);
          }
-         if (mover.getColor() == PieceColor.BLACK && yi == 1 && y == 3)
+         if (mover.getColor() == ChessPiece.Color.BLACK && yi == 1 && y == 3)
          {
             clear = spaceIsEmpty(xi, yi + 1);
          }
@@ -1074,7 +1074,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     @return boolean - true if no piece or piece of opposite color, false
     otherwise
     */
-   public boolean spaceIsOpen(int x, int y, PieceColor color)
+   public boolean spaceIsOpen(int x, int y, ChessPiece.Color color)
    {
       return spaceIsEmpty(x, y) || pieceArray[x][y].getColor() != color;
    }

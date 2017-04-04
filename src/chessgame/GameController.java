@@ -18,7 +18,7 @@ public class GameController
 
    private ChessBoard board;
    private ChessPiece selectedPiece, pieceToAdd;
-   private PieceColor playerToMove;
+   private ChessPiece.Color playerToMove;
    private AI deepBlue;
    private ArrayList<ChessMove> moveList;
    private GameMode mode;
@@ -30,7 +30,7 @@ public class GameController
    public GameController()
    {
       board = new ChessBoard();
-      playerToMove = PieceColor.WHITE;
+      playerToMove = ChessPiece.Color.WHITE;
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
       mode = GameMode.UNDECIDED;
@@ -51,7 +51,7 @@ public class GameController
       return board.getPiecesList();
    }
 
-   public PieceColor getPlayerToMove()
+   public ChessPiece.Color getPlayerToMove()
    {
       return playerToMove;
    }
@@ -140,7 +140,7 @@ public class GameController
 
     @return
     */
-   public PieceColor getWinningSide()
+   public ChessPiece.Color getWinningSide()
    {
       return deepBlue.getWinningSide();
    }
@@ -377,14 +377,14 @@ public class GameController
    */
    private ChessPiece LoadPiece(String loadString)
    {
-      PieceColor color;
+      ChessPiece.Color color;
       if(loadString.charAt(0) == 'B')
       {
-         color = PieceColor.BLACK;
+         color = ChessPiece.Color.BLACK;
       }
       else
       {
-         color = PieceColor.WHITE;
+         color = ChessPiece.Color.WHITE;
       }
       switch(loadString.charAt(1))
       {

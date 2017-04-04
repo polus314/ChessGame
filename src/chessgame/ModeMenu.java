@@ -17,12 +17,12 @@ import javax.swing.JMenuItem;
 public class ModeMenu extends JMenu implements ActionListener
 {
 
-   private JMenuItem item_singlePlayer, item_versus, item_setUp;
+   private JMenuItem item_singlePlayer, item_versus, item_setUp, item_puzzle;
    private GameMode mode;
 
    public ModeMenu()
    {
-      super("Modes ");
+      super("Mode Menu");
       initComponents();
       this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
@@ -49,6 +49,11 @@ public class ModeMenu extends JMenu implements ActionListener
       item_setUp.setMnemonic(KeyEvent.VK_U);
       item_setUp.setActionCommand("Setup");
       item_setUp.addActionListener(this);
+      
+      item_puzzle = new JMenuItem("Puzzle Solving Mode");
+      item_puzzle.setMnemonic(KeyEvent.VK_P);
+      item_puzzle.setActionCommand("Puzzle");
+      item_puzzle.addActionListener(this);
    }
 
    @Override
@@ -66,6 +71,9 @@ public class ModeMenu extends JMenu implements ActionListener
             break;
          case "Setup":
             setGameMode(GameMode.SET_UP);
+            break;
+         case "Puzzle":
+            setGameMode(GameMode.PUZZLE_SOLVER);
             break;
       }
    }

@@ -13,6 +13,12 @@ public class AI
 {
    public static final float FLOAT_ERROR = 0.0001f;
    
+   // Enumerates the algorithms that can be used to evaluate the position
+   public enum Algorithm { DFS, BFS, MINI_MAX };
+   
+   //public enum Heuristic { OPENING };
+   // have subclasses with separate heuristics?
+   
    /**
    This is a "struct" used in the game tree to hold information that is
    necessary for finding the best move
@@ -49,8 +55,9 @@ public class AI
    }
    
    private final ChessBoard gameBoard;
-   private final PieceColor playerToMove;
+   private final ChessPiece.Color playerToMove;
    private final boolean gameOver;
+   private Algorithm algorithm;
 
    /**
     Default constructor, initializes the chessboard to the start of a new game
@@ -58,8 +65,9 @@ public class AI
    public AI()
    {
       gameBoard = new ChessBoard();
-      playerToMove = PieceColor.WHITE;
+      playerToMove = ChessPiece.Color.WHITE;
       gameOver = gameBoard.checkForMate(playerToMove);
+      algorithm = Algorithm.MINI_MAX;
    }
 
    /**
@@ -68,7 +76,7 @@ public class AI
     @param cb - board that AI should use for calculations
     @param playerToMove - color of player who has the next move
     */
-   public AI(ChessBoard cb, PieceColor playerToMove)
+   public AI(ChessBoard cb, ChessPiece.Color playerToMove)
    {
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
@@ -110,11 +118,11 @@ public class AI
                if (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
                {
                   // Black captures down, White captures up
-                  if (cp.color == PieceColor.BLACK && cp.yCoord + 1 == yDest)
+                  if (cp.color == ChessPiece.Color.BLACK && cp.yCoord + 1 == yDest)
                   {
                      isADefender = true;
                   }
-                  else if (cp.color == PieceColor.WHITE && cp.yCoord - 1 == yDest)
+                  else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
                   {
                      isADefender = true;
                   }
@@ -129,6 +137,20 @@ public class AI
       }
       return defenders;
    }
+   
+   private ChessMove bfsBestMove()
+   {
+      // search breadth first
+      // return move that is best
+      return new ChessMove();
+   }
+   
+   private ChessMove dfsBestMove()
+   {
+      // search depth first
+      // return move that is best
+      return new ChessMove();
+   }
 
    /**
     This method tests all moves and evaluate the positions that result. The
@@ -138,38 +160,13 @@ public class AI
     */
    public ChessMove findBestMove()
    {
-      boolean max = playerToMove == PieceColor.WHITE;
-      int depth = 3;
-      long startTime = System.currentTimeMillis();
-      Tree<GameState> gameTree = generateGameTree(depth);
-      System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime));
-      if (gameTree.children.isEmpty())
+      switch(algorithm)
       {
-         return null;
+         case BFS: return bfsBestMove();
+         case DFS: return dfsBestMove();
+         case MINI_MAX: return miniMaxBestMove();
+         default: return new ChessMove();
       }
-
-      float bestRating = runMiniMax(gameTree, max);
-      
-      for(Tree<GameState> child : gameTree.children)
-      {
-         if(Math.abs(child.info.miniMaxRating - bestRating) < FLOAT_ERROR)
-         {
-            return child.info.move;
-         }
-      }
-      // if all else fails, return best first move
-      int indexOfBest = 0;
-      bestRating = 0.0f;
-      for(int i = 0; i < gameTree.children.size(); i++)
-      {
-         Tree<GameState> child = gameTree.children.get(i);
-         if((max && child.info.board.materialRating > bestRating) ||
-            (!max && child.info.board.materialRating < bestRating))
-         {
-            indexOfBest = i;
-         }
-      }
-      return (gameTree.children.get(indexOfBest)).info.move;
    }
 
    /**
@@ -180,7 +177,7 @@ public class AI
    @param color
    @return int number of children generated
    */
-   private ArrayList<Tree<GameState>> generateAllChildren(Tree<GameState> parentTree, PieceColor color)
+   private ArrayList<Tree<GameState>> generateAllChildren(Tree<GameState> parentTree, ChessPiece.Color color)
    {
       if (parentTree == null || parentTree.info == null)
       {
@@ -210,7 +207,7 @@ public class AI
    */
    private Tree<GameState> generateGameTree(int depth)
    {
-      PieceColor playerColor = playerToMove;
+      ChessPiece.Color playerColor = playerToMove;
       
       // create the root node
       rateBoard(gameBoard);
@@ -244,23 +241,23 @@ public class AI
    /**
     Returns the color that has the won the game
 
-    @return PieceColor - color that won the game, null if tied or game isn't
+    @return Color - color that won the game, null if tied or game isn't
     over
     */
-   public PieceColor getWinningSide()
+   public ChessPiece.Color getWinningSide()
    {
       if (!isGameOver())
       {
          return null;
       }
 
-      if (gameBoard.checkForCheck(PieceColor.WHITE))
+      if (gameBoard.checkForCheck(ChessPiece.Color.WHITE))
       {
-         return PieceColor.BLACK;
+         return ChessPiece.Color.BLACK;
       }
-      else if (gameBoard.checkForCheck(PieceColor.BLACK))
+      else if (gameBoard.checkForCheck(ChessPiece.Color.BLACK))
       {
-         return PieceColor.WHITE;
+         return ChessPiece.Color.WHITE;
       }
       else
       {
@@ -276,7 +273,7 @@ public class AI
     @param color
     @return int - value of pieces that are not defended sufficiently
     */
-   private int hangRating(ChessBoard cb, PieceColor color)
+   private int hangRating(ChessBoard cb, ChessPiece.Color color)
    {
       int valueOfHanging = 0;
       ArrayList<ChessPiece> goodPieces = cb.getPieces(color);
@@ -350,7 +347,7 @@ public class AI
     @param cb - board position to analyze
     @return int - number of potential moves that are available
     */
-   private int howManyMoves(PieceColor color, ChessBoard cb)
+   private int howManyMoves(ChessPiece.Color color, ChessBoard cb)
    {
       // TODO - make this more efficient somehow, quadruple for loops is bad
       // Big Picture: using vectors instead of checking every square will make
@@ -389,17 +386,17 @@ public class AI
                      }
                      else if (cp instanceof Pawn)
                      {
-                        if (color == PieceColor.WHITE && j - m == 1
+                        if (color == ChessPiece.Color.WHITE && j - m == 1
                               && (i - k == 1 || k - i == 1)
                               && cb.getPieceAt(k, m) != null
-                              && cb.getPieceAt(k, m).getColor() == PieceColor.BLACK)
+                              && cb.getPieceAt(k, m).getColor() == ChessPiece.Color.BLACK)
                         {
                            numMoves++;
                         }
-                        if (color == PieceColor.BLACK && m - j == 1
+                        if (color == ChessPiece.Color.BLACK && m - j == 1
                               && (i - k == 1 || k - i == 1)
                               && cb.getPieceAt(k, m) != null
-                              && cb.getPieceAt(k, m).getColor() == PieceColor.WHITE)
+                              && cb.getPieceAt(k, m).getColor() == ChessPiece.Color.WHITE)
                         {
                            numMoves++;
                         }
@@ -436,13 +433,13 @@ public class AI
       float rating, wMaterial, bMaterial, totalMaterial;
       wMaterial = bMaterial = 0.0f;
       
-      ArrayList<ChessPiece> pieces = cb.getPieces(PieceColor.WHITE);
+      ArrayList<ChessPiece> pieces = cb.getPieces(ChessPiece.Color.WHITE);
       for(ChessPiece piece : pieces)
       {
          wMaterial += piece.value;
       }
       
-      pieces = cb.getPieces(PieceColor.BLACK);
+      pieces = cb.getPieces(ChessPiece.Color.BLACK);
       for(ChessPiece piece : pieces)
       {
          bMaterial += piece.value;
@@ -450,6 +447,43 @@ public class AI
       totalMaterial = wMaterial + bMaterial;
       
       return (wMaterial - bMaterial) / totalMaterial;
+   }
+   
+   private ChessMove miniMaxBestMove()
+   {
+      
+      boolean max = playerToMove == ChessPiece.Color.WHITE;
+      int depth = 3;
+      long startTime = System.currentTimeMillis();
+      Tree<GameState> gameTree = generateGameTree(depth);
+      System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime) + "ms");
+      if (gameTree.children.isEmpty())
+      {
+         return null;
+      }
+
+      float bestRating = runMiniMax(gameTree, max);
+      
+      for(Tree<GameState> child : gameTree.children)
+      {
+         if(Math.abs(child.info.miniMaxRating - bestRating) < FLOAT_ERROR)
+         {
+            return child.info.move;
+         }
+      }
+      // if all else fails, return best first move
+      int indexOfBest = 0;
+      bestRating = 0.0f;
+      for(int i = 0; i < gameTree.children.size(); i++)
+      {
+         Tree<GameState> child = gameTree.children.get(i);
+         if((max && child.info.board.materialRating > bestRating) ||
+            (!max && child.info.board.materialRating < bestRating))
+         {
+            indexOfBest = i;
+         }
+      }
+      return (gameTree.children.get(indexOfBest)).info.move;
    }
 
    /**
@@ -463,8 +497,8 @@ public class AI
     */
    private float mobRating(ChessBoard cb)
    {
-      float wMobility = howManyMoves(PieceColor.WHITE, cb);
-      float bMobility = howManyMoves(PieceColor.BLACK, cb);
+      float wMobility = howManyMoves(ChessPiece.Color.WHITE, cb);
+      float bMobility = howManyMoves(ChessPiece.Color.BLACK, cb);
       float totalMobility = wMobility + bMobility;
       
       return (wMobility - bMobility) / totalMobility;
@@ -485,8 +519,8 @@ public class AI
 //      //TODO - rewrite hangRating method and do this in there
 //      // also LOOK CAREFULLY, I am switching these because a positive should
 //      // be good for that color
-//      float wHRating = hangRating(cb, PieceColor.BLACK);
-//      float bHRating = hangRating(cb, PieceColor.WHITE);
+//      float wHRating = hangRating(cb, Color.BLACK);
+//      float bHRating = hangRating(cb, Color.WHITE);
 //      float totalHRating = wHRating + bHRating;
 //      if(totalHRating < (FLOAT_ERROR))
 //      {
@@ -544,6 +578,16 @@ public class AI
          return extreme;
       }
    }
+   
+   /**
+   Set the algorithm used by this AI.
+   
+   @param a algorithm used by this AI
+   */
+   public void setAlgorithm(Algorithm a)
+   {
+      algorithm  = a;
+   }
 
    /**
     Sorts the given list of boards in ascending order
@@ -565,27 +609,6 @@ public class AI
       Collections.sort(list);
       Collections.reverse(list);
    }
-
-//   /**
-//    Sorts the given moveList in ascending order
-//
-//    @param moveList
-//    */
-//   private void sortMovesA(ArrayList<ChessMove> moveList)
-//   {
-//      Collections.sort(moveList);
-//   }
-//
-//   /**
-//    Sorts the given moveList in descending order
-//
-//    @param moveList
-//    */
-//   private void sortMovesD(ArrayList<ChessMove> moveList)
-//   {
-//      Collections.sort(moveList);
-//      Collections.reverse(moveList);
-//   }
 
    /**
     This method finds the sum of the values of the "num"-smallest pieces in

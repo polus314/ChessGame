@@ -25,7 +25,7 @@ public class King extends ChessPiece
     This constructor takes an input of the piece color and the starting
     position for the king
     */
-   public King(PieceColor c, int xC, int yC)
+   public King(Color c, int xC, int yC)
    {
       super();
       hasMoved = false;
@@ -39,7 +39,7 @@ public class King extends ChessPiece
     This constructor takes a piece color and sets the starting 
     position as the default king position
     */
-   public King(PieceColor c)
+   public King(Color c)
    {
       super();
       value = 10;

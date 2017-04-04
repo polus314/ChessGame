@@ -24,7 +24,7 @@ public class Pawn extends ChessPiece
     This constructor takes an input of the piece color and the starting
     position for the pawn
     */
-   public Pawn(PieceColor c, int xC, int yC)
+   public Pawn(Color c, int xC, int yC)
    {
       super();
       value = 1;
@@ -37,7 +37,7 @@ public class Pawn extends ChessPiece
     This constructor takes a piece color and sets the starting 
     position as the default pawn position
     */
-   public Pawn(PieceColor c)
+   public Pawn(Color c)
    {
       super();
       value = 1;
@@ -94,7 +94,7 @@ public class Pawn extends ChessPiece
       {
          return false;
       }
-      if (color == PieceColor.WHITE)
+      if (color == Color.WHITE)
       {
          if (yCoord - y == 2)
          {
@@ -108,7 +108,7 @@ public class Pawn extends ChessPiece
             return true;
          }
       }
-      if (color == PieceColor.BLACK)
+      if (color == Color.BLACK)
       {
          if (y - yCoord == 2)
          {
