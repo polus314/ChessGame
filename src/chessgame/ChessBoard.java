@@ -38,6 +38,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    public float mobilityRating;
    public float materialRating;
+   public float hangingRating;
 
    /**
     This constructor sets up a standard chess game on the board
@@ -157,8 +158,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       {
          nextNode.getPieceAt(xf, yf).hasMoved = true;
       }
-      nextNode.mobilityRating = cm.getMobilityRating();
-      nextNode.materialRating = cm.getMaterialRating();
       return nextNode;
    }
 
@@ -1097,7 +1096,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             ChessPiece cp = getPieceAt(j, i);
             if (cp == null)
             {
-               string = string + "  ";
+               string = string + "-- ";
             }
             else
             {

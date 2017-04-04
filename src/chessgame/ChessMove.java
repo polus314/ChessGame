@@ -7,7 +7,7 @@ package chessgame;
 
  @author John Polus
  */
-public class ChessMove implements Comparable<ChessMove>
+public class ChessMove //implements Comparable<ChessMove>
 {
    // TODO - don't associate ratings with a move should be associated with
    // the board position
@@ -17,9 +17,9 @@ public class ChessMove implements Comparable<ChessMove>
    private int xDest;
    private int yDest;
    private MoveType moveType;
-   private float materialRating;
-   private float mobilityRating;
-   private int hangRating;
+//   private float materialRating;
+//   private float mobilityRating;
+//   private int hangRating;
    
    public boolean givesCheck = false;
    public boolean givesMate = false;
@@ -36,8 +36,6 @@ public class ChessMove implements Comparable<ChessMove>
       xDest = 7;
       yDest = 7;
       moveType = MoveType.NORMAL;
-      materialRating = 0.0f;
-      mobilityRating = 0.0f;
    }
 
    public ChessMove(ChessPiece cp, int xD, int yD)
@@ -80,35 +78,35 @@ public class ChessMove implements Comparable<ChessMove>
       return yDest;
    }
 
-   public void setMatRating(float mr)
-   {
-      materialRating = mr;
-   }
-
-   public void setMobRating(float mr)
-   {
-      mobilityRating = mr;
-   }
-
-   public void setHangRating(int hr)
-   {
-      hangRating = hr;
-   }
-
-   public float getMaterialRating()
-   {
-      return materialRating;
-   }
-
-   public int getHangRating()
-   {
-      return hangRating;
-   }
-
-   public float getMobilityRating()
-   {
-      return mobilityRating;
-   }
+//   public void setMatRating(float mr)
+//   {
+//      materialRating = mr;
+//   }
+//
+//   public void setMobRating(float mr)
+//   {
+//      mobilityRating = mr;
+//   }
+//
+//   public void setHangRating(int hr)
+//   {
+//      hangRating = hr;
+//   }
+//
+//   public float getMaterialRating()
+//   {
+//      return materialRating;
+//   }
+//
+//   public int getHangRating()
+//   {
+//      return hangRating;
+//   }
+//
+//   public float getMobilityRating()
+//   {
+//      return mobilityRating;
+//   }
 
    public MoveType getMoveType()
    {
@@ -126,38 +124,38 @@ public class ChessMove implements Comparable<ChessMove>
       cm.setMoveType(moveType);
    }
 
-   /**
-    This method compares two Chess Moves, useful for sorting
-
-    @param cm
-    @return -1 if this is worse, 0 if equal, 1 if better than param
-    */
-   public int compareTo(ChessMove cm)
-   {
-      if (cm.hangRating < hangRating)
-      {
-         return -1;
-      }
-      if (cm.hangRating == hangRating)
-      {
-         if (cm.materialRating > materialRating)
-         {
-            return -1;
-         }
-         if (cm.materialRating == materialRating)
-         {
-            if (cm.mobilityRating > mobilityRating)
-            {
-               return -1;
-            }
-            if (cm.mobilityRating == mobilityRating)
-            {
-               return 0;
-            }
-         }
-      }
-      return 1;
-   }
+//   /**
+//    This method compares two Chess Moves, useful for sorting
+//
+//    @param cm
+//    @return -1 if this is worse, 0 if equal, 1 if better than param
+//    */
+//   public int compareTo(ChessMove cm)
+//   {
+//      if (cm.hangRating < hangRating)
+//      {
+//         return -1;
+//      }
+//      if (cm.hangRating == hangRating)
+//      {
+//         if (cm.materialRating > materialRating)
+//         {
+//            return -1;
+//         }
+//         if (cm.materialRating == materialRating)
+//         {
+//            if (cm.mobilityRating > mobilityRating)
+//            {
+//               return -1;
+//            }
+//            if (cm.mobilityRating == mobilityRating)
+//            {
+//               return 0;
+//            }
+//         }
+//      }
+//      return 1;
+//   }
 
    private String unoccupiedMoveToString()
    {

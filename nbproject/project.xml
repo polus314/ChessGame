@@ -12,7 +12,9 @@
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>int</word>
             <word>piece's</word>
+            <word>pieces'</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

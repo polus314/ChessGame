@@ -1,5 +1,8 @@
 package chessgame;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -14,7 +17,7 @@ public class GameController
 
    private ChessBoard board;
    private ChessPiece selectedPiece, pieceToAdd;
-   private PieceColor playerToMove, humanPlayer;
+   private PieceColor playerToMove;
    private AI deepBlue;
    private ArrayList<ChessMove> moveList;
    private GameMode mode;
@@ -26,7 +29,6 @@ public class GameController
    public GameController()
    {
       board = new ChessBoard();
-      humanPlayer = PieceColor.WHITE;
       playerToMove = PieceColor.WHITE;
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
@@ -98,6 +100,7 @@ public class GameController
     */
    public boolean takeAction(int x, int y)
    {
+      System.out.println("Board: \n" + board.toString());
       switch (mode)
       {
          case SINGLE:
@@ -149,7 +152,7 @@ public class GameController
     */
    public boolean doCPUTurn()
    {
-      ChessMove move = deepBlue.findBestMove(humanPlayer.opposite());
+      ChessMove move = deepBlue.findBestMove();
       //checking for checkmate
       if (move == null)
       {
@@ -307,5 +310,37 @@ public class GameController
       playerToMove = playerToMove.opposite();
       deepBlue = new AI(board, playerToMove);
       moveList.add(move);
+   }
+   
+   public boolean loadPositionFromFile(String filename)
+   {
+      FileInputStream file;
+      byte [] buf;
+      try {
+         file = new FileInputStream(filename);
+         buf = new byte[64 + 8]; // 64 pieces plus 8 newlines
+         file.read(buf, 0, 64 + 8);
+      }
+      catch(FileNotFoundException fnfe)
+      {
+         System.out.println("File not found!");
+         return false;
+      }
+      catch(IOException ioe)
+      {
+         System.out.println("File reading failed");
+         return false;
+      }
+      ArrayList<ChessPiece> position = new ArrayList<>();
+      String posString = new String(buf);
+      posString = posString.replace("\r\n", "");
+      for(int i = 0; i < 8; i++)
+      {
+         for(int j = 0; j < 8; j++)
+         {
+            System.out.println(posString.charAt(i + j));
+         }
+      }
+      return true;
    }
 }

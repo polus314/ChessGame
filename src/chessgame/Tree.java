@@ -12,7 +12,7 @@ import java.util.ArrayList;
  */
 public class Tree<T>
 {
-   public ArrayList<Tree> children;
+   public ArrayList<Tree<T>> children;
    public T info;
 
    public Tree(T in)
@@ -21,10 +21,10 @@ public class Tree<T>
       info = in;
    }
 
-   public void addChild(T childInfo)
-   {
-      children.add(new Tree(childInfo));
-   }
+//   public void addChild(T childInfo)
+//   {
+//      children.add(new Tree(childInfo));
+//   }
 
    /**
    This is my first recursive method ever. Hopefully my computer doesn't blow
