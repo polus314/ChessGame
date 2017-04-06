@@ -1,5 +1,9 @@
-package chessgame;
+package chessgui;
 
+import chessgame.ChessBoard;
+import chessgame.ChessPiece;
+import chessgame.GameController;
+import chessgame.GameMode;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

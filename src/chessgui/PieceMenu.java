@@ -1,9 +1,9 @@
-package chessgame;
+package chessgui;
 
+import chessgame.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.BoxLayout;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -24,14 +24,18 @@ public class PieceMenu extends JMenu implements ActionListener
    private static final String AC_PAWN = "pawn";
    private static final String AC_EMPTY = "empty";
 
-   // TODO - change to btn_king etc.
-   public final JMenuItem item_King, item_Queen, item_Rook, item_Bishop,
+   public JMenuItem item_King, item_Queen, item_Rook, item_Bishop,
          item_Knight, item_Pawn, item_Empty;
    private ChessPiece piece;
 
    public PieceMenu()
    {
       super("Piece Types");
+      initComponents();
+   }
+   
+   private void initComponents()
+   {
       item_King = new JMenuItem("King");
       item_King.setMnemonic(KeyEvent.VK_K);
       item_King.setActionCommand(AC_KING);
@@ -60,16 +64,6 @@ public class PieceMenu extends JMenu implements ActionListener
       item_Empty.setMnemonic(KeyEvent.VK_E);
       item_Empty.setActionCommand(AC_EMPTY);
 
-      add(item_King);
-      add(item_Queen);
-      add(item_Rook);
-      add(item_Bishop);
-      add(item_Knight);
-      add(item_Pawn);
-      add(item_Empty);
-
-      this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-
       item_King.addActionListener(this);
       item_Queen.addActionListener(this);
       item_Rook.addActionListener(this);
@@ -77,6 +71,14 @@ public class PieceMenu extends JMenu implements ActionListener
       item_Knight.addActionListener(this);
       item_Pawn.addActionListener(this);
       item_Empty.addActionListener(this);
+      
+      add(item_King);
+      add(item_Queen);
+      add(item_Rook);
+      add(item_Bishop);
+      add(item_Knight);
+      add(item_Pawn);
+      add(item_Empty);
    }
 
    @Override

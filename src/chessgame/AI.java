@@ -509,9 +509,8 @@ public class AI
     hanging rating.
 
     @param cb
-    @param moveList
     */
-   private void rateBoard(ChessBoard cb)
+   protected void rateBoard(ChessBoard cb)
    {
       cb.materialRating = matRating(cb);
       cb.mobilityRating = 0.0f;//mobRating(cb);
@@ -569,7 +568,6 @@ public class AI
                (!max && childRating < extreme))
             {
                extreme = childRating;
-               //System.out.println("Extreme!!" + count++);
             }
          }
          gameTree.info.checkedForMiniMax = true;

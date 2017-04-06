@@ -1,10 +1,10 @@
-package chessgame;
+package chessgui;
 
+import chessgame.GameMode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -24,11 +24,6 @@ public class ModeMenu extends JMenu implements ActionListener
    {
       super("Mode Menu");
       initComponents();
-      this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-
-      add(item_singlePlayer);
-      add(item_versus);
-      add(item_setUp);
 
       mode = GameMode.UNDECIDED;
    }
@@ -54,6 +49,11 @@ public class ModeMenu extends JMenu implements ActionListener
       item_puzzle.setMnemonic(KeyEvent.VK_P);
       item_puzzle.setActionCommand("Puzzle");
       item_puzzle.addActionListener(this);
+      
+      add(item_singlePlayer);
+      add(item_versus);
+      add(item_setUp);
+      add(item_puzzle);
    }
 
    @Override

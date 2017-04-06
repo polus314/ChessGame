@@ -1,10 +1,9 @@
-package chessgame;
+package chessgui;
 
+import chessgame.ChessPiece;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
 import java.awt.event.KeyEvent;
-import javax.swing.BoxLayout;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -17,12 +16,19 @@ import javax.swing.JMenuItem;
 public class ColorMenu extends JMenu implements ActionListener
 {
 
-   private final JMenuItem item_black, item_white;
+   private JMenuItem item_black, item_white;
    private ChessPiece.Color chosenColor;
 
    public ColorMenu()
    {
       super("Colors");
+      initComponents();
+
+      chosenColor = null;
+   }
+   
+   private void initComponents()
+   {
       item_black = new JMenuItem("Choose Black Pieces");
       item_black.setMnemonic(KeyEvent.VK_B);
       item_black.setActionCommand("Black");
@@ -30,16 +36,12 @@ public class ColorMenu extends JMenu implements ActionListener
       item_white = new JMenuItem("Choose White Pieces");
       item_white.setMnemonic(KeyEvent.VK_W);
       item_white.setActionCommand("White");
-
+      
       add(item_black);
       add(item_white);
 
       item_black.addActionListener(this);
       item_white.addActionListener(this);
-
-      this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-
-      chosenColor = null;
    }
 
    @Override

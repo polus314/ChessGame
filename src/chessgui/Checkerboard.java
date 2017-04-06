@@ -1,4 +1,4 @@
-package chessgame;
+package chessgui;
 
 /**
  This class represents the graphical checkerboard that a chess game is played
@@ -8,6 +8,7 @@ package chessgame;
 
  @author John Polus
  */
+import chessgame.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;

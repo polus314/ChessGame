@@ -1,4 +1,4 @@
-package chessgame;
+package chessgui;
 
 /**
  This panel is responsible for drawing the chess game on the JFrame.
@@ -29,7 +29,7 @@ public class GamePanel extends JPanel
    @Override
    public Dimension getPreferredSize()
    {
-      return new Dimension(250, 200);
+      return new Dimension(425, 425);
    }
 
    /**
