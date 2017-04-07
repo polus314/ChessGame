@@ -636,14 +636,23 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       }
       if (materialRating == cb.materialRating)
       {
-         if (mobilityRating < cb.mobilityRating)
-         {
-            return -1;
-         }
-         if (mobilityRating == cb.mobilityRating)
-         {
-            return 0;
-         }
+//         boolean lhsCheck = checkForCheck(ChessPiece.Color.WHITE) || 
+//               checkForCheck(ChessPiece.Color.BLACK);
+//         boolean rhsCheck = cb.checkForCheck(ChessPiece.Color.WHITE) || 
+//               cb.checkForCheck(ChessPiece.Color.BLACK);
+//         if(lhsCheck && rhsCheck)
+//         {
+            if (mobilityRating < cb.mobilityRating)
+            {
+               return -1;
+            }
+            if (mobilityRating == cb.mobilityRating)
+            {
+               return 0;
+            }
+//         }
+//         if(rhsCheck)
+//            return -1;
       }
       return 1;
    }

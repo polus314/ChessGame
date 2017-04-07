@@ -12,6 +12,7 @@ import java.util.Collections;
 public class AI
 {
    public static final float FLOAT_ERROR = 0.0001f;
+   public static final int MAX_BRANCH = 5;
    
    // Enumerates the algorithms that can be used to evaluate the position
    public enum Algorithm { DFS, BFS, MINI_MAX };
@@ -23,7 +24,7 @@ public class AI
    This is a "struct" used in the game tree to hold information that is
    necessary for finding the best move
    */
-   private class GameState 
+   private class GameState implements Comparable<GameState>
    {
       // board represents the position of the pieces
       public ChessBoard board;
@@ -52,12 +53,19 @@ public class AI
          miniMaxRating = mmR;
          checkedForMiniMax = false;
       }
+      
+      @Override
+      public int compareTo(GameState rhs)
+      {
+         return board.compareTo(rhs.board);
+      }
    }
    
    protected ChessBoard gameBoard;
    protected ChessPiece.Color playerToMove;
    protected boolean gameOver;
    protected Algorithm algorithm;
+   private ArrayList<ChessMove> pathToMate;
 
    /**
     Default constructor, initializes the chessboard to the start of a new game
@@ -139,14 +147,14 @@ public class AI
       return defenders;
    }
    
-   private ChessMove bfsBestMove()
+   private ChessMove bfsBestMove(Tree<GameState> gameTree)
    {
       // search breadth first
       // return move that is best
       return new ChessMove();
    }
    
-   private ChessMove dfsBestMove()
+   private ChessMove dfsBestMove(Tree<GameState> gameTree)
    {
       // search depth first
       // return move that is best
@@ -161,11 +169,20 @@ public class AI
     */
    public ChessMove findBestMove()
    {
+      int depth = 3;
+      long startTime = System.currentTimeMillis();
+      Tree<GameState> gameTree = generateGameTree(depth, true);
+      System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime) + "ms");
+      if (gameTree.children.isEmpty())
+      {
+         return null;
+      }
+      
       switch(algorithm)
       {
-         case BFS: return bfsBestMove();
-         case DFS: return dfsBestMove();
-         case MINI_MAX: return miniMaxBestMove();
+         case BFS: return bfsBestMove(gameTree);
+         case DFS: return dfsBestMove(gameTree);
+         case MINI_MAX: return miniMaxBestMove(gameTree);
          default: return new ChessMove();
       }
    }
@@ -196,6 +213,7 @@ public class AI
          parentTree.children.add(child);
       }
 
+      parentTree.children.trimToSize();
       return parentTree.children;
    }
    
@@ -206,7 +224,7 @@ public class AI
    @param depth number of plies to expand the game tree
    @return Tree - the root node, which has the other expanded nodes attached
    */
-   private Tree<GameState> generateGameTree(int depth)
+   private Tree<GameState> generateGameTree(int depth, boolean trim)
    {
       ChessPiece.Color playerColor = playerToMove;
       
@@ -224,11 +242,20 @@ public class AI
       
       while(curDepth < depth)
       {
+         System.out.println("Generating at depth: " + curDepth);
+         int debugCount = 0;
          // take all the nodes at the current level and generate their children
          for(Tree tree : curLevel)
          {
-            childLevel.addAll(generateAllChildren(tree, playerColor));
+            System.out.print(debugCount++ + " ");
+            generateAllChildren(tree, playerColor);
+            if(trim)
+            {
+               trimTree(tree, playerColor == ChessPiece.Color.WHITE);
+            }
+            childLevel.addAll(tree.children);
          }
+         System.out.println("");
          // the children become the current nodes for the next iteration
          curLevel = childLevel;
          childLevel = new ArrayList<>();
@@ -450,19 +477,10 @@ public class AI
       return (wMaterial - bMaterial) / totalMaterial;
    }
    
-   private ChessMove miniMaxBestMove()
+   private ChessMove miniMaxBestMove(Tree<GameState> gameTree)
    {
       
       boolean max = playerToMove == ChessPiece.Color.WHITE;
-      int depth = 3;
-      long startTime = System.currentTimeMillis();
-      Tree<GameState> gameTree = generateGameTree(depth);
-      System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime) + "ms");
-      if (gameTree.children.isEmpty())
-      {
-         return null;
-      }
-
       float bestRating = runMiniMax(gameTree, max);
       
       for(Tree<GameState> child : gameTree.children)
@@ -514,7 +532,7 @@ public class AI
    protected void rateBoard(ChessBoard cb)
    {
       cb.materialRating = matRating(cb);
-      cb.mobilityRating = 0.0f;//mobRating(cb);
+      cb.mobilityRating = mobRating(cb);
       
 //      //TODO - rewrite hangRating method and do this in there
 //      // also LOOK CAREFULLY, I am switching these because a positive should
@@ -588,16 +606,144 @@ public class AI
       algorithm  = a;
    }
 
-   public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves)
+   /**
+   Generates the game tree to the given number of moves and determines whether
+   checkmate can be forced by the given player.
+   
+   @param player side trying to force checkmate
+   @param moves depth to search through
+   @return list containing the moves used to force mate, null if mate isn't
+   forced
+   */
+   public ArrayList<ChessMove> solveForMate(ChessPiece.Color player, int moves, 
+         boolean quickly)
    {
-      Tree<GameState> tree = generateGameTree(2 * moves); // move = 2 * ply
-      return new ArrayList<ChessMove>();
+      Tree<GameState> tree = generateGameTree(2 * moves, quickly); // move = 2 * ply
+      System.out.println("Tree generated with " + (2 * moves) + " plies");
+      //if(quickly)
+      //   trimTree(tree, player == ChessPiece.Color.WHITE);
+      if(!forcesMate(player, tree))
+      {
+         return null;
+      }
+      System.out.println("Forces Mate");
+      pathToMate = new ArrayList<>();
+      if(!tracePathToMate(player, tree))
+      {
+         return null;
+      }
+      Collections.reverse(pathToMate);
+      return pathToMate;
+   }
+   
+   /**
+   Determines whether for the given game tree, the player passed in has a
+   move that wins the game regardless of what the opponent plays. The opponent
+   is assumed to have just moved and gameTree branches from there.
+   
+   @param player side who might be guaranteed to win
+   @param gameTree positions (moves) that are being considered
+   @return true if player can always checkmate their opponent, false otherwise
+   */
+   private boolean forcesMate(ChessPiece.Color player, Tree<GameState> gameTree)
+   {
+      // if position is checkmate, search is unnecessary
+      if(gameTree.info.board.checkForMate(player.opposite()))
+         return true;
+      
+      // if no more children, mate is forced by opponent on this side or depth
+      // has been reached
+      if(gameTree.children.isEmpty())
+         return false;
+      
+      for(Tree<GameState> child : gameTree.children)
+      {
+         if(child.info.board.checkForMate(player.opposite()))
+         {
+            return true;
+         }
+      }
+      
+      // check each child: if for every move the opponent takes there is a move
+      // for this side that forces checkmate, mate is forced as well.
+      for(Tree<GameState> child : gameTree.children)
+      {
+         boolean leadsToMate = false;
+         for(Tree<GameState> grandChild : child.children)
+         {
+            if(forcesMate(player, grandChild))
+               leadsToMate = true;
+         }
+         // opponent has move that prevents them being checkmated
+         if(!leadsToMate)
+            return false;
+      }
+      return true;
+   }
+   
+   /**
+   Assembles a list of moves that lead to the opponent being checkmated.
+   
+   @param player player who has won after these moves are played
+   @param tree positions that are being searched through
+   @return true if mate has been found, false otherwise
+   */
+   private boolean tracePathToMate(ChessPiece.Color player, Tree<GameState> tree)
+   {
+      // if position is checkmate, search is unnecessary
+      if(tree.info.board.checkForMate(player.opposite()))
+      {
+         return true;
+      }
+      
+      for(Tree<GameState> child : tree.children)
+      {
+         if(child.info.board.checkForMate(player.opposite()))
+         {
+            pathToMate.add(child.info.move);
+            return true;
+         }
+      }
+      
+      for(Tree<GameState> child : tree.children)
+      {
+         for(Tree<GameState> grandChild : child.children)
+         {
+            if(tracePathToMate(player, grandChild))
+            {
+               pathToMate.add(grandChild.info.move);
+               return true;
+            }
+         }
+      }
+      return false; 
+   }
+   
+   private void trimTree(Tree<GameState> tree, boolean max)
+   {
+      // make sure there are children to trim
+      if(tree.children.size() <= MAX_BRANCH)
+         return;
+      
+      // sort best positions to the front (negative is good for black)
+      Collections.sort(tree.children);
+      if(max)
+         Collections.reverse(tree.children);
+      
+      // trim off past the given threshold, or keep all if less than MAX_BRANCH
+      int oldLength = tree.children.size();
+      tree.children.subList(MAX_BRANCH, oldLength).clear();
+      
+      for(Tree<GameState> child : tree.children)
+      {
+         trimTree(child, !max);
+      }
    }
    
    /**
     Sorts the given list of boards in ascending order
 
-    @param list - the list of boards to be sorted
+    @param list the list of boards to be sorted
     */
    private void sortBoardsA(ArrayList<ChessBoard> list)
    {

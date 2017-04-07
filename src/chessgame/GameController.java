@@ -75,24 +75,27 @@ public class GameController
     Sets the board with the given list of pieces IF the resulting position is
     legal. If position is illegal, does nothing. Criteria for legality are
     listed in ChessBoard.checkPositionIsLegal()
-
+   
     @param pieces - list of pieces specifying the board position to set up
     @return whether board was legal and position was updated
     */
-   public boolean setBoardPosition(ArrayList<ChessPiece> pieces)
+   public boolean setBoardPosition(ArrayList<ChessPiece> pieces, 
+         ChessPiece.Color playerToMove)
    {
       ChessBoard temp = new ChessBoard(pieces);
       if (temp.checkPositionIsLegal())
       {
          board = temp;
+         deepBlue = new AI(temp, playerToMove);
          return true;
       }
       return false;
    }
    
-   public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves)
+   public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves, 
+         boolean quickly)
    {
-      return deepBlue.solveForMate(color, moves);
+      return deepBlue.solveForMate(color, moves, quickly);
    }
 
    /**

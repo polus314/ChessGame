@@ -92,6 +92,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       
       DEBUG = false;
       colorToAdd = ChessPiece.Color.WHITE;
+      humanPlayer = ChessPiece.Color.WHITE;
       changeMode(GameMode.UNDECIDED);
       gamePanel.myBoard.setPieces(controller.getPiecesList());
       
@@ -264,7 +265,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          int choice = JOptionPane.showOptionDialog(this, KEEP_BOARD_MSG, KEEP_BOARD_TITLE, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
          if (choice == 0)
          {
-            if (!controller.setBoardPosition(gamePanel.myBoard.getPiecesList()))
+            if (!controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer))
             {
                JOptionPane.showMessageDialog(this, ILLEGAL_BOARD_POS);
                shouldChangeMode = false;
@@ -273,7 +274,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          else if (choice == 1)
          {
             ArrayList<ChessPiece> standardPosition = new ChessBoard().getPiecesList();
-            controller.setBoardPosition(standardPosition);
+            controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
             gamePanel.myBoard.setPieces(standardPosition);
          }
          else
@@ -286,7 +287,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       {
          changeMode(newMode);
          colorMenu.setColor(null);
-         humanPlayer = null;
       }
    }
 
@@ -307,46 +307,75 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             changeMode(GameMode.UNDECIDED);
             break;
          case "Save":
-            JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-            File selectedFile;
-            if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) 
-            {
-               selectedFile = chooser.getSelectedFile();
-            }
-            else
-               return;
-            if(controller.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
-               System.out.println("Save Successful");
-            else
-               System.out.println("Save Failed");
+            saveToFile();
             break;
          case "Load":
-            chooser = new JFileChooser(System.getProperty("user.dir"));
-            if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
-            {
-               selectedFile = chooser.getSelectedFile();
-            }
-            else
-               return;
-            if(controller.loadPositionFromFile(selectedFile.getAbsolutePath()))
-            {
-               gamePanel.myBoard.setPieces(controller.getPiecesList());
-               System.out.println("Load Successful");
-            }
-            else
-               System.out.println("Load failed");
+            loadFromFile();
             break;
          case "Solve":
-            String moves = JOptionPane.showInputDialog("How many moves?");
-            int x = Integer.parseInt(moves);
-            // use x in AI to solve for mate
-            System.out.println("Moves: " + x);
-            ArrayList<ChessMove> moveList = 
-                  controller.solveForMate(humanPlayer, x);
-            
+            solveForMate();
             break;
       }
       refresh();
+   }
+   
+   private void saveToFile()
+   {
+      JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+      File selectedFile;
+      if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) 
+      {
+         selectedFile = chooser.getSelectedFile();
+      }
+      else
+         return;
+      if(controller.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
+         System.out.println("Save Successful");
+      else
+         System.out.println("Save Failed");
+   }
+   
+   private void loadFromFile()
+   {
+      File selectedFile;
+      JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+      if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
+      {
+         selectedFile = chooser.getSelectedFile();
+      }
+      else
+         return;
+      if(controller.loadPositionFromFile(selectedFile.getAbsolutePath()))
+      {
+         gamePanel.myBoard.setPieces(controller.getPiecesList());
+         System.out.println("Load Successful");
+      }
+      else
+         System.out.println("Load failed");
+   }
+   
+   private void solveForMate()
+   {
+      boolean validNumber = false;
+      int x = 1;
+      while(!validNumber)
+      {
+         String moves = JOptionPane.showInputDialog("How many moves?");
+         try
+         {
+            x = Integer.parseInt(moves);
+            validNumber = true;
+         }
+         catch(NumberFormatException e)
+         {
+         }
+      }
+      // use x in AI to solve for mate
+      System.out.println("Moves: " + x);
+      controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
+      ArrayList<ChessMove> moveList = 
+            controller.solveForMate(humanPlayer, x, x > 1);
+      System.out.println("MoveList: " + moveList);
    }
 
    private void refresh()

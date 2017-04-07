@@ -10,21 +10,22 @@ import java.util.ArrayList;
  @param <T> type of the information stored in the Tree
  @author John Polus
  */
-public class Tree<T>
+public class Tree<T extends Comparable<T>> implements Comparable<Tree<T>>
 {
    public ArrayList<Tree<T>> children;
    public T info;
-
+   
    public Tree(T in)
    {
       children = new ArrayList<>();
       info = in;
    }
-
-//   public void addChild(T childInfo)
-//   {
-//      children.add(new Tree(childInfo));
-//   }
+   
+   @Override
+   public int compareTo(Tree<T> rhs)
+   {
+      return info.compareTo(rhs.info);
+   }
 
    /**
    This is my first recursive method ever. Hopefully my computer doesn't blow
