@@ -109,7 +109,7 @@ public class GameController
     */
    public boolean takeAction(int x, int y)
    {
-      System.out.println("Board: \n" + board.toString());
+      //System.out.println("Board: \n" + board.toString());
       switch (mode)
       {
          case SINGLE:
@@ -328,7 +328,7 @@ public class GameController
    @param filename name of file to read from
    @return whether board position was loaded successfully
    */
-   public boolean loadPositionFromFile(String filename)
+   public static boolean loadPositionFromFile(String filename, ChessBoard cb)
    {
       FileInputStream file;
       byte [] buf;
@@ -365,11 +365,11 @@ public class GameController
                ChessPiece cp = LoadPiece(nextPiece);
                cp.xCoord = col;
                cp.yCoord = row;
-               board.setPieceAt(cp, col, row);
+               cb.setPieceAt(cp, col, row);
             }
             else
             {
-               board.setPieceAt(null, col, row);
+               cb.setPieceAt(null, col, row);
             }
             posString = posString.substring(2);
          }
@@ -383,7 +383,7 @@ public class GameController
    @param loadString string that specifies what piece to create
    @return new piece created based on loadString
    */
-   private ChessPiece LoadPiece(String loadString)
+   private static ChessPiece LoadPiece(String loadString)
    {
       ChessPiece.Color color;
       if(loadString.charAt(0) == 'B')
@@ -412,7 +412,7 @@ public class GameController
    @param filename name of file to store position in
    @return whether the position was saved successfully
    */
-   public boolean savePositionToFile(ChessBoard cb, String filename)
+   public static boolean savePositionToFile(ChessBoard cb, String filename)
    {
       FileOutputStream file;
       byte buffer[] = cb.toString().getBytes();

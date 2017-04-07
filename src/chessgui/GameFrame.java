@@ -57,10 +57,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private JMenuBar menuBar;
    private JTextArea textArea;
 
-   private ChessPiece.Color humanPlayer;
+   //private ChessPiece.Color humanPlayer;
    private ChessPiece.Color colorToAdd;
    private ChessPiece pieceToAdd;
-   private GameController controller;
+   //private GameController controller;
 
    public static void main(String[] args)
    {
@@ -87,14 +87,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    {
       super(WINDOW_TITLE);
       initComponents();
-      initMouseListener();
-      controller = new GameController();
       
-      DEBUG = false;
       colorToAdd = ChessPiece.Color.WHITE;
-      humanPlayer = ChessPiece.Color.WHITE;
       changeMode(GameMode.UNDECIDED);
-      gamePanel.myBoard.setPieces(controller.getPiecesList());
       
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
    }
@@ -138,60 +133,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       add(gamePanel, BorderLayout.NORTH);
       setJMenuBar(menuBar);
    }
-   
-   private void initMouseListener()
-   {
-      addMouseListener(new MouseAdapter()
-      {
-         @Override
-         public void mousePressed(MouseEvent e)
-         {
-            if (DEBUG)
-            {
-               printDebugInfo();
-            }
-
-            Point p = SwingUtilities.convertPoint(null, e.getPoint(), gamePanel);
-            
-            int x = (int)p.getX();
-            int y = (int)p.getY();
-            if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
-            {
-               int a = x / Checkerboard.SQUARE_WIDTH;
-               int b = y / Checkerboard.SQUARE_HEIGHT;
-               if (!controller.takeAction(a, b))
-               {
-                  return;
-               }
-
-               updateGamePanel();
-               if (controller.getGameMode() == GameMode.SINGLE
-                     && controller.getPlayerToMove() != humanPlayer
-                     && !controller.isGameOver())
-               {
-                  if (controller.doCPUTurn())
-                  {
-                     refresh();
-                  }
-               }
-               if (controller.isGameOver())
-               {
-                  displayEndGameMessage();
-                  System.out.println("Done with game");
-                  changeMode(GameMode.UNDECIDED);
-                  refresh();
-               }
-            }
-         }
-      });  
-            
-   }
 
    private void displayEndGameMessage()
    {
-      ChessPiece.Color winner = controller.getWinningSide();
+      ChessPiece.Color winner = gamePanel.getWinningSide();
       String msg;
-      if (winner == humanPlayer)
+      if (winner == gamePanel.humanPlayer)
       {
          msg = GAME_WON_MSG;
       }
@@ -206,13 +153,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       JOptionPane.showMessageDialog(this, msg, GAME_OVER_TITLE, JOptionPane.PLAIN_MESSAGE);
    }
 
-   private void updateGamePanel()
-   {
-      gamePanel.myBoard.setSelectedPiece(controller.getSelectedPiece());
-      gamePanel.myBoard.setPieces(controller.getPiecesList());
-      repaint();
-   }
-
    @Override
    public void propertyChange(PropertyChangeEvent event)
    {
@@ -221,7 +161,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       {
          case "piece":
             pieceToAdd = determinePieceToAdd();
-            controller.setPieceToAdd(pieceToAdd);
+            gamePanel.setPieceToAdd(pieceToAdd);
             break;
          case "mode":
             handleModePropertyChange(event);
@@ -234,11 +174,11 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             }
             else if (mode == GameMode.SINGLE)
             {
-               humanPlayer = colorMenu.getColor();
+               gamePanel.humanPlayer = colorMenu.getColor();
                remove(colorMenu);
             }
             pieceToAdd = determinePieceToAdd();
-            controller.setPieceToAdd(pieceToAdd);
+            gamePanel.setPieceToAdd(pieceToAdd);
             break;
          default:
             return;
@@ -265,7 +205,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          int choice = JOptionPane.showOptionDialog(this, KEEP_BOARD_MSG, KEEP_BOARD_TITLE, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
          if (choice == 0)
          {
-            if (!controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer))
+            if (!gamePanel.startGameWithDisplayedPieces())
             {
                JOptionPane.showMessageDialog(this, ILLEGAL_BOARD_POS);
                shouldChangeMode = false;
@@ -273,9 +213,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          }
          else if (choice == 1)
          {
-            ArrayList<ChessPiece> standardPosition = new ChessBoard().getPiecesList();
-            controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
-            gamePanel.myBoard.setPieces(standardPosition);
+            gamePanel.setUpNewGame();
+            
          }
          else
          {
@@ -293,7 +232,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void changeMode(GameMode newMode)
    {
       modeMenu.setMode(newMode);
-      controller.setGameMode(newMode);
+      gamePanel.setGameMode(newMode);
       modeChanged = true;
    }
 
@@ -313,7 +252,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             loadFromFile();
             break;
          case "Solve":
-            solveForMate();
+            gamePanel.solveForMate();
             break;
       }
       refresh();
@@ -329,7 +268,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       }
       else
          return;
-      if(controller.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
+      if(GameController.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
          System.out.println("Save Successful");
       else
          System.out.println("Save Failed");
@@ -345,49 +284,23 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       }
       else
          return;
-      if(controller.loadPositionFromFile(selectedFile.getAbsolutePath()))
+      if(gamePanel.loadFromFile(selectedFile.getAbsolutePath()))
       {
-         gamePanel.myBoard.setPieces(controller.getPiecesList());
          System.out.println("Load Successful");
       }
       else
          System.out.println("Load failed");
    }
-   
-   private void solveForMate()
-   {
-      boolean validNumber = false;
-      int x = 1;
-      while(!validNumber)
-      {
-         String moves = JOptionPane.showInputDialog("How many moves?");
-         try
-         {
-            x = Integer.parseInt(moves);
-            validNumber = true;
-         }
-         catch(NumberFormatException e)
-         {
-         }
-      }
-      // use x in AI to solve for mate
-      System.out.println("Moves: " + x);
-      controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
-      ArrayList<ChessMove> moveList = 
-            controller.solveForMate(humanPlayer, x, x > 1);
-      System.out.println("MoveList: " + moveList);
-   }
 
    private void refresh()
    {
       pieceToAdd = determinePieceToAdd();
-      controller.setPieceToAdd(pieceToAdd);
+      gamePanel.setPieceToAdd(pieceToAdd);
 
       if (modeChanged)
       {
          setComponentsForNewMode();
       }
-      updateGamePanel();
 
       validate();
       int resize = getHeight();
@@ -408,16 +321,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       remove(modeMenu);
       remove(pieceMenu);
       remove(colorMenu);
-      switch (controller.getGameMode())
+      switch (gamePanel.getGameMode())
       {
          case UNDECIDED:
             menuBar.add(modeMenu, BorderLayout.EAST);
             break;
          case SINGLE:
-            if (humanPlayer == null)
-            {
-               menuBar.add(colorMenu, BorderLayout.EAST);
-            }
             break;
          case VERSUS:
             break;
@@ -439,25 +348,4 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       piece.setColor(colorToAdd);
       return piece;
    }
-
-   ///* DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
-   private boolean DEBUG;
-
-   private void printDebugInfo()
-   {
-      System.out.println("\nDEBUG INFO");
-      System.out.println("modeChanged: " + modeChanged);
-      System.out.println("pieceToAdd: " + pieceToAdd);
-      System.out.println("humanPlayer: " + humanPlayer);
-      System.out.println("mode(GUI): " + modeMenu.getMode());
-      System.out.println("mode(cont): " + controller.getGameMode());
-      System.out.println("selectedPiece(GUI): " + gamePanel.myBoard.selectedPiece);
-      System.out.println("selectedPiece(cont): " + controller.getSelectedPiece());
-      System.out.println("playerToMove: " + controller.getPlayerToMove());
-      System.out.println("color from ColorMenu: " + colorMenu.getColor() + "\n");
-
-      System.out.println("MoveList:" + controller.getMoveList().toString());
-   }
-
-//*/ // DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
 }
