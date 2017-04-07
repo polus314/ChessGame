@@ -147,18 +147,18 @@ public class AI
       return defenders;
    }
    
-   private ChessMove bfsBestMove(Tree<GameState> gameTree)
+   private int bfsFindMate(Tree<GameState> gameTree)
    {
       // search breadth first
-      // return move that is best
-      return new ChessMove();
+      // return number of moves to mate
+      return -1;
    }
    
-   private ChessMove dfsBestMove(Tree<GameState> gameTree)
+   private int dijkstraFindMate(Tree<GameState> gameTree)
    {
       // search depth first
-      // return move that is best
-      return new ChessMove();
+      // return number of moves to mate
+      return -1;
    }
 
    /**
@@ -180,8 +180,8 @@ public class AI
       
       switch(algorithm)
       {
-         case BFS: return bfsBestMove(gameTree);
-         case DFS: return dfsBestMove(gameTree);
+         //case BFS: return bfsBestMove(gameTree);
+         //case DFS: return dfsBestMove(gameTree);
          case MINI_MAX: return miniMaxBestMove(gameTree);
          default: return new ChessMove();
       }
@@ -618,22 +618,49 @@ public class AI
    public ArrayList<ChessMove> solveForMate(ChessPiece.Color player, int moves, 
          boolean quickly)
    {
-      Tree<GameState> tree = generateGameTree(2 * moves, quickly); // move = 2 * ply
-      System.out.println("Tree generated with " + (2 * moves) + " plies");
-      //if(quickly)
-      //   trimTree(tree, player == ChessPiece.Color.WHITE);
-      if(!forcesMate(player, tree))
+      Tree<GameState> tree = generateGameTree(2 * moves, quickly);
+      if(mateIsFound(tree))
       {
-         return null;
+         
       }
-      System.out.println("Forces Mate");
-      pathToMate = new ArrayList<>();
-      if(!tracePathToMate(player, tree))
-      {
-         return null;
-      }
-      Collections.reverse(pathToMate);
       return pathToMate;
+//      Tree<GameState> tree = generateGameTree(2 * moves, quickly); // move = 2 * ply
+//      System.out.println("Tree generated with " + (2 * moves) + " plies");
+//      //if(quickly)
+//      //   trimTree(tree, player == ChessPiece.Color.WHITE);
+//      if(!forcesMate(player, tree))
+//      {
+//         return null;
+//      }
+//      System.out.println("Forces Mate");
+//      pathToMate = new ArrayList<>();
+//      if(!tracePathToMate(player, tree))
+//      {
+//         return null;
+//      }
+//      Collections.reverse(pathToMate);
+//      return pathToMate;
+   }
+   
+   private int miniMaxFindMate(Tree<GameState> tree)
+   {
+      return -1;
+   }
+   
+   private boolean mateIsFound(Tree<GameState> tree)
+   {
+      int numMoves;
+      switch(algorithm)
+      {
+         case BFS: numMoves = bfsFindMate(tree); break;
+         case DFS: numMoves = dijkstraFindMate(tree); break;
+         default: numMoves = miniMaxFindMate(tree);
+      }
+      if(numMoves != -1)
+      {
+         return true;
+      }
+      return false;
    }
    
    /**
