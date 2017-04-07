@@ -1,10 +1,13 @@
 package chessgui;
 
 import chessgame.ChessBoard;
+import chessgame.ChessMove;
 import chessgame.ChessPiece;
 import chessgame.GameController;
 import chessgame.GameMode;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -19,6 +22,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 /**
@@ -30,22 +34,8 @@ import javax.swing.SwingUtilities;
  */
 public class GameFrame extends JFrame implements ActionListener, PropertyChangeListener
 {
-   private ModeMenu modeMenu;
-   private GamePanel gamePanel;
-   private ColorMenu colorMenu;
-   private PieceMenu pieceMenu;
-   private boolean modeChanged;
-   private JMenuBar menuBar;
-
-   private ChessPiece.Color humanPlayer;
-   private ChessPiece.Color colorToAdd;
-   private ChessPiece pieceToAdd;
-   private GameController controller;
-
    private static final int FRAME_HEIGHT = 500;
    private static final int FRAME_WIDTH = 500;
-   private int topBorderHeight = 58;
-   private int leftBorderWidth = 8;
 
    public static final String WINDOW_TITLE = "John Polus's Chess Game";
 
@@ -58,6 +48,19 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public static final String GAME_WON_MSG = "You have won!";
    public static final String GAME_TIED_MSG = "It's a tie";
    public static final String GAME_LOST_MSG = "You have lost!";
+   
+   private ModeMenu modeMenu;
+   private GamePanel gamePanel;
+   private ColorMenu colorMenu;
+   private PieceMenu pieceMenu;
+   private boolean modeChanged;
+   private JMenuBar menuBar;
+   private JTextArea textArea;
+
+   private ChessPiece.Color humanPlayer;
+   private ChessPiece.Color colorToAdd;
+   private ChessPiece pieceToAdd;
+   private GameController controller;
 
    public static void main(String[] args)
    {
@@ -83,16 +86,24 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public GameFrame()
    {
       super(WINDOW_TITLE);
+      initComponents();
+      initMouseListener();
+      controller = new GameController();
+      
+      DEBUG = false;
+      colorToAdd = ChessPiece.Color.WHITE;
+      changeMode(GameMode.UNDECIDED);
+      gamePanel.myBoard.setPieces(controller.getPiecesList());
+      
+      setSize(FRAME_WIDTH, FRAME_HEIGHT);
+   }
+   
+   private void initComponents()
+   {
       modeMenu = new ModeMenu();
       gamePanel = new GamePanel();
       colorMenu = new ColorMenu();
       pieceMenu = new PieceMenu();
-
-      DEBUG = false; //true;
-      controller = new GameController();
-      colorToAdd = ChessPiece.Color.WHITE;
-      changeMode(GameMode.UNDECIDED);
-      gamePanel.myBoard.setPieces(controller.getPiecesList());
       
       menuBar = new JMenuBar();
       JMenu fileMenu = new JMenu(" File ");
@@ -119,11 +130,16 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       modeMenu.addPropertyChangeListener(this);
       colorMenu.addPropertyChangeListener(this);
 
-      setSize(FRAME_WIDTH, FRAME_HEIGHT);
-
-      add(gamePanel, BorderLayout.CENTER);
-      this.setJMenuBar(menuBar);
-
+      textArea = new JTextArea();
+      textArea.setMinimumSize(new Dimension(100, 50));
+      textArea.append("Start of Program");
+      add(textArea, BorderLayout.SOUTH);
+      add(gamePanel, BorderLayout.NORTH);
+      setJMenuBar(menuBar);
+   }
+   
+   private void initMouseListener()
+   {
       addMouseListener(new MouseAdapter()
       {
          @Override
@@ -134,8 +150,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                printDebugInfo();
             }
 
-            int x = e.getX() - (gamePanel.getX() + leftBorderWidth);
-            int y = e.getY() - (gamePanel.getY() + topBorderHeight);
+            Point p = SwingUtilities.convertPoint(null, e.getPoint(), gamePanel);
+            
+            int x = (int)p.getX();
+            int y = (int)p.getY();
             if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
             {
                int a = x / Checkerboard.SQUARE_WIDTH;
@@ -164,7 +182,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                }
             }
          }
-      });
+      });  
+            
    }
 
    private void displayEndGameMessage()
@@ -322,6 +341,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             int x = Integer.parseInt(moves);
             // use x in AI to solve for mate
             System.out.println("Moves: " + x);
+            ArrayList<ChessMove> moveList = 
+                  controller.solveForMate(humanPlayer, x);
+            
             break;
       }
       refresh();

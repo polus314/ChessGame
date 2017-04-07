@@ -89,6 +89,11 @@ public class GameController
       }
       return false;
    }
+   
+   public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves)
+   {
+      return deepBlue.solveForMate(color, moves);
+   }
 
    /**
     Takes the appropriate action for when the given coordinates are selected.

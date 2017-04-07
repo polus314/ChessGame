@@ -8,6 +8,17 @@ package chessgame;
 */
 public class EndGameAI extends AI 
 {
+   
+   public EndGameAI()
+   {
+      super();
+   }
+   
+   public EndGameAI(ChessBoard cb, ChessPiece.Color playerToMove)
+   {
+      super(cb, playerToMove);
+   }
+   
    /**
    
    @param cb 
@@ -15,6 +26,11 @@ public class EndGameAI extends AI
    @Override
    protected void rateBoard(ChessBoard cb)
    {
-      
+      int kingDistance = findDistanceBetweenKings();
+   }
+   
+   private int findDistanceBetweenKings()
+   {
+      return 0;
    }
 }

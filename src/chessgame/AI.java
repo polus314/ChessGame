@@ -54,10 +54,10 @@ public class AI
       }
    }
    
-   private final ChessBoard gameBoard;
-   private final ChessPiece.Color playerToMove;
-   private final boolean gameOver;
-   private Algorithm algorithm;
+   protected ChessBoard gameBoard;
+   protected ChessPiece.Color playerToMove;
+   protected boolean gameOver;
+   protected Algorithm algorithm;
 
    /**
     Default constructor, initializes the chessboard to the start of a new game
@@ -81,6 +81,7 @@ public class AI
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
       gameOver = gameBoard.checkForMate(playerToMove);
+      algorithm = Algorithm.MINI_MAX;
    }
 
    /**
@@ -587,6 +588,12 @@ public class AI
       algorithm  = a;
    }
 
+   public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves)
+   {
+      Tree<GameState> tree = generateGameTree(2 * moves); // move = 2 * ply
+      return new ArrayList<ChessMove>();
+   }
+   
    /**
     Sorts the given list of boards in ascending order
 
