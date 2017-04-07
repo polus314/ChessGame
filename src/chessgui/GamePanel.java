@@ -129,9 +129,10 @@ public class GamePanel extends JPanel
    
    public boolean loadFromFile(String pathname)
    {
-      if(GameController.loadPositionFromFile(pathname, new ChessBoard(controller.getPiecesList())))
+      ChessBoard cb = new ChessBoard(controller.getPiecesList());
+      if(GameController.loadPositionFromFile(pathname, cb))
       {
-         myBoard.setPieces(getPiecesList());
+         myBoard.setPieces(cb.getPiecesList());
          return true;
       }
       else
