@@ -1,5 +1,6 @@
 package chessgui;
 
+import chessgame.AI;
 import chessgame.ChessBoard;
 import chessgame.ChessMove;
 import chessgame.ChessPiece;
@@ -252,10 +253,40 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             loadFromFile();
             break;
          case "Solve":
+            String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
+            setSettings(settings);
             gamePanel.solveForMate();
             break;
       }
       refresh();
+   }
+   
+   private void setSettings(String settings)
+   {
+      if(settings.charAt(0) == 'f')
+      {
+         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.FORCING;
+      }
+      else if (settings.charAt(0) == 'm')
+      {
+         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.MATERIAL;
+      }
+      else
+      {
+         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.UNINFORMED;
+      }
+      if(settings.charAt(1) == 'b')
+      {
+         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.BFS;
+      }
+      else if(settings.charAt(1) == 'd')
+      {
+         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.DFS;
+      }
+      else
+      {
+         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.GREEDY;
+      }
    }
    
    private void saveToFile()

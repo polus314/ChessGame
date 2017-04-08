@@ -15,9 +15,9 @@ public class AI
    public static final int MAX_BRANCH = 5;
    
    // Enumerates the algorithms that can be used to evaluate the position
-   public enum Algorithm { DFS, BFS, MINI_MAX };
+   public enum Algorithm { DFS, BFS, GREEDY };
    
-   //public enum Heuristic { OPENING };
+   public enum Heuristic { MATERIAL, FORCING, CHECK, UNINFORMED };
    // have subclasses with separate heuristics?
    
    /**
@@ -64,7 +64,8 @@ public class AI
    protected ChessBoard gameBoard;
    protected ChessPiece.Color playerToMove;
    protected boolean gameOver;
-   protected Algorithm algorithm;
+   public Algorithm algorithm;
+   public Heuristic heuristic;
    private ArrayList<ChessMove> pathToMate;
 
    /**
@@ -75,7 +76,8 @@ public class AI
       gameBoard = new ChessBoard();
       playerToMove = ChessPiece.Color.WHITE;
       gameOver = gameBoard.checkForMate(playerToMove);
-      algorithm = Algorithm.MINI_MAX;
+      algorithm = Algorithm.BFS;
+      heuristic = Heuristic.UNINFORMED;
    }
 
    /**
@@ -89,7 +91,8 @@ public class AI
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
       gameOver = gameBoard.checkForMate(playerToMove);
-      algorithm = Algorithm.MINI_MAX;
+      algorithm = Algorithm.BFS;
+      heuristic = Heuristic.UNINFORMED;
    }
 
    /**
@@ -151,6 +154,30 @@ public class AI
    {
       // search breadth first
       // return number of moves to mate
+      ArrayList<Tree<GameState>> states = new ArrayList<>(), 
+                                 nextLevel = new ArrayList<>();
+      states.add(gameTree);
+      int count = 0;
+      boolean mateFound = false;
+      System.out.println("In BFS Find Mate");
+      while(!states.isEmpty() && !mateFound)
+      {
+         Tree<GameState> current = states.get(0);
+         states.remove(0);
+         if(current.info.board.checkForMate(ChessPiece.Color.BLACK))
+         {
+            mateFound = true;
+            return count;
+         }
+         nextLevel.addAll(current.children);
+         if(states.isEmpty())
+         {
+            states = nextLevel;
+            nextLevel = new ArrayList<>();
+            count++;
+            System.out.println("Count: " + count);
+         }
+      }
       return -1;
    }
    
@@ -182,7 +209,7 @@ public class AI
       {
          //case BFS: return bfsBestMove(gameTree);
          //case DFS: return dfsBestMove(gameTree);
-         case MINI_MAX: return miniMaxBestMove(gameTree);
+         //case MINI_MAX: return miniMaxBestMove(gameTree);
          default: return new ChessMove();
       }
    }
@@ -208,7 +235,7 @@ public class AI
       {
          ChessMove move = moveList.get(i);
          ChessBoard newBoard = curBoard.advancePosition(move);
-         rateBoard(newBoard);
+         rateBoard(newBoard, color.opposite());
          Tree<GameState> child = new Tree<>(new GameState(newBoard, move));
          parentTree.children.add(child);
       }
@@ -229,7 +256,7 @@ public class AI
       ChessPiece.Color playerColor = playerToMove;
       
       // create the root node
-      rateBoard(gameBoard);
+      rateBoard(gameBoard, playerToMove);
       Tree<GameState> gameTree = new Tree<>(new GameState(gameBoard, null));
       
       // maintain a list of current level nodes and a list of all their children
@@ -529,25 +556,42 @@ public class AI
 
     @param cb
     */
-   protected void rateBoard(ChessBoard cb)
+   protected void rateBoard(ChessBoard cb, ChessPiece.Color player)
    {
-      cb.materialRating = matRating(cb);
-      cb.mobilityRating = mobRating(cb);
-      
-//      //TODO - rewrite hangRating method and do this in there
-//      // also LOOK CAREFULLY, I am switching these because a positive should
-//      // be good for that color
-//      float wHRating = hangRating(cb, Color.BLACK);
-//      float bHRating = hangRating(cb, Color.WHITE);
-//      float totalHRating = wHRating + bHRating;
-//      if(totalHRating < (FLOAT_ERROR))
-//      {
-         cb.hangingRating = 0.0f;
-//      }
-//      else
-//      {
-//         cb.hangingRating = (wHRating - bHRating) / totalHRating;
-//      }
+      switch(heuristic)
+      {
+         case UNINFORMED:
+            cb.overallRating = 0.0f;
+            break;
+         case MATERIAL: 
+            cb.overallRating = matRating(cb);
+            break;
+         case FORCING:
+            cb.overallRating = forcingRating(cb, player);
+            break;
+      }
+//      cb.materialRating = matRating(cb);
+//      cb.mobilityRating = mobRating(cb);
+//      
+////      //TODO - rewrite hangRating method and do this in there
+////      // also LOOK CAREFULLY, I am switching these because a positive should
+////      // be good for that color
+////      float wHRating = hangRating(cb, Color.BLACK);
+////      float bHRating = hangRating(cb, Color.WHITE);
+////      float totalHRating = wHRating + bHRating;
+////      if(totalHRating < (FLOAT_ERROR))
+////      {
+//         cb.hangingRating = 0.0f;
+////      }
+////      else
+////      {
+////         cb.hangingRating = (wHRating - bHRating) / totalHRating;
+////      }
+   }
+   
+   private float forcingRating(ChessBoard cb, ChessPiece.Color player)
+   {
+      return (-1) * howManyMoves(player.opposite(), cb);
    }
    
    /**
@@ -619,9 +663,10 @@ public class AI
          boolean quickly)
    {
       Tree<GameState> tree = generateGameTree(2 * moves, quickly);
+      pathToMate = new ArrayList<>();
       if(mateIsFound(tree))
       {
-         
+         tracePathToMate(player, tree);
       }
       return pathToMate;
 //      Tree<GameState> tree = generateGameTree(2 * moves, quickly); // move = 2 * ply
@@ -654,13 +699,10 @@ public class AI
       {
          case BFS: numMoves = bfsFindMate(tree); break;
          case DFS: numMoves = dijkstraFindMate(tree); break;
-         default: numMoves = miniMaxFindMate(tree);
+         case GREEDY: numMoves = bfsFindMate(tree); break;
+         default: numMoves = -1;
       }
-      if(numMoves != -1)
-      {
-         return true;
-      }
-      return false;
+      return numMoves != -1;
    }
    
    /**

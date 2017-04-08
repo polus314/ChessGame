@@ -13,7 +13,7 @@ public class OpeningAI extends AI
    @param cb 
    */
    @Override
-   protected void rateBoard(ChessBoard cb)
+   protected void rateBoard(ChessBoard cb, ChessPiece.Color player)
    {
       
    }

@@ -36,6 +36,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
    private final ChessPiece[][] pieceArray;
 
+   public float overallRating;
    public float mobilityRating;
    public float materialRating;
    public float hangingRating;
@@ -601,22 +602,28 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    @Override
    public int compare(ChessBoard cb1, ChessBoard cb2)
    {
-      if (cb1.materialRating > cb2.materialRating)
+      if(cb1.overallRating > cb2.overallRating)
       {
          return 1;
       }
-      if (cb1.materialRating == cb2.materialRating)
-      {
-         if (cb1.mobilityRating > cb2.mobilityRating)
-         {
-            return 1;
-         }
-         if (cb1.mobilityRating == cb2.mobilityRating)
-         {
-            return 0;
-         }
-      }
-      return -1;
+      return cb1.overallRating == cb2.overallRating ? 0 : -1;
+//      
+//      if (cb1.materialRating > cb2.materialRating)
+//      {
+//         return 1;
+//      }
+//      if (cb1.materialRating == cb2.materialRating)
+//      {
+//         if (cb1.mobilityRating > cb2.mobilityRating)
+//         {
+//            return 1;
+//         }
+//         if (cb1.mobilityRating == cb2.mobilityRating)
+//         {
+//            return 0;
+//         }
+//      }
+//      return -1;
    }
 
    /**
@@ -630,31 +637,36 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    @Override
    public int compareTo(ChessBoard cb)
    {
-      if (materialRating < cb.materialRating)
+      if(overallRating > cb.overallRating)
       {
-         return -1;
+         return 1;
       }
-      if (materialRating == cb.materialRating)
-      {
-//         boolean lhsCheck = checkForCheck(ChessPiece.Color.WHITE) || 
-//               checkForCheck(ChessPiece.Color.BLACK);
-//         boolean rhsCheck = cb.checkForCheck(ChessPiece.Color.WHITE) || 
-//               cb.checkForCheck(ChessPiece.Color.BLACK);
-//         if(lhsCheck && rhsCheck)
-//         {
-            if (mobilityRating < cb.mobilityRating)
-            {
-               return -1;
-            }
-            if (mobilityRating == cb.mobilityRating)
-            {
-               return 0;
-            }
-//         }
-//         if(rhsCheck)
-//            return -1;
-      }
-      return 1;
+      return overallRating == cb.overallRating ? 0 : -1;
+//      if (materialRating < cb.materialRating)
+//      {
+//         return -1;
+//      }
+//      if (materialRating == cb.materialRating)
+//      {
+////         boolean lhsCheck = checkForCheck(ChessPiece.Color.WHITE) || 
+////               checkForCheck(ChessPiece.Color.BLACK);
+////         boolean rhsCheck = cb.checkForCheck(ChessPiece.Color.WHITE) || 
+////               cb.checkForCheck(ChessPiece.Color.BLACK);
+////         if(lhsCheck && rhsCheck)
+////         {
+//            if (mobilityRating < cb.mobilityRating)
+//            {
+//               return -1;
+//            }
+//            if (mobilityRating == cb.mobilityRating)
+//            {
+//               return 0;
+//            }
+////         }
+////         if(rhsCheck)
+////            return -1;
+//      }
+//      return 1;
    }
 
    /**

@@ -19,7 +19,7 @@ public class GameController
    private ChessBoard board;
    private ChessPiece selectedPiece, pieceToAdd;
    private ChessPiece.Color playerToMove;
-   private AI deepBlue;
+   public AI deepBlue;
    private ArrayList<ChessMove> moveList;
    private GameMode mode;
 

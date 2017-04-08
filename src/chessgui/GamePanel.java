@@ -24,7 +24,7 @@ public class GamePanel extends JPanel
 {
 
    public Checkerboard myBoard;
-   private GameController controller;
+   public GameController controller;
    public ChessPiece.Color humanPlayer;
    /**
     Default constructor, initializes the Checkerboard
@@ -36,6 +36,7 @@ public class GamePanel extends JPanel
       setMinimumSize(new Dimension(425, 425));
       controller = new GameController();
       myBoard.setPieces(controller.getPiecesList());
+      humanPlayer = ChessPiece.Color.WHITE;
       
       initMouseListener();
    }
@@ -77,8 +78,7 @@ public class GamePanel extends JPanel
                }
             }
          }
-      });  
-            
+      });
    }
    
    private void updateGamePanel()
