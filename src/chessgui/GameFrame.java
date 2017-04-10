@@ -2,21 +2,16 @@ package chessgui;
 
 import chessgame.AI;
 import chessgame.ChessBoard;
-import chessgame.ChessMove;
 import chessgame.ChessPiece;
 import chessgame.GameController;
 import chessgame.GameMode;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -56,7 +51,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private PieceMenu pieceMenu;
    private boolean modeChanged;
    private JMenuBar menuBar;
-   private JTextArea textArea;
 
    //private ChessPiece.Color humanPlayer;
    private ChessPiece.Color colorToAdd;
@@ -127,10 +121,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       modeMenu.addPropertyChangeListener(this);
       colorMenu.addPropertyChangeListener(this);
 
-      textArea = new JTextArea();
-      textArea.setMinimumSize(new Dimension(100, 50));
-      textArea.append("Start of Program");
-      add(textArea, BorderLayout.SOUTH);
       add(gamePanel, BorderLayout.NORTH);
       setJMenuBar(menuBar);
    }

@@ -19,9 +19,6 @@ import javax.imageio.ImageIO;
 
 public class Checkerboard
 {
-
-   // TODO - change this to width and height as well
-
    public static final int NUM_ROWS = ChessBoard.HEIGHT;
    public static final int NUM_COLS = ChessBoard.WIDTH;
 
@@ -113,6 +110,16 @@ public class Checkerboard
       }
    }
 
+   public void setPieceAt(int x, int y, ChessPiece cp)
+   {
+      this.pieces[x][y] = cp;
+   }
+   
+   public ChessPiece getPieceAt(int x, int y)
+   {
+      return pieces[x][y];
+   }
+   
    public void setSelectedPiece(ChessPiece cp)
    {
       selectedPiece = cp;
