@@ -1,24 +1,23 @@
 package chessgui;
 
-import chessgame.AI;
-import chessgame.ChessBoard;
-import chessgame.ChessPiece;
-import chessgame.GameController;
-import chessgame.GameMode;
+import chessgame.*;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 /**
@@ -45,17 +44,93 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public static final String GAME_TIED_MSG = "It's a tie";
    public static final String GAME_LOST_MSG = "You have lost!";
    
+   private class MyMouseAdapter extends MouseAdapter
+   {
+      @Override
+      public void mousePressed(MouseEvent e)
+      {
+         e = SwingUtilities.convertMouseEvent(null, e, gamePanel);
+         int x = e.getX();
+         int y = e.getY() - gamePanel.myBoard.getY();
+         if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
+         {
+            int a = x / Checkerboard.SQUARE_WIDTH;
+            int b = y / Checkerboard.SQUARE_HEIGHT;
+            switch(controller.getGameMode())
+            {
+               case SET_UP: doSetUp(e, a, b); break;
+               case SINGLE:
+               case VERSUS: doGamePlay(e, a,b); break;
+            }
+            repaint();
+         }
+      }
+
+      @Override
+      public void mouseWheelMoved(MouseWheelEvent e)
+      {
+         int clicks = Math.abs(e.getWheelRotation());
+         
+         if(!e.isShiftDown())
+         {
+            switch(pieceToAdd.oneLetterIdentifier())
+            {
+               case "K": 
+                  pieceToAdd = new Queen(colorToAdd);//etc etc TODO
+                  break;
+               case "Q": 
+                  pieceToAdd = new Bishop(colorToAdd);
+                  break;
+               case "B": 
+                  pieceToAdd = new Knight(colorToAdd);
+                  break;
+               case "N": 
+                  pieceToAdd = new Rook(colorToAdd);
+                  break;
+               case "R": 
+                  pieceToAdd = new Pawn(colorToAdd);
+                  break;
+               case "":
+                  pieceToAdd = new King(colorToAdd);
+                  break;
+
+            }
+            String label = pieceToAdd == null ? "Empty" : pieceToAdd.toString();
+            lbl_pieceToAdd.setText(label);
+         }
+         else if(pieceToAdd != null)
+         {
+            if(clicks % 2 == 1)
+            {
+               ChessPiece.Color curColor = pieceToAdd.getColor();
+               pieceToAdd.setColor(curColor.opposite());
+               colorToAdd = curColor.opposite();
+               lbl_pieceToAdd.setText(pieceToAdd.toString());
+            }
+         }
+      }
+   }
+   
+   private void initMouseListener()
+   {
+      MouseAdapter m = new MyMouseAdapter();
+      addMouseListener(m);
+      addMouseWheelListener(m);
+   }
+   
    private ModeMenu modeMenu;
    private GamePanel gamePanel;
    private ColorMenu colorMenu;
    private PieceMenu pieceMenu;
    private boolean modeChanged;
-   private JMenuBar menuBar;
+   private JMenuBar menuBar; 
+   
+   public GameController controller;
+   public ChessPiece.Color humanPlayer;
+   private JLabel lbl_pieceToAdd;
 
-   //private ChessPiece.Color humanPlayer;
    private ChessPiece.Color colorToAdd;
    private ChessPiece pieceToAdd;
-   //private GameController controller;
 
    public static void main(String[] args)
    {
@@ -83,6 +158,11 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       super(WINDOW_TITLE);
       initComponents();
       
+      controller = new GameController();
+      humanPlayer = ChessPiece.Color.WHITE;
+      
+      lbl_pieceToAdd = new JLabel("Piece To Add");
+      add(lbl_pieceToAdd);
       colorToAdd = ChessPiece.Color.WHITE;
       changeMode(GameMode.UNDECIDED);
       
@@ -123,13 +203,84 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
       add(gamePanel, BorderLayout.NORTH);
       setJMenuBar(menuBar);
+      
+      initMouseListener();
+   }
+   
+   private void doSetUp(MouseEvent e, int a, int b)
+   {
+      int button = e.getButton();
+      if(button == MouseEvent.BUTTON1) // Left Mouse Button
+      {
+         System.out.println("Button 1");
+         System.out.println("PieceToAdd: " + pieceToAdd);
+         if(pieceToAdd != null)
+         {
+            ChessPiece newPiece = pieceToAdd.copyOfThis();
+            newPiece.movePiece(a, b);
+            gamePanel.myBoard.setPieceAt(a, b, newPiece);
+         }
+         else
+            gamePanel.myBoard.setPieceAt(a, b, null);
+      }
+      else if(button == MouseEvent.BUTTON2) // Middle Mouse Button
+      {         
+         System.out.println("Button 2");
+         pieceToAdd = gamePanel.myBoard.getPieceAt(a, b);
+         if(pieceToAdd != null)
+            pieceToAdd = pieceToAdd.copyOfThis();
+         String label = pieceToAdd == null ? "Empty" : pieceToAdd.toString();
+         lbl_pieceToAdd.setText(label);
+      }
+      else if(button == MouseEvent.BUTTON3) // Right Mouse Button
+      {
+         System.out.println("Button 3");
+         gamePanel.myBoard.setPieceAt(a, b, null);
+      }
+      else
+      {
+         System.out.println("Button?: " + button);
+      }
+   }
+   
+   private void updateGamePanel()
+   {
+      gamePanel.myBoard.setSelectedPiece(controller.getSelectedPiece());
+      gamePanel.myBoard.setPieces(controller.getPiecesList());
+      repaint();
+   }
+   
+   private void doGamePlay(MouseEvent e, int a, int b)
+   {
+      if (!controller.takeAction(a, b))
+      {
+         return;
+      }
+
+      updateGamePanel();
+      if (controller.getGameMode() == GameMode.SINGLE
+            && controller.getPlayerToMove() != humanPlayer
+            && !controller.isGameOver())
+      {
+         if (controller.doCPUTurn())
+         {
+            refresh();
+         }
+      }
+      if (controller.isGameOver())
+      {
+         displayEndGameMessage();
+         System.out.println("Done with game");
+         changeMode(GameMode.UNDECIDED);
+         refresh();
+      }
    }
 
    private void displayEndGameMessage()
    {
-      ChessPiece.Color winner = gamePanel.getWinningSide();
+      ChessPiece.Color winner = controller.getWinningSide();
       String msg;
-      if (winner == gamePanel.humanPlayer)
+      if (winner == humanPlayer)
       {
          msg = GAME_WON_MSG;
       }
@@ -152,7 +303,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       {
          case "piece":
             pieceToAdd = determinePieceToAdd();
-            gamePanel.setPieceToAdd(pieceToAdd);
             break;
          case "mode":
             handleModePropertyChange(event);
@@ -165,11 +315,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             }
             else if (mode == GameMode.SINGLE)
             {
-               gamePanel.humanPlayer = colorMenu.getColor();
+               humanPlayer = colorMenu.getColor();
                remove(colorMenu);
             }
             pieceToAdd = determinePieceToAdd();
-            gamePanel.setPieceToAdd(pieceToAdd);
             break;
          default:
             return;
@@ -196,7 +345,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          int choice = JOptionPane.showOptionDialog(this, KEEP_BOARD_MSG, KEEP_BOARD_TITLE, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
          if (choice == 0)
          {
-            if (!gamePanel.startGameWithDisplayedPieces())
+            if (!startGameWithDisplayedPieces())
             {
                JOptionPane.showMessageDialog(this, ILLEGAL_BOARD_POS);
                shouldChangeMode = false;
@@ -204,7 +353,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          }
          else if (choice == 1)
          {
-            gamePanel.setUpNewGame();
+            setUpNewGame();
             
          }
          else
@@ -223,7 +372,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void changeMode(GameMode newMode)
    {
       modeMenu.setMode(newMode);
-      gamePanel.setGameMode(newMode);
+      controller.setGameMode(newMode);
       modeChanged = true;
    }
 
@@ -245,7 +394,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          case "Solve":
             String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
             setSettings(settings);
-            gamePanel.solveForMate();
+            solveForMate();
             break;
       }
       refresh();
@@ -255,27 +404,27 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    {
       if(settings.charAt(0) == 'f')
       {
-         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.FORCING;
+         controller.deepBlue.heuristic = AI.Heuristic.FORCING;
       }
       else if (settings.charAt(0) == 'm')
       {
-         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.MATERIAL;
+         controller.deepBlue.heuristic = AI.Heuristic.MATERIAL;
       }
       else
       {
-         gamePanel.controller.deepBlue.heuristic = AI.Heuristic.UNINFORMED;
+         controller.deepBlue.heuristic = AI.Heuristic.UNINFORMED;
       }
       if(settings.charAt(1) == 'b')
       {
-         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.BFS;
+         controller.deepBlue.algorithm = AI.Algorithm.BFS;
       }
       else if(settings.charAt(1) == 'd')
       {
-         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.DFS;
+         controller.deepBlue.algorithm = AI.Algorithm.DFS;
       }
       else
       {
-         gamePanel.controller.deepBlue.algorithm = AI.Algorithm.GREEDY;
+         controller.deepBlue.algorithm = AI.Algorithm.GREEDY;
       }
    }
    
@@ -305,7 +454,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       }
       else
          return;
-      if(gamePanel.loadFromFile(selectedFile.getAbsolutePath()))
+      if(loadFromFile(selectedFile.getAbsolutePath()))
       {
          System.out.println("Load Successful");
       }
@@ -316,7 +465,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void refresh()
    {
       pieceToAdd = determinePieceToAdd();
-      gamePanel.setPieceToAdd(pieceToAdd);
 
       if (modeChanged)
       {
@@ -342,7 +490,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       remove(modeMenu);
       remove(pieceMenu);
       remove(colorMenu);
-      switch (gamePanel.getGameMode())
+      switch (controller.getGameMode())
       {
          case UNDECIDED:
             menuBar.add(modeMenu, BorderLayout.EAST);
@@ -368,5 +516,65 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       ChessPiece piece = pieceMenu.getPiece().copyOfThis();
       piece.setColor(colorToAdd);
       return piece;
+   }
+   
+   public void solveForMate()
+   {
+      boolean validNumber = false;
+      int x = 1;
+      while(!validNumber)
+      {
+         String moves = JOptionPane.showInputDialog("How many moves?");
+         try
+         {
+            x = Integer.parseInt(moves);
+            validNumber = true;
+         }
+         catch(NumberFormatException e)
+         {
+         }
+      }
+      // use x in AI to solve for mate
+      System.out.println("Moves: " + x);
+      controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
+      ArrayList<ChessMove> moveList = 
+            controller.solveForMate(humanPlayer, x, x > 1);
+      System.out.println("MoveList: " + moveList);
+   }
+   
+   public boolean loadFromFile(String pathname)
+   {
+      ChessBoard cb = new ChessBoard(controller.getPiecesList());
+      if(GameController.loadPositionFromFile(pathname, cb))
+      {
+         gamePanel.myBoard.setPieces(cb.getPiecesList());
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+   
+   public boolean startGameWithDisplayedPieces()
+   {
+      return controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
+   }
+   
+   public void setUpNewGame()
+   {
+      ArrayList<ChessPiece> standardPosition = new ChessBoard().getPiecesList();
+      controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
+      gamePanel.myBoard.setPieces(standardPosition);
+   }
+   
+   public void setGameMode(GameMode mode)
+   {
+      controller.setGameMode(mode);
+   }
+   
+   public ChessPiece.Color getWinningSide()
+   {
+      return controller.getWinningSide();
    }
 }
