@@ -46,6 +46,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    
    private class MyMouseAdapter extends MouseAdapter
    {
+      /**
+      Handles the mousePressed event for the component to which this adapter
+      is attached. If the mouse is pressed on the checkerboard, then the 
+      appropriate methods are called on the game controller.
+      
+      @param e mouse event that was passed to this component
+      */
       @Override
       public void mousePressed(MouseEvent e)
       {
@@ -66,32 +73,41 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          }
       }
 
+      /**
+      Handles the mouseWheelMoved event for the component to which this
+      adapter is attached. Cycles through the types and colors for the
+      pieceToAdd.
+      
+      @param e mouseWheelEvent that is passed to this component
+      */
       @Override
       public void mouseWheelMoved(MouseWheelEvent e)
       {
-         int clicks = Math.abs(e.getWheelRotation());
+         if(pieceToAdd == null)
+            return;
          
          if(!e.isShiftDown())
          {
+            ChessPiece.Color curColor = pieceToAdd.getColor();
             switch(pieceToAdd.oneLetterIdentifier())
             {
                case "K": 
-                  pieceToAdd = new Queen(colorToAdd);//etc etc TODO
+                  pieceToAdd = new Queen(curColor);
                   break;
                case "Q": 
-                  pieceToAdd = new Bishop(colorToAdd);
+                  pieceToAdd = new Bishop(curColor);
                   break;
                case "B": 
-                  pieceToAdd = new Knight(colorToAdd);
+                  pieceToAdd = new Knight(curColor);
                   break;
                case "N": 
-                  pieceToAdd = new Rook(colorToAdd);
+                  pieceToAdd = new Rook(curColor);
                   break;
                case "R": 
-                  pieceToAdd = new Pawn(colorToAdd);
+                  pieceToAdd = new Pawn(curColor);
                   break;
                case "":
-                  pieceToAdd = new King(colorToAdd);
+                  pieceToAdd = new King(curColor);
                   break;
 
             }
@@ -100,11 +116,11 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          }
          else if(pieceToAdd != null)
          {
+            int clicks = Math.abs(e.getWheelRotation());
             if(clicks % 2 == 1)
             {
-               ChessPiece.Color curColor = pieceToAdd.getColor();
-               pieceToAdd.setColor(curColor.opposite());
-               colorToAdd = curColor.opposite();
+               ChessPiece.Color nextColor = pieceToAdd.getColor().opposite();
+               pieceToAdd.setColor(nextColor);
                lbl_pieceToAdd.setText(pieceToAdd.toString());
             }
          }
@@ -129,8 +145,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public ChessPiece.Color humanPlayer;
    private JLabel lbl_pieceToAdd;
 
-   private ChessPiece.Color colorToAdd;
-   private ChessPiece pieceToAdd;
+   private ChessPiece pieceToAdd; // should never be null, default to WPawn
 
    public static void main(String[] args)
    {
@@ -163,7 +178,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       
       lbl_pieceToAdd = new JLabel("Piece To Add");
       add(lbl_pieceToAdd);
-      colorToAdd = ChessPiece.Color.WHITE;
+      pieceToAdd = new Pawn(ChessPiece.Color.WHITE);
       changeMode(GameMode.UNDECIDED);
       
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -196,6 +211,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       fileMenu.add(solve);
       
       menuBar.add(modeMenu);
+      menuBar.add(colorMenu);
+      menuBar.add(pieceMenu);
 
       pieceMenu.addPropertyChangeListener(this);
       modeMenu.addPropertyChangeListener(this);
@@ -311,7 +328,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             GameMode mode = modeMenu.getMode();
             if (mode == GameMode.SET_UP)
             {
-               colorToAdd = colorMenu.getColor();
+               pieceToAdd.setColor(colorMenu.getColor());
             }
             else if (mode == GameMode.SINGLE)
             {
@@ -389,7 +406,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             saveToFile();
             break;
          case "Load":
-            loadFromFile();
+            load();
             break;
          case "Solve":
             String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
@@ -442,24 +459,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          System.out.println("Save Successful");
       else
          System.out.println("Save Failed");
-   }
-   
-   private void loadFromFile()
-   {
-      File selectedFile;
-      JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-      if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
-      {
-         selectedFile = chooser.getSelectedFile();
-      }
-      else
-         return;
-      if(loadFromFile(selectedFile.getAbsolutePath()))
-      {
-         System.out.println("Load Successful");
-      }
-      else
-         System.out.println("Load failed");
    }
 
    private void refresh()
@@ -514,17 +513,18 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          return null;
       }
       ChessPiece piece = pieceMenu.getPiece().copyOfThis();
-      piece.setColor(colorToAdd);
       return piece;
    }
    
-   public void solveForMate()
+   private void solveForMate()
    {
       boolean validNumber = false;
       int x = 1;
       while(!validNumber)
       {
          String moves = JOptionPane.showInputDialog("How many moves?");
+         if(moves == null) // user has chosen to cancel inputting a number
+            return;
          try
          {
             x = Integer.parseInt(moves);
@@ -542,7 +542,14 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       System.out.println("MoveList: " + moveList);
    }
    
-   public boolean loadFromFile(String pathname)
+   /**
+   Loads a position from the file with the given pathname and displays it on
+   the checkerboard.
+   
+   @param pathname location of board position save file
+   @return true if position could be loaded successfully, false otherwise
+   */
+   private boolean loadFromFile(String pathname)
    {
       ChessBoard cb = new ChessBoard(controller.getPiecesList());
       if(GameController.loadPositionFromFile(pathname, cb))
@@ -556,25 +563,48 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       }
    }
    
-   public boolean startGameWithDisplayedPieces()
+   /**
+   Prompts the user for file to load from and then attempts to load board
+   position from that file. Displays a status message and, if successful, the
+   new board position.
+   */
+   private void load()
+   {
+      File selectedFile;
+      JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+      if(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) 
+      {
+         selectedFile = chooser.getSelectedFile();
+      }
+      else
+         return;
+      if(loadFromFile(selectedFile.getAbsolutePath()))
+      {
+         System.out.println("Load Successful");
+      }
+      else
+         System.out.println("Load failed");
+   }
+
+   
+   /**
+   Tries to start a game with the displayed pieces, fails if the pieces do not
+   constitute a legal position
+   
+   @return true if displayed position is legal, false otherwise
+   */
+   private boolean startGameWithDisplayedPieces()
    {
       return controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
    }
    
-   public void setUpNewGame()
+   /**
+   Sets up the standard start-of-game board position on the checkerboard
+   */
+   private void setUpNewGame()
    {
       ArrayList<ChessPiece> standardPosition = new ChessBoard().getPiecesList();
       controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
       gamePanel.myBoard.setPieces(standardPosition);
-   }
-   
-   public void setGameMode(GameMode mode)
-   {
-      controller.setGameMode(mode);
-   }
-   
-   public ChessPiece.Color getWinningSide()
-   {
-      return controller.getWinningSide();
    }
 }
