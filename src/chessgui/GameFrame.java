@@ -2,8 +2,10 @@ package chessgui;
 
 import chessgame.*;
 import java.awt.BorderLayout;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -155,9 +157,16 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          public void run()
          {
             createAndShowGUI();
-         }
-
+        }
       });
+       System.out.println("This executes");
+       ChessRobot robby = new ChessRobot();
+       (new Thread(robby)).start();
+       while(true)
+       {
+            try { Thread.sleep(1000); } catch(Exception e) {}
+            System.out.println("Another day, another dollar");
+       }
    }
 
    public static void createAndShowGUI()
@@ -165,7 +174,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       GameFrame gf = new GameFrame();
       gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       gf.setVisible(true);
-
    }
 
    public GameFrame()
