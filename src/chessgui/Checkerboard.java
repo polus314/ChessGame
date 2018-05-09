@@ -46,11 +46,11 @@ public class Checkerboard
    private static final int IMG_WIDTH = 30;
    private static final int IMG_HEIGHT = 30;
 
-   private Color lightSquareColor = Color.white;
-   private Color darkSquareColor = Color.gray;
-   private Color selectedPieceColor = Color.red;
-   private Color darkPieceColor = Color.black;
-   private Color lightPieceColor = Color.white;
+   private final Color lightSquareColor = Color.white;
+   private final Color darkSquareColor = Color.gray;
+   private final Color selectedPieceColor = Color.red;
+   private final Color darkPieceColor = Color.black;
+   private final Color lightPieceColor = Color.white;
 
    private final BufferedImage[] pieceImages;
 
@@ -240,8 +240,7 @@ public class Checkerboard
    }
 
    /**
-    This method paints the piece cp as a letter (R for Rook, etc.) or a circle
-    if a pawn
+    This method paints the piece cp
 
     @param g
     @param cp
