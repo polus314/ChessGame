@@ -33,7 +33,7 @@ public class GameController
       playerToMove = ChessPiece.Color.WHITE;
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
-      mode = GameMode.UNDECIDED;
+      mode = GameMode.SINGLE;
    }
 
    public void setGameMode(GameMode m)

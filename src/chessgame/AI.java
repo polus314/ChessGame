@@ -13,11 +13,14 @@ public class AI
 {
    public static final float FLOAT_ERROR = 0.0001f;
    public static final int MAX_BRANCH = 5;
+   public static final float MATERIAL_WEIGHT = 3.0f;
+   public static final float MOBILITY_WEIGHT = 1.0f;
+   public static final float HANGING_WEIGHT = 3.0f;
    
    // Enumerates the algorithms that can be used to evaluate the position
    public enum Algorithm { DFS, BFS, GREEDY };
    
-   public enum Heuristic { MATERIAL, FORCING, CHECK, UNINFORMED };
+   public enum Heuristic { OPTIMAL, MATERIAL, FORCING, CHECK, UNINFORMED };
    // have subclasses with separate heuristics?
    
    /**
@@ -77,7 +80,7 @@ public class AI
       playerToMove = ChessPiece.Color.WHITE;
       gameOver = gameBoard.checkForMate(playerToMove);
       algorithm = Algorithm.BFS;
-      heuristic = Heuristic.UNINFORMED;
+      heuristic = Heuristic.OPTIMAL;
    }
 
    /**
@@ -92,7 +95,7 @@ public class AI
       this.playerToMove = playerToMove;
       gameOver = gameBoard.checkForMate(playerToMove);
       algorithm = Algorithm.BFS;
-      heuristic = Heuristic.UNINFORMED;
+      heuristic = Heuristic.OPTIMAL;
    }
 
    /**
@@ -196,7 +199,7 @@ public class AI
     */
    public ChessMove findBestMove()
    {
-      int depth = 3;
+      int depth = 4;
       long startTime = System.currentTimeMillis();
       Tree<GameState> gameTree = generateGameTree(depth, true);
       System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime) + "ms");
@@ -210,7 +213,7 @@ public class AI
          //case BFS: return bfsBestMove(gameTree);
          //case DFS: return dfsBestMove(gameTree);
          //case MINI_MAX: return miniMaxBestMove(gameTree);
-         default: return new ChessMove();
+         default: return miniMaxBestMove(gameTree);
       }
    }
 
@@ -270,11 +273,11 @@ public class AI
       while(curDepth < depth)
       {
          System.out.println("Generating at depth: " + curDepth);
-         int debugCount = 0;
+         //int debugCount = 0;
          // take all the nodes at the current level and generate their children
          for(Tree tree : curLevel)
          {
-            System.out.print(debugCount++ + " ");
+            //System.out.print(debugCount++ + " ");
             generateAllChildren(tree, playerColor);
             if(trim)
             {
@@ -282,7 +285,7 @@ public class AI
             }
             childLevel.addAll(tree.children);
          }
-         System.out.println("");
+         //System.out.println("");
          // the children become the current nodes for the next iteration
          curLevel = childLevel;
          childLevel = new ArrayList<>();
@@ -328,7 +331,7 @@ public class AI
     @param color
     @return int - value of pieces that are not defended sufficiently
     */
-   private int hangRating(ChessBoard cb, ChessPiece.Color color)
+   private int hangingPieceValue(ChessBoard cb, ChessPiece.Color color)
    {
       int valueOfHanging = 0;
       ArrayList<ChessPiece> goodPieces = cb.getPieces(color);
@@ -395,6 +398,32 @@ public class AI
    }
 
    /**
+    * Rates the given board based on how many pieces each color has "hanging",
+    * that is, in danger because it is insufficiently defended or being attacked
+    * by a piece of lesser value. A rating of 1.0 means all the hanging pieces
+    * are black (good for white), a rating of 0.0 means there are an equal
+    * number of pieces hanging for both sides (could be none), a rating of -1.0
+    * means all the hanging pieces are white (good for black).
+    * 
+    * @param cb
+    * @return rating showing which side has less vulnerable pieces
+    */
+   private float hangRating(ChessBoard cb)
+   {
+       int whiteHPV = hangingPieceValue(cb,ChessPiece.Color.WHITE);
+       int blackHPV = hangingPieceValue(cb, ChessPiece.Color.BLACK);
+       int totalHPV = whiteHPV + blackHPV;
+       if(totalHPV == 0)
+       {
+           return 0.0f;
+       }
+       else
+       {
+           return (float)(blackHPV - whiteHPV) / (float)(totalHPV);
+       }
+   }
+   
+   /**
     Counts how many moves there are for the given color and board position,
     doesn't consider check preventing any of these moves
 
@@ -408,7 +437,7 @@ public class AI
       // Big Picture: using vectors instead of checking every square will make
       // checking a piece's moves faster, but would require re-doing a large
       // chunk of the code.
-      // Similarly, storing the pieces in a list, rather than an array could
+      // Similarly, storing the pieces in a list, rather than a 2D array could
       // also speed this up, might slow other things down though
       int numMoves = 0;
       for (int i = 0; i < 8; i++)
@@ -569,6 +598,13 @@ public class AI
          case FORCING:
             cb.overallRating = forcingRating(cb, player);
             break;
+         case OPTIMAL:
+             cb.materialRating = matRating(cb);
+             cb.hangingRating = hangRating(cb);
+             cb.mobilityRating = mobRating(cb);
+             cb.overallRating = (MATERIAL_WEIGHT * cb.materialRating) + 
+                     (MOBILITY_WEIGHT * cb.mobilityRating) + 
+                     (HANGING_WEIGHT * cb.hangingRating);
       }
 //      cb.materialRating = matRating(cb);
 //      cb.mobilityRating = mobRating(cb);
@@ -611,13 +647,12 @@ public class AI
       {
          ChessBoard cb = gameTree.info.board;
          gameTree.info.checkedForMiniMax = true;
-         gameTree.info.miniMaxRating = (10 * cb.materialRating) + cb.mobilityRating + cb.hangingRating;
+         gameTree.info.miniMaxRating = cb.overallRating;
          return gameTree.info.miniMaxRating;
       }
       else // non-leaf nodes check their children
       {
-         float childRating, extreme = 0.0f; // highest/lowest value seen so far
-         int count = 0;
+         float extreme = 0.0f; // highest/lowest value seen so far
          for(Tree<GameState> child : gameTree.children)
          {
             // if child doesn't have a value yet, recurse
@@ -626,7 +661,7 @@ public class AI
                runMiniMax(child, !max);
             }
             // now that child has a value, compare to other children
-            childRating = child.info.miniMaxRating;
+            float childRating = child.info.miniMaxRating;
             if((max && childRating > extreme) ||
                (!max && childRating < extreme))
             {
@@ -635,7 +670,6 @@ public class AI
          }
          gameTree.info.checkedForMiniMax = true;
          gameTree.info.miniMaxRating = extreme;
-         //System.out.println(extreme);
          return extreme;
       }
    }
