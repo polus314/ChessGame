@@ -419,18 +419,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    
    private void setSettings(String settings)
    {
-      if(settings.charAt(0) == 'f')
-      {
-         controller.deepBlue.heuristic = AI.Heuristic.FORCING;
-      }
-      else if (settings.charAt(0) == 'm')
-      {
-         controller.deepBlue.heuristic = AI.Heuristic.MATERIAL;
-      }
-      else
-      {
-         controller.deepBlue.heuristic = AI.Heuristic.UNINFORMED;
-      }
       if(settings.charAt(1) == 'b')
       {
          controller.deepBlue.algorithm = AI.Algorithm.BFS;

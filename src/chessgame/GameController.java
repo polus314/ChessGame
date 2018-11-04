@@ -95,7 +95,7 @@ public class GameController
    public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves, 
          boolean quickly)
    {
-      return deepBlue.solveForMate(color, moves, quickly);
+      return null; //deepBlue.solveForMate(color, moves, quickly);
    }
 
    /**
