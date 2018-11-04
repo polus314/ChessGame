@@ -4,7 +4,6 @@ import chessgame.GameMode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.BoxLayout;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -73,7 +72,7 @@ public class ModeMenu extends JMenu implements ActionListener
             setGameMode(GameMode.SET_UP);
             break;
          case "Puzzle":
-            setGameMode(GameMode.PUZZLE_SOLVER);
+            setGameMode(GameMode.REFERENCE);
             break;
       }
    }

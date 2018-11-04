@@ -13,5 +13,5 @@ package chessgame;
 */
 public enum GameMode 
 {
-   SINGLE, VERSUS, SET_UP, PUZZLE_SOLVER, UNDECIDED
+   SINGLE, VERSUS, SET_UP, REFERENCE, UNDECIDED
 }
