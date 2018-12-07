@@ -26,8 +26,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    private static final int PAWN_ROW_W = 6;
 
    private static final int K_ROOK_X = 7;
-   private static final int K_BISHOP_X = 6;
-   private static final int K_KNIGHT_X = 5;
+   private static final int K_KNIGHT_X = 6;
+   private static final int K_BISHOP_X = 5;
    private static final int KING_X = 4;
    private static final int QUEEN_X = 3;
    private static final int Q_BISHOP_X = 2;
@@ -312,6 +312,24 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       return true;
    }
 
+   public boolean canMovePiece(ChessPiece mover, int xf, int yf)
+   {
+      int xi = mover.getX();
+      int yi = mover.getY();
+      ChessBoard movedBoard = new ChessBoard(this);
+      if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf)
+            && spaceIsEmpty(xf, yf))
+      {
+         movedBoard.replacePiece(xi, yi, xf, yf);
+         if (!movedBoard.checkForCheck(mover.getColor()))
+         {
+            return true;   // move is successful
+         }
+         return false;     // move puts mover in check, so unsuccessful
+      }
+      return false;        // piece can't move there, path is blocked, or space
+   }                       // is occupied
+   
    /**
     Attempts to execute the capture of the piece at (x,y) by attacker. Checks
     to make sure capture is legal (piece can move to that square and move
@@ -607,23 +625,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          return 1;
       }
       return cb1.overallRating == cb2.overallRating ? 0 : -1;
-//      
-//      if (cb1.materialRating > cb2.materialRating)
-//      {
-//         return 1;
-//      }
-//      if (cb1.materialRating == cb2.materialRating)
-//      {
-//         if (cb1.mobilityRating > cb2.mobilityRating)
-//         {
-//            return 1;
-//         }
-//         if (cb1.mobilityRating == cb2.mobilityRating)
-//         {
-//            return 0;
-//         }
-//      }
-//      return -1;
    }
 
    /**
@@ -642,33 +643,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          return 1;
       }
       return overallRating == cb.overallRating ? 0 : -1;
-//      if (materialRating < cb.materialRating)
-//      {
-//         return -1;
-//      }
-//      if (materialRating == cb.materialRating)
-//      {
-////         boolean lhsCheck = checkForCheck(ChessPiece.Color.WHITE) || 
-////               checkForCheck(ChessPiece.Color.BLACK);
-////         boolean rhsCheck = cb.checkForCheck(ChessPiece.Color.WHITE) || 
-////               cb.checkForCheck(ChessPiece.Color.BLACK);
-////         if(lhsCheck && rhsCheck)
-////         {
-//            if (mobilityRating < cb.mobilityRating)
-//            {
-//               return -1;
-//            }
-//            if (mobilityRating == cb.mobilityRating)
-//            {
-//               return 0;
-//            }
-////         }
-////         if(rhsCheck)
-////            return -1;
-//      }
-//      return 1;
    }
-
+   
    /**
     Two ChessBoards are equal if for each square, both boards have equal
     pieces at that location
@@ -845,6 +821,27 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    {
       return pieceArray[row][col];
    }
+   
+    /**
+    Returns all the pieces on the board in a list.
+
+    @return List - list of pieces that are on this board
+    */
+   public ArrayList<ChessPiece> getPieces()
+   {
+      ArrayList<ChessPiece> tempList = new ArrayList<>();
+      for (int i = 0; i < WIDTH; i++)
+      {
+         for (int j = 0; j < HEIGHT; j++)
+         {
+            if (getPieceAt(i, j) != null)
+            {
+               tempList.add(getPieceAt(i, j));
+            }
+         }
+      }
+      return tempList;
+   }
 
    /**
     Returns all the pieces of the given color in a list.
@@ -896,27 +893,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    }
 
    /**
-    Returns all the pieces on the board in a list.
-
-    @return List - list of pieces that are on this board
-    */
-   public ArrayList<ChessPiece> getPiecesList()
-   {
-      ArrayList<ChessPiece> tempList = new ArrayList<>();
-      for (int i = 0; i < WIDTH; i++)
-      {
-         for (int j = 0; j < HEIGHT; j++)
-         {
-            if (getPieceAt(i, j) != null)
-            {
-               tempList.add(getPieceAt(i, j));
-            }
-         }
-      }
-      return tempList;
-   }
-
-   /**
     This method determines whether a move will result in the moving player
     being in check.
 
@@ -942,25 +918,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
    {
       int xi = mover.getX();
       int yi = mover.getY();
-      ChessBoard movedBoard = new ChessBoard(this);
-      if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf)
-            && spaceIsEmpty(xf, yf))
+      if (canMovePiece(mover, xf, yf))
       {
-         movedBoard.replacePiece(xi, yi, xf, yf);
-         if (!movedBoard.checkForCheck(mover.getColor()))
-         {
-            replacePiece(xi, yi, xf, yf);
-            if (mover instanceof King // castling concerns
-                  || mover instanceof Rook)
-            {
-               mover.hasMoved = true;
-            }
-            return true;   // move is successful
-         }
-         return false;     // move puts mover in check, so unsuccessful
+          replacePiece(xi, yi, xf, yf);
+          mover.hasMoved = true;
+          return true;
       }
-      return false;        // piece can't move there, path is block, or space
-   }                       // is occupied
+      return false;
+   }
 
    /**
     Checks to see if there any pawns that have reached the other side of the
@@ -1084,6 +1049,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
       return pieceArray[x][y] == null;
    }
 
+   public boolean spaceIsEnemy(int x, int y, ChessPiece.Color color)
+   {
+       return pieceArray[x][y] != null && pieceArray[x][y].getColor() == color.opposite();
+   }
+   
    /**
     Like spaceIsEmpty but also allows a piece of the opposite color to be on
     the square
@@ -1097,7 +1067,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     */
    public boolean spaceIsOpen(int x, int y, ChessPiece.Color color)
    {
-      return spaceIsEmpty(x, y) || pieceArray[x][y].getColor() != color;
+      return spaceIsEmpty(x, y) || spaceIsEnemy(x,y,color);
    }
 
    /**
@@ -1131,5 +1101,54 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
          }
       }
       return string;
+   }
+   
+   public ChessMove validateMove(ChessMove move)
+   {
+       if (move == null) return null;
+       
+       ChessPiece mover = move.piece;
+       if (mover == null) return null;
+       
+       boolean done = false;
+       int xDest = move.getXDest(), yDest = move.getYDest();
+       if (spaceIsEmpty(move.getXDest(), move.getYDest()))
+       {
+           if (move.piece instanceof King) // try to castle
+           {
+               if (canCastleKS(mover.getColor()) && xDest == K_KNIGHT_X)
+               {
+                   move.setMoveType(ChessMove.Type.CASTLE_KS);
+                   done = true;
+               }
+               else if (canCastleQS(mover.getColor()) && xDest == Q_BISHOP_X)
+               {
+                   move.setMoveType(ChessMove.Type.CASTLE_QS);
+                   done = true;
+               }
+           }
+           if (!done)
+           {
+               if (canMovePiece(mover, xDest, yDest))
+               {
+                   move.setMoveType(ChessMove.Type.NORMAL);
+                   done = true;
+               }
+           }
+       }
+       if (!done && canCapture(mover, xDest, yDest) && spaceIsEnemy(xDest, yDest, mover.getColor()))
+       {
+           move.setMoveType(ChessMove.Type.NORMAL);
+           move.captures = true;
+           done = true;
+       }
+       if (!done)
+       {
+           return null;
+       }
+       
+       // TODO - check for en passant
+       // TODO - check for check, mate, etc.
+       return move;
    }
 }

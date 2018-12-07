@@ -237,6 +237,8 @@ public class Checkerboard
       }
       g.setColor(selectedPieceColor);
       paintPiece(g, selectedPiece);
+      g.setColor(Color.BLACK);
+      g.drawRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
    }
 
    /**

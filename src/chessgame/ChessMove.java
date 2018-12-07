@@ -86,36 +86,6 @@ public class ChessMove //implements Comparable<ChessMove>
       return yDest;
    }
 
-//   public void setMatRating(float mr)
-//   {
-//      materialRating = mr;
-//   }
-//
-//   public void setMobRating(float mr)
-//   {
-//      mobilityRating = mr;
-//   }
-//
-//   public void setHangRating(int hr)
-//   {
-//      hangRating = hr;
-//   }
-//
-//   public float getMaterialRating()
-//   {
-//      return materialRating;
-//   }
-//
-//   public int getHangRating()
-//   {
-//      return hangRating;
-//   }
-//
-//   public float getMobilityRating()
-//   {
-//      return mobilityRating;
-//   }
-
    public Type getMoveType()
    {
       return moveType;
@@ -132,45 +102,6 @@ public class ChessMove //implements Comparable<ChessMove>
       cm.setMoveType(moveType);
    }
 
-//   /**
-//    This method compares two Chess Moves, useful for sorting
-//
-//    @param cm
-//    @return -1 if this is worse, 0 if equal, 1 if better than param
-//    */
-//   public int compareTo(ChessMove cm)
-//   {
-//      if (cm.hangRating < hangRating)
-//      {
-//         return -1;
-//      }
-//      if (cm.hangRating == hangRating)
-//      {
-//         if (cm.materialRating > materialRating)
-//         {
-//            return -1;
-//         }
-//         if (cm.materialRating == materialRating)
-//         {
-//            if (cm.mobilityRating > mobilityRating)
-//            {
-//               return -1;
-//            }
-//            if (cm.mobilityRating == mobilityRating)
-//            {
-//               return 0;
-//            }
-//         }
-//      }
-//      return 1;
-//   }
-
-   private String unoccupiedMoveToString()
-   {
-      String moveName = "";
-      moveName = pieceToString() + intToColumn(xDest) + "" + intToRow(yDest);
-      return moveName;
-   }
 
    private String captureMoveToString()
    {

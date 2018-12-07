@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import chessgui.GameRequest;
 
 /**
  Controller class for the chess game. Handles moving pieces as well as
@@ -13,7 +15,7 @@ import java.util.ArrayList;
 
  @author John Polus
  */
-public class GameController
+public class GameController implements Runnable
 {
 
    private ChessBoard board;
@@ -22,18 +24,146 @@ public class GameController
    public AI deepBlue;
    private ArrayList<ChessMove> moveList;
    private GameMode mode;
-
+   private final BlockingQueue<GameRequest> tasks;
+   private final BlockingQueue<GameRequest> responses;
+   
    /**
-    Default constructor, sets board to standard starting position and human
-    player is White.
+    * Default constructor, sets board to standard starting position and human
+    * player is White.
+    * 
+    * @param queue 
     */
-   public GameController()
+   public GameController(BlockingQueue<GameRequest> tasks, BlockingQueue<GameRequest> responses)
    {
       board = new ChessBoard();
       playerToMove = ChessPiece.Color.WHITE;
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
       mode = GameMode.UNDECIDED;
+      this.tasks = tasks;
+      this.responses = responses;
+   }
+   
+   public void run()
+   {
+       GameRequest task, response;
+       //int count = 0;
+       while (true)
+       {
+           //try {Thread.sleep(5000); } catch (Exception e) {}
+           //System.out.println(++count + ": I am processing stuff");
+           //if (true) continue;
+           //check queue
+           while ((task = tasks.poll()) != null)
+           {
+               response = doTask(task);
+               responses.add(response);
+           }
+               
+       }
+   }
+   
+   private GameRequest task_SetBoardPosition(GameRequest request)
+   {
+       GameRequest response = new GameRequest(request.task, null, false);
+       ArrayList<ChessPiece> newPieceList = (ArrayList<ChessPiece>)request.info;
+       if (newPieceList == null)
+       {
+           return response;
+       }
+       setBoardPosition(newPieceList, playerToMove);
+       response.success = true;
+       return response;
+   }
+   
+   private GameRequest task_PlayMove(GameRequest request)
+   {
+       GameRequest response = new GameRequest(request.task, null, false);
+       ChessMove move = (ChessMove)request.info;
+       if (move == null || move.piece.getColor() != playerToMove)
+       {
+          return response;
+       }
+       if (move.getMoveType() != ChessMove.Type.NORMAL)
+       {
+           response.success = board.castle(move);
+       }
+       else if (move.captures)
+       {
+           response.success = board.capturePiece(move.piece, move.getXDest(), move.getYDest());
+       }
+       else // normal, non-capturing move
+       {
+           response.success = board.movePiece(move.piece, move.getXDest(), move.getYDest());
+       }
+       response.info = board.getPieces();
+       if (response.success)
+       {
+           playerToMove = playerToMove.opposite();
+           moveList.add(move);
+       }
+       return response;
+   }
+   
+   private GameRequest task_FindBestMove(GameRequest request)
+   {
+       GameRequest response = new GameRequest(request.task, null, false);
+       deepBlue = new AI(board, playerToMove);
+       ChessMove bestMove = deepBlue.findBestMove();
+       if (bestMove == null)
+       {
+           return response;
+       }
+       response.info = bestMove;
+       response.success = true;
+       return response;
+   }
+   
+   
+   /**
+    * Request should have an incomplete ChessMove as its info. The ChessMove
+    * should have the piece to move, and the desired destination coordinates.
+    * This method will determine whether a legal move is possible, as well as
+    * whether it involves capturing, giving check, en passant, etc.
+    * 
+    * @param request
+    * @return 
+    */
+   private GameRequest task_CreateMove(GameRequest request)
+   {
+       GameRequest response = new GameRequest(request.task, null, false);
+       ChessMove move = (ChessMove)request.info;
+       move = board.validateMove(move);
+       if (move == null)
+       {
+           return response;
+       }
+       
+       response.info = move;
+       response.success = true;
+       return response;
+   }
+   
+   private GameRequest task_Default(GameRequest request)
+   {
+       return new GameRequest();
+   }
+   
+   private GameRequest doTask(GameRequest request)
+   {
+       switch (request.task)
+       {
+           case CREATE_MOVE:
+               return task_CreateMove(request);
+           case SET_BOARD_POSITION: 
+               return task_SetBoardPosition(request);
+           case PLAY_MOVE:          
+               return task_PlayMove(request);
+           case FIND_BEST_MOVE:     
+               return task_FindBestMove(request);
+           default:                 
+               return task_Default(request);
+       }
    }
 
    public void setGameMode(GameMode m)
@@ -48,7 +178,7 @@ public class GameController
 
    public ArrayList<ChessPiece> getPiecesList()
    {
-      return board.getPiecesList();
+      return board.getPieces();
    }
 
    public ChessPiece.Color getPlayerToMove()
@@ -97,6 +227,11 @@ public class GameController
    {
       return null; //deepBlue.solveForMate(color, moves, quickly);
    }
+   
+   public ChessMove findBestMove()
+   {
+       return deepBlue.findBestMove();
+   }
 
    /**
     Takes the appropriate action for when the given coordinates are selected.
@@ -109,7 +244,6 @@ public class GameController
     */
    public boolean takeAction(int x, int y)
    {
-      //System.out.println("Board: \n" + board.toString());
       switch (mode)
       {
          case SINGLE:
@@ -349,6 +483,7 @@ public class GameController
       }
       
       String posString = new String(buf);
+      posString = posString.replace("\r","");
       posString = posString.replace("\n", "");
       posString = posString.replace(" ", "");
       posString = posString.trim();

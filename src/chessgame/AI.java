@@ -1,5 +1,6 @@
 package chessgame;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -14,9 +15,10 @@ public class AI
    public static final float FLOAT_ERROR = 0.0001f;
    public static final int MAX_BRANCH = 5;
    
+   private static final boolean DEBUG = true;
+   
    // Enumerates the algorithms that can be used to evaluate the position
-   public enum Algorithm { DFS, BFS, GREEDY, MINI_MAX };
-   // have subclasses with separate heuristics?
+   public enum Algorithm { DFS, BFS, GREEDY, MINI_MAX, SIMPLE };
    
    /**
    This is a "struct" used in the game tree to hold information that is
@@ -75,7 +77,7 @@ public class AI
       gameBoard = new ChessBoard();
       playerToMove = ChessPiece.Color.WHITE;
       gameOver = gameBoard.checkForMate(playerToMove);
-      algorithm = Algorithm.MINI_MAX;
+      algorithm = Algorithm.SIMPLE;
    }
 
    /**
@@ -90,7 +92,32 @@ public class AI
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
       gameOver = gameBoard.checkForMate(playerToMove);
-      algorithm = Algorithm.MINI_MAX;
+      algorithm = Algorithm.SIMPLE;
+   }
+   
+   private void dumpGameTree(Tree<GameState> gameTree, String filename)
+   {
+       try 
+       {
+            PrintWriter writer = new PrintWriter(filename,"UTF-8");
+            writer.println("Game Tree starts here");
+            for (Tree<GameState> tree : gameTree.children)
+            {
+                String str = tree.info.move.toString();
+                str += "\tOVR: " + tree.info.board.overallRating;
+                str += "\tMATERIAL: " + tree.info.board.materialRating;
+                str += "\tMOBILITY: " + tree.info.board.mobilityRating;
+                str += "\tHANGING : " + tree.info.board.hangingRating;
+                writer.println(str);
+            }
+            writer.println("One level of Game Tree printed successfully");
+            writer.flush();
+       }
+       catch (Exception e)
+       {
+           System.out.println("Oops, debug printing failed!");
+       }
+
    }
 
    /**
@@ -112,6 +139,7 @@ public class AI
       
       switch(algorithm)
       {
+         case SIMPLE:   return simpleBestMove(gameTree);
          case MINI_MAX: return miniMaxBestMove(gameTree);
          default: return new ChessMove();
       }
@@ -187,6 +215,11 @@ public class AI
          childLevel = new ArrayList<>();
          playerColor = playerColor.opposite();
          curDepth++;
+      }
+      
+      if (DEBUG)
+      {
+          dumpGameTree(gameTree, "gameTree.txt");
       }
       
       return gameTree;
@@ -301,6 +334,32 @@ public class AI
          gameTree.info.miniMaxRating = extreme;
          return extreme;
       }
+   }
+   
+   /**
+    * Searches one ply deep and returns the best move from that.
+    * 
+    * @param gameTree the pre-generated gameTree, must be at least one ply deep
+    * @return move that is best for the playerToMove
+    */
+   private ChessMove simpleBestMove(Tree<GameState> gameTree)
+   {
+       boolean max = playerToMove == ChessPiece.Color.WHITE;
+       if (gameTree.numChildren() == 0)
+            return null;
+       ChessMove bestMove = null;
+       float bestRank = max ? -1.0f : 1.0f;
+       for (Tree<GameState> tree : gameTree.children)
+       {
+           float childRating = tree.info.board.overallRating;
+           if ((max && childRating > bestRank) ||
+               (!max && childRating < bestRank))
+           {
+               bestRank = childRating;
+               bestMove = tree.info.move;
+           }
+       }
+       return bestMove;
    }
    
    /**

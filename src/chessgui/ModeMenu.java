@@ -21,7 +21,7 @@ public class ModeMenu extends JMenu implements ActionListener
 
    public ModeMenu()
    {
-      super("Mode Menu");
+      super("Modes");
       initComponents();
 
       mode = GameMode.UNDECIDED;
@@ -29,22 +29,22 @@ public class ModeMenu extends JMenu implements ActionListener
 
    private void initComponents()
    {
-      item_singlePlayer = new JMenuItem("Single Player");
-      item_singlePlayer.setMnemonic(KeyEvent.VK_S);
+      item_singlePlayer = new JMenuItem("Play the Computer");
+      item_singlePlayer.setMnemonic(KeyEvent.VK_C);
       item_singlePlayer.setActionCommand("Single");
       item_singlePlayer.addActionListener(this);
 
-      item_versus = new JMenuItem("Versus Mode");
-      item_versus.setMnemonic(KeyEvent.VK_V);
+      item_versus = new JMenuItem("Play your Friend");
+      item_versus.setMnemonic(KeyEvent.VK_F);
       item_versus.setActionCommand("Versus");
       item_versus.addActionListener(this);
 
-      item_setUp = new JMenuItem("Set-Up Mode");
+      item_setUp = new JMenuItem("Set Up Board");
       item_setUp.setMnemonic(KeyEvent.VK_U);
       item_setUp.setActionCommand("Setup");
       item_setUp.addActionListener(this);
       
-      item_puzzle = new JMenuItem("Puzzle Solving Mode");
+      item_puzzle = new JMenuItem("Puzzle Solver");
       item_puzzle.setMnemonic(KeyEvent.VK_P);
       item_puzzle.setActionCommand("Puzzle");
       item_puzzle.addActionListener(this);

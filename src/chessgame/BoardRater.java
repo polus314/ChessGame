@@ -8,6 +8,8 @@ import java.util.Collections;
  * @author John
  */
 public class BoardRater {
+    private static final int TOTAL_MATERIAL = 39;
+    
     /**
     This method takes a ChessBoard and assigns it a material, mobility, and
     hanging rating.
@@ -19,7 +21,8 @@ public class BoardRater {
    {
         cb.materialRating = matRating(cb);
         cb.mobilityRating = mobRating(cb);
-        cb.hangingRating = -1 * hangRating(cb, player);
+        cb.hangingRating = hangRating(cb);
+        cb.overallRating = cb.materialRating * 0.75f + cb.mobilityRating * 0.25f;
    }
    
    /**
@@ -95,14 +98,14 @@ public class BoardRater {
       {
          wMaterial += piece.value;
       }
-      wMaterial -= hangRating(cb, ChessPiece.Color.WHITE);
+      wMaterial -= hangValue(cb, ChessPiece.Color.WHITE);
       
       pieces = cb.getPieces(ChessPiece.Color.BLACK);
       for(ChessPiece piece : pieces)
       {
          bMaterial += piece.value;
       }
-      bMaterial -= hangRating(cb, ChessPiece.Color.BLACK);
+      bMaterial -= hangValue(cb, ChessPiece.Color.BLACK);
       totalMaterial = wMaterial + bMaterial;
       
       return (wMaterial - bMaterial) / totalMaterial;
@@ -204,7 +207,14 @@ public class BoardRater {
     @param color
     @return int - value of pieces that are not defended sufficiently
     */
-   private int hangRating(ChessBoard cb, ChessPiece.Color color)
+   private float hangRating(ChessBoard cb)
+   {
+       int whiteHangers = hangValue(cb, ChessPiece.Color.WHITE);
+       int blackHangers = hangValue(cb, ChessPiece.Color.BLACK);
+       return (blackHangers - whiteHangers) / (float)TOTAL_MATERIAL;
+   }
+   
+   private int hangValue(ChessBoard cb, ChessPiece.Color color)
    {
       int valueOfHanging = 0;
       ArrayList<ChessPiece> goodPieces = cb.getPieces(color);

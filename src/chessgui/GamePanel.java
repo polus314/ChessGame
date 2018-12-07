@@ -25,7 +25,7 @@ public class GamePanel extends JPanel
       setBorder(BorderFactory.createLineBorder(Color.black));
       setMinimumSize(new Dimension(425, 425));
       
-      myBoard.setPieces(new ChessBoard().getPiecesList());
+      myBoard.setPieces(new ChessBoard().getPieces());
    }
    
    @Override
