@@ -66,7 +66,9 @@ public class Pawn extends ChessPiece
    @Override
    public String toString()
    {
-      return color.toString() + " Pawn";
+      String str = color == null ? "" : color.toString() + " ";
+      str += "Pawn";
+      return str;
    }
 
    /**

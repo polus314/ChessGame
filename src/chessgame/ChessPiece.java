@@ -140,7 +140,9 @@ public abstract class ChessPiece implements Comparable<ChessPiece>
    @Override
    public String toString()
    {
-      return color.toString() + " ChessPiece";
+      String str = color == null ? "" : color.toString() + " ";
+      str += "ChessPiece";
+      return str;
    }
 
    /**

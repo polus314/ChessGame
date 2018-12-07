@@ -66,7 +66,9 @@ public class Knight extends ChessPiece
    @Override
    public String toString()
    {
-      return color.toString() + " Knight";
+      String str = color == null ? "" : color.toString() + " ";
+      str += "Knight";
+      return str;
    }
 
    /**

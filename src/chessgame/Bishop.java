@@ -63,7 +63,9 @@ public class Bishop extends ChessPiece
    @Override
    public String toString()
    {
-      return color.toString() + " Bishop";
+      String str = color == null ? "" : color.toString() + " ";
+      str += "Bishop";
+      return str;
    }
 
    /**

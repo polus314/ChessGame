@@ -59,29 +59,21 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       @Override
       public void mousePressed(MouseEvent e)
       {
-         //tasks.add(new GameRequest(GameRequest.GameTask.MOVE_PIECE, null, false));
-         e = SwingUtilities.convertMouseEvent(null, e, gamePanel);
-         if (e.getButton() == MouseEvent.BUTTON1)
-         {
-            int x = e.getX();
-            int y = e.getY() - gamePanel.myBoard.getY();
-            if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
-            {
-               int a = x / Checkerboard.SQUARE_WIDTH;
-               int b = y / Checkerboard.SQUARE_HEIGHT;
-               switch(controller.getGameMode())
-               {
-                  case SET_UP: doSetUp(e, a, b); break;
-                  case SINGLE:
-                  case VERSUS: doGamePlay(e, a,b); break;
-               }
-               repaint();
-            }
-         }
-         else if (e.getButton() == MouseEvent.BUTTON2)
-         {
-            analyzeBoard();
-         }
+        //tasks.add(new GameRequest(GameRequest.GameTask.MOVE_PIECE, null, false));
+        e = SwingUtilities.convertMouseEvent(null, e, gamePanel);
+        int x = e.getX();
+        int y = e.getY() - gamePanel.myBoard.getY();
+        if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
+        {
+           int a = x / Checkerboard.SQUARE_WIDTH;
+           int b = y / Checkerboard.SQUARE_HEIGHT;
+           switch(modeMenu.getMode())
+           {
+              case SET_UP: doSetUp(e, a, b); break;
+              case SINGLE:
+              case VERSUS: doGamePlay(e, a,b); break;
+           }
+        }
       }
 
       /**
@@ -94,47 +86,43 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       @Override
       public void mouseWheelMoved(MouseWheelEvent e)
       {
-         if(pieceToAdd == null)
-            return;
+         ChessPiece pieceToAdd = determinePieceToAdd();
          
-         if(!e.isShiftDown())
+         if(!e.isShiftDown()) // change piece type
          {
-            ChessPiece.Color curColor = pieceToAdd.getColor();
-            switch(pieceToAdd.oneLetterIdentifier())
+            String pieceType = pieceToAdd == null ? "null" : pieceToAdd.oneLetterIdentifier();
+            switch(pieceType)
             {
-               case "K": 
-                  pieceToAdd = new Queen(curColor);
+               case "K":
+                   pieceMenu.setPiece(new Queen());
                   break;
-               case "Q": 
-                  pieceToAdd = new Bishop(curColor);
+               case "Q":
+                   pieceMenu.setPiece(new Bishop());
                   break;
                case "B": 
-                  pieceToAdd = new Knight(curColor);
+                   pieceMenu.setPiece(new Knight());
                   break;
                case "N": 
-                  pieceToAdd = new Rook(curColor);
+                   pieceMenu.setPiece(new Rook());
                   break;
                case "R": 
-                  pieceToAdd = new Pawn(curColor);
+                   pieceMenu.setPiece(new Pawn());
                   break;
-               case "":
-                  pieceToAdd = new King(curColor);
+               default:
+                   pieceMenu.setPiece(new King());
                   break;
-
             }
-            String label = pieceToAdd == null ? "Empty" : pieceToAdd.toString();
-            lbl_pieceToAdd.setText(label);
          }
-         else if(pieceToAdd != null)
+         else // change piece color
          {
             int clicks = Math.abs(e.getWheelRotation());
-            if(clicks % 2 == 1)
+            if(clicks > 0)
             {
-               ChessPiece.Color nextColor = pieceToAdd.getColor().opposite();
-               pieceToAdd.setColor(nextColor);
-               lbl_pieceToAdd.setText(pieceToAdd.toString());
+               colorMenu.flipColor();
             }
          }
+         pieceToAdd = determinePieceToAdd();
+         lbl_pieceToAdd.setText(pieceToAdd.toString());
       }
    }
    
@@ -145,22 +133,24 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       addMouseWheelListener(m);
    }
    
+   public static int __count = 0;
+   
    private ModeMenu modeMenu;
    private GamePanel gamePanel;
    private ColorMenu colorMenu;
    private PieceMenu pieceMenu;
-   private boolean modeChanged;
+   private FileMenu fileMenu;
    private JMenuBar menuBar; 
    
    public GameController controller;
    public ChessPiece.Color humanPlayer;
    private JLabel lbl_pieceToAdd;
 
-   private ChessPiece pieceToAdd; // should never be null, default to WPawn
+   //private ChessPiece pieceToAdd; // should never be null, default to WPawn
    
-   private final BlockingQueue<GameRequest> tasks; // tasks that need to be done on the processing thread
-   private final BlockingQueue<GameRequest> responses; // responses to processing tasks
-   private final Timer checkForResponseTimer;
+   private BlockingQueue<GameRequest> tasks; // tasks that need to be done on the processing thread
+   private BlockingQueue<GameRequest> responses; // responses to processing tasks
+   private Timer checkForResponseTimer;
    private boolean boardEnabled = true;
 
    public static void main(String[] args)
@@ -170,72 +160,49 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          @Override
          public void run()
          {
-            createAndShowGUI();
+            GameFrame gf = new GameFrame();
+            gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            gf.setVisible(true);
          }
 
       });
-   }
-
-   public static void createAndShowGUI()
-   {
-      GameFrame gf = new GameFrame();
-      gf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      gf.setVisible(true);
    }
 
    public GameFrame()
    {
       super(WINDOW_TITLE);
       initComponents();
+      initGameServer();
+      humanPlayer = ChessPiece.Color.WHITE;
       
+      setSize(FRAME_WIDTH, FRAME_HEIGHT);
+   }
+   
+   private void initGameServer()
+   {
+       // set up GUI's response timer
       checkForResponseTimer = new Timer(100, this);
       checkForResponseTimer.setActionCommand("Response Queue Timer");
       checkForResponseTimer.start();
+      
+      // set up "server" to send messages to
       tasks = new ArrayBlockingQueue(25);
       responses = new ArrayBlockingQueue(25);
       controller = new GameController(tasks, responses);
       new Thread(controller).start();
-      humanPlayer = ChessPiece.Color.WHITE;
-      
-      lbl_pieceToAdd = new JLabel("Piece To Add");
-      add(lbl_pieceToAdd);
-      pieceToAdd = new Pawn(ChessPiece.Color.WHITE);
-      changeMode(GameMode.UNDECIDED);
-      
-      setSize(FRAME_WIDTH, FRAME_HEIGHT);
-      
-      //DEBUG
-       loadFromFile("DebugPosition.txt");
-       changeMode(GameMode.SINGLE);
-       refresh();
    }
    
    private void initComponents()
    {
+      menuBar = new JMenuBar();
+      setJMenuBar(menuBar);
+      
       modeMenu = new ModeMenu();
-      gamePanel = new GamePanel();
       colorMenu = new ColorMenu();
       pieceMenu = new PieceMenu();
+      fileMenu = new FileMenu();
       
-      menuBar = new JMenuBar();
-      JMenu fileMenu = new JMenu(" File ");
       menuBar.add(fileMenu);
-      
-      JMenuItem load = new JMenuItem("Load Position");
-      load.setActionCommand("Load");
-      load.addActionListener(this);
-      fileMenu.add(load);
-      
-      JMenuItem save = new JMenuItem("Save Position");
-      save.setActionCommand("Save");
-      save.addActionListener(this);
-      fileMenu.add(save);
-      
-      JMenuItem solve = new JMenuItem("Solve for Mate");
-      solve.setActionCommand("Solve");
-      solve.addActionListener(this);
-      fileMenu.add(solve);
-      
       menuBar.add(modeMenu);
       menuBar.add(colorMenu);
       menuBar.add(pieceMenu);
@@ -243,9 +210,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       pieceMenu.addPropertyChangeListener(this);
       modeMenu.addPropertyChangeListener(this);
       colorMenu.addPropertyChangeListener(this);
+      fileMenu.addPropertyChangeListener(this);
 
+      gamePanel = new GamePanel();
       add(gamePanel, BorderLayout.NORTH);
-      setJMenuBar(menuBar);
+      
+      lbl_pieceToAdd = new JLabel("");
+      add(lbl_pieceToAdd);
       
       initMouseListener();
    }
@@ -267,9 +238,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void doSetUp(MouseEvent e, int a, int b)
    {
       int button = e.getButton();
+      ChessPiece pieceToAdd = determinePieceToAdd();
       switch (button)
       {
-          case MouseEvent.BUTTON1: // Left Mouse Button
+          case MouseEvent.BUTTON1: // Place piece
               if(pieceToAdd != null)
               {
                  ChessPiece newPiece = pieceToAdd.copyOfThis();
@@ -279,26 +251,23 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
               else
                  gamePanel.myBoard.setPieceAt(a, b, null);
               break;
-          case MouseEvent.BUTTON2:  // Middle Mouse Button
+          case MouseEvent.BUTTON2:  // Choose piece
                 pieceToAdd = gamePanel.myBoard.getPieceAt(a, b);
-                if(pieceToAdd != null)
-                   pieceToAdd = pieceToAdd.copyOfThis();
-                String label = pieceToAdd == null ? "Empty" : pieceToAdd.toString();
-                lbl_pieceToAdd.setText(label);
+                if (pieceToAdd == null) 
+                {
+                    return;
+                }
+                pieceMenu.setPiece(pieceToAdd);
+                colorMenu.setColor(pieceToAdd.getColor());
+                lbl_pieceToAdd.setText(pieceToAdd.toString());
                 break;
-          case MouseEvent.BUTTON3: // Right Mouse Button
+          case MouseEvent.BUTTON3: // Remove piece
               gamePanel.myBoard.setPieceAt(a, b, null);
               break;
           default:
               System.out.println("Button?: " + button);
       }
       addRequest(GameTask.SET_BOARD_POSITION, gamePanel.myBoard.getPiecesList());
-   }
-   
-   private void updateGamePanel()
-   {
-      gamePanel.myBoard.setSelectedPiece(controller.getSelectedPiece());
-      gamePanel.myBoard.setPieces(controller.getPiecesList());
       repaint();
    }
    
@@ -334,28 +303,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
            Object info = new ChessMove(selPiece, a, b);
            addRequest(task, info);
        }
-
        repaint();
-       if (true) return;
-       
-      updateGamePanel();
-      if (controller.getGameMode() == GameMode.SINGLE
-            && controller.getPlayerToMove() != humanPlayer
-            && !controller.isGameOver())
-      {
-         updateGamePanel();
-         if (controller.doCPUTurn())
-         {
-            refresh();
-         }
-      }
-      if (controller.isGameOver())
-      {
-         displayEndGameMessage();
-         System.out.println("Done with game");
-         changeMode(GameMode.UNDECIDED);
-         refresh();
-      }
    }
 
    private void displayEndGameMessage()
@@ -383,31 +331,39 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       String property = event.getPropertyName();
       switch (property)
       {
-         case "piece":
-            pieceToAdd = determinePieceToAdd();
-            break;
+          case "piece":
+              lbl_pieceToAdd.setText(determinePieceToAdd().toString());
+              break;
+          case "color":
+              lbl_pieceToAdd.setText(determinePieceToAdd().toString());
+              break;
          case "mode":
             handleModePropertyChange(event);
             break;
-         case "color":
-            GameMode mode = modeMenu.getMode();
-            if (mode == GameMode.SET_UP)
-            {
-               pieceToAdd.setColor(colorMenu.getColor());
-            }
-            else if (mode == GameMode.SINGLE)
-            {
-               humanPlayer = colorMenu.getColor();
-               //remove(colorMenu);
-            }
-            pieceToAdd = determinePieceToAdd();
+         case "Save":
+            saveToFile();
+            break;
+         case "Load":
+            load();
+            break;
+         case "Solve":
+            String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
+            setSettings(settings);
+            solveForMate();
             break;
          default:
-            return;
+             break;
       }
-      refresh();
    }
 
+   private void enableAllMenus()
+   {
+       modeMenu.setEnabled(true);
+       pieceMenu.setEnabled(true);
+       colorMenu.setEnabled(true);
+       fileMenu.enableAll();
+   }
+   
    /**
     Handles the logic of how to transition between modes, such as resetting
     values that need to be chosen on each transition into a new state.
@@ -416,7 +372,20 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
     */
    private void handleModePropertyChange(PropertyChangeEvent event)
    {
-      GameMode newMode = (GameMode) event.getNewValue();
+       GameMode newMode = (GameMode)event.getNewValue();
+       modeMenu.setMode(newMode);
+       enableAllMenus();
+       switch(newMode)
+       {
+           case SINGLE:
+               pieceMenu.setEnabled(false);
+               //modeMenu.setEnabled(false);
+               fileMenu.disable(GameMode.SINGLE);
+               break;
+       }
+       
+       if (true) return;
+       
       boolean shouldChangeMode = true;
       if (newMode == GameMode.SINGLE || newMode == GameMode.VERSUS)
       {
@@ -446,16 +415,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
       if (shouldChangeMode)
       {
-         changeMode(newMode);
+         modeMenu.setMode(newMode);
          colorMenu.setColor(null);
       }
-   }
-
-   private void changeMode(GameMode newMode)
-   {
-      modeMenu.setMode(newMode);
-      controller.setGameMode(newMode);
-      modeChanged = true;
    }
 
    @Override
@@ -465,18 +427,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       switch (command)
       {
          case "Main Menu":
-            changeMode(GameMode.UNDECIDED);
-            break;
-         case "Save":
-            saveToFile();
-            break;
-         case "Load":
-            load();
-            break;
-         case "Solve":
-            String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
-            setSettings(settings);
-            solveForMate();
+            modeMenu.setMode(GameMode.UNDECIDED);
             break;
          case "Response Queue Timer":
              updateEllipsis();
@@ -485,10 +436,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 processResponse(responses.poll());
             }
       }
-      refresh();
    }
    
-   public static int __count = 0;
    private void updateEllipsis()
    {
        if (++__count % 2 != 0)
@@ -526,7 +475,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
            return;
        }
        
-       switch(this.controller.getGameMode())
+       switch(modeMenu.getMode())
        {
            case SINGLE:
                processResponseSinglePlayer(response);
@@ -630,49 +579,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
          System.out.println("Save Failed");
    }
 
-   private void refresh()
-   {
-      pieceToAdd = determinePieceToAdd();
-
-      if (modeChanged)
-      {
-         setComponentsForNewMode();
-      }
-
-      validate();
-      repaint();
-   }
-
-   private void setComponentsForNewMode()
-   {
-      menuBar.remove(modeMenu);
-      menuBar.remove(pieceMenu);
-      menuBar.remove(colorMenu);
-      switch (controller.getGameMode())
-      {
-         case UNDECIDED:
-            menuBar.add(modeMenu);
-            break;
-         case SINGLE:
-             menuBar.add(modeMenu);
-            break;
-         case VERSUS:
-            break;
-         case SET_UP:
-            menuBar.add(colorMenu);
-            menuBar.add(pieceMenu);
-            break;
-      }
-      modeChanged = false;
-   }
-
    private ChessPiece determinePieceToAdd()
    {
-      if (pieceMenu.getPiece() == null)
-      {
-         return null;
-      }
-      ChessPiece piece = pieceMenu.getPiece().copyOfThis();
+      ChessPiece piece = pieceMenu.getPiece();
+      piece.setColor(colorMenu.getColor());
       return piece;
    }
    
@@ -711,11 +621,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    */
    private boolean loadFromFile(String pathname)
    {
-      ChessBoard cb = new ChessBoard(controller.getPiecesList());
+      ChessBoard cb = new ChessBoard();
       if(GameController.loadPositionFromFile(pathname, cb))
       {
-         gamePanel.myBoard.setPieces(cb.getPieces());
          controller.setBoardPosition(cb.getPieces(), humanPlayer);
+         gamePanel.myBoard.setPieces(cb.getPieces());
+         repaint();
          return true;
       }
       else

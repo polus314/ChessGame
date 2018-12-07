@@ -26,12 +26,14 @@ public class PieceMenu extends JMenu implements ActionListener
 
    public JMenuItem item_King, item_Queen, item_Rook, item_Bishop,
          item_Knight, item_Pawn, item_Empty;
-   private ChessPiece piece;
+   // chosenPiece should never be null
+   private ChessPiece chosenPiece;
 
    public PieceMenu()
    {
       super("Piece Types");
       initComponents();
+      chosenPiece = new King();
    }
    
    private void initComponents()
@@ -84,41 +86,47 @@ public class PieceMenu extends JMenu implements ActionListener
    @Override
    public void actionPerformed(ActionEvent event)
    {
-      ChessPiece oldPiece = piece;
+      ChessPiece oldPiece = chosenPiece;
       String command = event.getActionCommand();
       switch (command)
       {
          case AC_KING:
-            piece = new King();
+            chosenPiece = new King();
             break;
          case AC_QUEEN:
-            piece = new Queen();
+            chosenPiece = new Queen();
             break;
          case AC_ROOK:
-            piece = new Rook();
+            chosenPiece = new Rook();
             break;
          case AC_BISHOP:
-            piece = new Bishop();
+            chosenPiece = new Bishop();
             break;
          case AC_KNIGHT:
-            piece = new Knight();
+            chosenPiece = new Knight();
             break;
          case AC_PAWN:
-            piece = new Pawn();
-            break;
-         case AC_EMPTY:
-            piece = null;
+            chosenPiece = new Pawn();
             break;
          default:
+             chosenPiece = new King();
             return;
       }
-      repaint();
-      this.firePropertyChange("piece", oldPiece, piece);
+      this.firePropertyChange("piece", oldPiece, chosenPiece);
    }
 
    public ChessPiece getPiece()
    {
-      return piece;
+      return chosenPiece;
+   }
+   
+   public void setPiece(ChessPiece piece)
+   {
+       if (piece == null)
+       {
+           return;
+       }
+       chosenPiece = piece;
    }
 
    @Override

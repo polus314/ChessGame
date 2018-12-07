@@ -72,4 +72,13 @@ public class ColorMenu extends JMenu implements ActionListener
    {
       chosenColor = pc;
    }
+   
+   public void flipColor()
+   {
+       if (chosenColor == null)
+       {
+           return;
+       }
+       chosenColor = chosenColor.opposite();
+   }
 }

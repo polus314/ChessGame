@@ -65,7 +65,9 @@ public class Queen extends ChessPiece
    @Override
    public String toString()
    {
-      return color.toString() + " Queen";
+      String str = color == null ? "" : color.toString() + " ";
+      str += "Queen";
+      return str;
    }
 
    /**

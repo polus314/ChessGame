@@ -23,7 +23,6 @@ public class GameController implements Runnable
    private ChessPiece.Color playerToMove;
    public AI deepBlue;
    private ArrayList<ChessMove> moveList;
-   private GameMode mode;
    private final BlockingQueue<GameRequest> tasks;
    private final BlockingQueue<GameRequest> responses;
    
@@ -39,7 +38,6 @@ public class GameController implements Runnable
       playerToMove = ChessPiece.Color.WHITE;
       deepBlue = new AI(board, playerToMove);
       moveList = new ArrayList<>();
-      mode = GameMode.UNDECIDED;
       this.tasks = tasks;
       this.responses = responses;
    }
@@ -166,16 +164,6 @@ public class GameController implements Runnable
        }
    }
 
-   public void setGameMode(GameMode m)
-   {
-      mode = m;
-   }
-
-   public GameMode getGameMode()
-   {
-      return mode;
-   }
-
    public ArrayList<ChessPiece> getPiecesList()
    {
       return board.getPieces();
@@ -234,40 +222,7 @@ public class GameController implements Runnable
    }
 
    /**
-    Takes the appropriate action for when the given coordinates are selected.
-    Considers what game mode it is, whether there is a piece selected, and the
-    next player to move.
-
-    @param x - x coordinate of square to take action on
-    @param y - y coordinate of square to take action on
-    @return boolean - whether an action was successfully executed or not
-    */
-   public boolean takeAction(int x, int y)
-   {
-      switch (mode)
-      {
-         case SINGLE:
-            if (isGameOver())
-            {
-               return false;
-            }
-            return doHumanTurn(x, y);
-         case VERSUS:
-            if (isGameOver())
-            {
-               return false;
-            }
-            return doHumanTurn(x, y);
-         case SET_UP:
-            return doSetUp(x, y);
-
-      }
-      return false;
-   }
-
-   /**
-    Returns true if the current game has ended. If in set-up mode, always
-    returns true.
+    Returns true if the current game has ended.
 
     @return boolean - whether or not game is over
     */
@@ -322,61 +277,6 @@ public class GameController implements Runnable
       return true;
    }
 
-   /**
-    Determines the appropriate action to take and attempts to execute that
-    action at the coordinates x and y. If the action is successful, that is,
-    the game state has in any way changed (player has made a move, selected
-    piece has changed, etc.), returns true.
-
-    @param x - x coordinate at which to take action
-    @param y - y coordinate at which to take action
-    @return boolean - whether the appropriate action was successful
-    */
-   private boolean doHumanTurn(int x, int y)
-   {
-      boolean moveSuccessful = false;
-      ChessMove move = new ChessMove(selectedPiece, x, y);
-      if (selectedPiece == null)
-      {
-         return trySelect(x, y);
-      }
-      else if (selectedPiece.equals(board.getPieceAt(x, y)))
-      {  //if clicked piece is selected, unselect the piece
-         selectedPiece = null;
-         return true;
-      }
-      // if piece is selected and space clicked on is empty, try to 
-      // move to that space
-      else if (board.spaceIsEmpty(x, y))
-      {
-         if (selectedPiece instanceof King) // try to castle
-         {
-            if (tryCastling(move))
-            {
-               moveSuccessful = true;
-            }
-         }
-         if (!moveSuccessful && board.movePiece(selectedPiece, x, y)) // else try to move normally
-         {
-            moveSuccessful = true;
-         }
-      }
-      else //capture the piece at the coordinates
-      {
-         if (board.capturePiece(selectedPiece, x, y))
-         {
-            moveSuccessful = true;
-            move.captures = true;
-         }
-      }
-      if (moveSuccessful)
-      {
-         advanceTurn(move);
-         return true;
-      }
-      return false;
-   }
-
    private boolean tryToPromote()
    {
       ChessPiece pawn = board.needPromotion();
@@ -388,40 +288,6 @@ public class GameController implements Runnable
          return true;
       }
       return false;
-   }
-
-   /**
-    Attempts to select the piece at the given coordinates. If the space does
-    not contain a piece of the playerToMove's color, returns false.
-
-    @param x - x coordinate of square of piece to select
-    @param y - y coordinate of square of piece to select
-    @return boolean - whether piece was successfully selected
-    */
-   private boolean trySelect(int x, int y)
-   {
-      if (board.getPieceAt(x, y) != null
-            && board.getPieceAt(x, y).getColor() == playerToMove)
-      {
-         selectedPiece = board.getPieceAt(x, y);
-         return true;
-      }
-      return false;
-   }
-
-   private boolean doSetUp(int a, int b)
-   {
-      if (pieceToAdd != null)
-      {
-         pieceToAdd.xCoord = a;
-         pieceToAdd.yCoord = b;
-         board.setPieceAt(pieceToAdd.copyOfThis(), a, b);
-      }
-      else
-      {
-         board.setPieceAt(null, a, b);
-      }
-      return true;
    }
 
    /**
@@ -497,7 +363,7 @@ public class GameController implements Runnable
             String nextPiece = posString.substring(0, 2);
             if(!nextPiece.equals("--"))
             {
-               ChessPiece cp = LoadPiece(nextPiece);
+               ChessPiece cp = loadPiece(nextPiece);
                cp.xCoord = col;
                cp.yCoord = row;
                cb.setPieceAt(cp, col, row);
@@ -518,7 +384,7 @@ public class GameController implements Runnable
    @param loadString string that specifies what piece to create
    @return new piece created based on loadString
    */
-   private static ChessPiece LoadPiece(String loadString)
+   private static ChessPiece loadPiece(String loadString)
    {
       ChessPiece.Color color;
       if(loadString.charAt(0) == 'B')
