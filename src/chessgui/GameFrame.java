@@ -118,7 +118,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             int clicks = Math.abs(e.getWheelRotation());
             if(clicks > 0)
             {
-               colorMenu.flipColor();
+                colorMenu.setColor(ChessPiece.Color.BLACK);
+               //colorMenu.flipColor();
             }
          }
          pieceToAdd = determinePieceToAdd();
@@ -274,7 +275,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void doGamePlay(MouseEvent e, int a, int b)
    {
        // Don't allow any game play actions while computer is thinking
-       if (!boardEnabled)
+       if (!boardEnabled || e.getButton() != MouseEvent.BUTTON1)
        {
            return;
        }
@@ -284,9 +285,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
        // select a piece
        if (selPiece == null)
        {
-           gamePanel.myBoard.setSelectedPiece(clickedPiece);
-           if (clickedPiece != null) 
+           if (clickedPiece != null && clickedPiece.getColor() == controller.getPlayerToMove())
            {
+               gamePanel.myBoard.setSelectedPiece(clickedPiece);
                repaint();
            }
            return;
@@ -365,59 +366,75 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    }
    
    /**
-    Handles the logic of how to transition between modes, such as resetting
-    values that need to be chosen on each transition into a new state.
-
-    @param event - change event that is being handled
+    * Handles the logic of how to transition between modes, such as enabling or
+    * disabling menu items, prompting user for additional info, etc.
+    * 
+    * 
+    * @param event - change event that is being handled
     */
    private void handleModePropertyChange(PropertyChangeEvent event)
    {
        GameMode newMode = (GameMode)event.getNewValue();
-       modeMenu.setMode(newMode);
-       enableAllMenus();
        switch(newMode)
        {
            case SINGLE:
-               pieceMenu.setEnabled(false);
-               //modeMenu.setEnabled(false);
-               fileMenu.disable(GameMode.SINGLE);
+               if (!switchToSinglePlayer())
+                   return;
+               break;
+           case SET_UP:
+               if (!switchToSetUp())
+                   return;
+           default:
                break;
        }
-       
-       if (true) return;
-       
-      boolean shouldChangeMode = true;
-      if (newMode == GameMode.SINGLE || newMode == GameMode.VERSUS)
-      {
-         Object[] options =
-         {
-            "Keep Current Set-Up", "New Game", "Cancel"
-         };
-         int choice = JOptionPane.showOptionDialog(this, KEEP_BOARD_MSG, KEEP_BOARD_TITLE, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-         if (choice == 0)
-         {
-            if (!startGameWithDisplayedPieces())
-            {
-               JOptionPane.showMessageDialog(this, ILLEGAL_BOARD_POS);
-               shouldChangeMode = false;
-            }
-         }
-         else if (choice == 1)
-         {
-            setUpNewGame();
-            
-         }
-         else
-         {
-            shouldChangeMode = false;
-         }
-      }
+       modeMenu.setMode(newMode);
+   }
+   
+   /**
+    * 
+    * @return whether mode can be switched successfully
+    */
+   private boolean switchToSinglePlayer()
+   {
+       enableAllMenus();
+        int choice = promptForGameBeginning();
+        switch(choice)
+        {
+            case 0:
+               if (!startGameWithDisplayedPieces())
+               {
+                  JOptionPane.showMessageDialog(this, ILLEGAL_BOARD_POS);
+                  return false;
+               }
+               break;
+            case 1:
+               setUpNewGame();
+               break;
+            default:
+               return false;
 
-      if (shouldChangeMode)
-      {
-         modeMenu.setMode(newMode);
-         colorMenu.setColor(null);
-      }
+        }
+        colorMenu.setEnabled(false);
+        pieceMenu.setEnabled(false);
+        fileMenu.disable(GameMode.SINGLE);
+        return true;
+    }
+   
+   private boolean switchToSetUp()
+   {
+       enableAllMenus();
+       return true;
+   }
+   
+   private int promptForGameBeginning()
+   {
+       
+        Object[] options =
+        {
+           "Keep Current Set-Up", "New Game", "Cancel"
+        };
+        return JOptionPane.showOptionDialog(this, KEEP_BOARD_MSG, KEEP_BOARD_TITLE, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        
    }
 
    @Override
@@ -508,6 +525,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                break;
            case PLAY_MOVE:
                gamePanel.myBoard.setPieces(controller.getPiecesList());
+               repaint();
                if (controller.getPlayerToMove() != humanPlayer)
                {
                    lbl_pieceToAdd.setText("CPU is thinking ...");
@@ -527,6 +545,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                }
                this.gamePanel.myBoard.setPieces(pieces);
                gamePanel.myBoard.setSelectedPiece(null);
+               repaint();
                break;
            case SET_PLAYER_TO_MOVE:
                break;
@@ -543,7 +562,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                System.out.println("Position is valid, big deal");
                break;
            default:
-               System.out.println("Unknown task for Set Up mode");
+               System.out.println("Task: " + response.task.toString());
        }
    }
    
@@ -678,5 +697,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       ArrayList<ChessPiece> standardPosition = new ChessBoard().getPieces();
       controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
       gamePanel.myBoard.setPieces(standardPosition);
+      repaint();
    }
 }

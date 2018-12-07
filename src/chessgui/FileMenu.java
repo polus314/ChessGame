@@ -56,6 +56,7 @@ public class FileMenu extends JMenu implements ActionListener
         {
             case SINGLE:
                 load.setEnabled(false);
+                solve.setEnabled(false);
                 break;
         }
     }
