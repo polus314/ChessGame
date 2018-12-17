@@ -16,9 +16,7 @@ import java.util.concurrent.BlockingQueue;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -32,8 +30,8 @@ import javax.swing.Timer;
  */
 public class GameFrame extends JFrame implements ActionListener, PropertyChangeListener
 {
-   private static final int FRAME_HEIGHT = 500;
-   private static final int FRAME_WIDTH = 500;
+   private static final int FRAME_HEIGHT = 750;
+   private static final int FRAME_WIDTH = 750;
 
    public static final String WINDOW_TITLE = "John Polus's Chess Game";
 
@@ -61,7 +59,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       {
         //tasks.add(new GameRequest(GameRequest.GameTask.MOVE_PIECE, null, false));
         e = SwingUtilities.convertMouseEvent(null, e, gamePanel);
-        int x = e.getX();
+        int x = e.getX() - gamePanel.myBoard.getX();
         int y = e.getY() - gamePanel.myBoard.getY();
         if (x < Checkerboard.BOARD_WIDTH && y < Checkerboard.BOARD_HEIGHT)
         {
@@ -87,43 +85,65 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       public void mouseWheelMoved(MouseWheelEvent e)
       {
          ChessPiece pieceToAdd = determinePieceToAdd();
+         int clicks = e.getWheelRotation();
          
          if(!e.isShiftDown()) // change piece type
          {
-            String pieceType = pieceToAdd == null ? "null" : pieceToAdd.oneLetterIdentifier();
-            switch(pieceType)
-            {
-               case "K":
-                   pieceMenu.setPiece(new Queen());
-                  break;
-               case "Q":
-                   pieceMenu.setPiece(new Bishop());
-                  break;
-               case "B": 
-                   pieceMenu.setPiece(new Knight());
-                  break;
-               case "N": 
-                   pieceMenu.setPiece(new Rook());
-                  break;
-               case "R": 
-                   pieceMenu.setPiece(new Pawn());
-                  break;
-               default:
-                   pieceMenu.setPiece(new King());
-                  break;
-            }
+            ChessPiece newPiece = clicks > 0 ? getNextPieceType(pieceToAdd) : getPrevPieceType(pieceToAdd);
+            pieceMenu.setPiece(newPiece);
+            
          }
          else // change piece color
          {
-            int clicks = Math.abs(e.getWheelRotation());
-            if(clicks > 0)
+            if(clicks != 0)
             {
-                colorMenu.setColor(ChessPiece.Color.BLACK);
-               //colorMenu.flipColor();
+               if (colorMenu.getColor() == null)
+               {
+                   colorMenu.setColor(ChessPiece.Color.WHITE);
+               }
+               else
+               {
+                   colorMenu.flipColor();
+               }
             }
          }
          pieceToAdd = determinePieceToAdd();
          lbl_pieceToAdd.setText(pieceToAdd.toString());
+      }
+      
+      private ChessPiece getPrevPieceType(ChessPiece oldPiece)
+      {
+          if (oldPiece == null)
+          {
+              return new King();
+          }
+          switch(oldPiece.oneLetterIdentifier())
+          {               
+               case "" : return new King();
+               case "K": return new Queen();
+               case "Q": return new Bishop();
+               case "B": return new Knight();
+               case "N": return new Rook();
+               default : return new Pawn();
+          }
+      }
+      
+      private ChessPiece getNextPieceType(ChessPiece oldPiece)
+      {
+          if (oldPiece == null)
+          {
+              return new King();
+          }
+          
+          switch(oldPiece.oneLetterIdentifier())
+          {               
+               case "Q": return new King();
+               case "B": return new Queen();
+               case "N": return new Bishop();
+               case "R": return new Knight();
+               case "" : return new Rook();
+               default : return new Pawn();
+          }
       }
    }
    
@@ -146,8 +166,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public GameController controller;
    public ChessPiece.Color humanPlayer;
    private JLabel lbl_pieceToAdd;
-
-   //private ChessPiece pieceToAdd; // should never be null, default to WPawn
    
    private BlockingQueue<GameRequest> tasks; // tasks that need to be done on the processing thread
    private BlockingQueue<GameRequest> responses; // responses to processing tasks
@@ -177,6 +195,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       humanPlayer = ChessPiece.Color.WHITE;
       
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
+      
+       //loadFromFile("Easy mate.txt"); // DEBUG
    }
    
    private void initGameServer()
@@ -214,7 +234,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       fileMenu.addPropertyChangeListener(this);
 
       gamePanel = new GamePanel();
-      add(gamePanel, BorderLayout.NORTH);
+      add(gamePanel, BorderLayout.EAST);
       
       lbl_pieceToAdd = new JLabel("");
       add(lbl_pieceToAdd);
@@ -375,19 +395,30 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    private void handleModePropertyChange(PropertyChangeEvent event)
    {
        GameMode newMode = (GameMode)event.getNewValue();
+       GameMode oldMode = (GameMode)event.getOldValue();
+       switchGameMode(oldMode, newMode);
+   }
+   
+   private void switchGameMode(GameMode oldMode, GameMode newMode)
+   {
        switch(newMode)
        {
            case SINGLE:
                if (!switchToSinglePlayer())
+               {
+                   modeMenu.setMode(oldMode);
                    return;
+               }
                break;
            case SET_UP:
                if (!switchToSetUp())
+               {
+                   modeMenu.setMode(oldMode);
                    return;
+               }
            default:
                break;
        }
-       modeMenu.setMode(newMode);
    }
    
    /**
@@ -525,7 +556,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                break;
            case PLAY_MOVE:
                gamePanel.myBoard.setPieces(controller.getPiecesList());
+               gamePanel.setMoveList(controller.getMoveList());
                repaint();
+               if (controller.isGameOver())
+               {
+                   displayEndGameMessage();
+                   break;
+               }
                if (controller.getPlayerToMove() != humanPlayer)
                {
                    lbl_pieceToAdd.setText("CPU is thinking ...");
@@ -686,6 +723,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    */
    private boolean startGameWithDisplayedPieces()
    {
+       
       return controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
    }
    
@@ -694,9 +732,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    */
    private void setUpNewGame()
    {
-      ArrayList<ChessPiece> standardPosition = new ChessBoard().getPieces();
-      controller.setBoardPosition(standardPosition, ChessPiece.Color.WHITE);
-      gamePanel.myBoard.setPieces(standardPosition);
+      controller.startNewGame();
+      gamePanel.myBoard.setPieces(controller.getPiecesList());
       repaint();
    }
 }

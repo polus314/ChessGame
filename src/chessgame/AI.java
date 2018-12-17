@@ -63,7 +63,6 @@ public class AI
    
    protected ChessBoard gameBoard;
    protected ChessPiece.Color playerToMove;
-   protected boolean gameOver;
    public Algorithm algorithm;
    protected ArrayList<ChessMove> pathToMate;
    protected BoardRater rater;
@@ -76,7 +75,6 @@ public class AI
       rater = new BoardRater();
       gameBoard = new ChessBoard();
       playerToMove = ChessPiece.Color.WHITE;
-      gameOver = gameBoard.checkForMate(playerToMove);
       algorithm = Algorithm.SIMPLE;
    }
 
@@ -91,7 +89,6 @@ public class AI
       rater = new BoardRater();
       gameBoard = new ChessBoard(cb);
       this.playerToMove = playerToMove;
-      gameOver = gameBoard.checkForMate(playerToMove);
       algorithm = Algorithm.SIMPLE;
    }
    
@@ -260,7 +257,7 @@ public class AI
     */
    public boolean isGameOver()
    {
-      return gameOver;
+      return gameBoard.checkForMate(playerToMove);
    }
    
    private ChessMove miniMaxBestMove(Tree<GameState> gameTree)

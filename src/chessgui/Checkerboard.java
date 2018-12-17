@@ -193,7 +193,7 @@ public class Checkerboard
    {
       //paints the light squares
       g.setColor(lightSquareColor);
-      g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+      g.fillRect(xPos, yPos, BOARD_WIDTH, BOARD_HEIGHT);
 
       //paints the dark squares
       g.setColor(darkSquareColor);
@@ -238,7 +238,7 @@ public class Checkerboard
       g.setColor(selectedPieceColor);
       paintPiece(g, selectedPiece);
       g.setColor(Color.BLACK);
-      g.drawRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+      g.drawRect(xPos, yPos, BOARD_WIDTH, BOARD_HEIGHT);
    }
 
    /**

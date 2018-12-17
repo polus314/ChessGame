@@ -76,7 +76,7 @@ public class GameController implements Runnable
    
    private GameRequest task_PlayMove(GameRequest request)
    {
-       GameRequest response = new GameRequest(request.task, null, false);
+       GameRequest response = new GameRequest(request.task, request.info, false);
        ChessMove move = (ChessMove)request.info;
        if (move == null || move.piece.getColor() != playerToMove)
        {
@@ -173,15 +173,10 @@ public class GameController implements Runnable
    {
       return playerToMove;
    }
-
-   public ChessPiece getSelectedPiece()
+   
+   public void setPlayerToMove(ChessPiece.Color color)
    {
-      return selectedPiece;
-   }
-
-   public void setPieceToAdd(ChessPiece cp)
-   {
-      pieceToAdd = cp;
+       playerToMove = color;
    }
 
    public ArrayList<ChessMove> getMoveList()
@@ -195,12 +190,14 @@ public class GameController implements Runnable
     listed in ChessBoard.checkPositionIsLegal()
    
     @param pieces - list of pieces specifying the board position to set up
+    @param playerToMove - the player whose move it is next
     @return whether board was legal and position was updated
     */
    public boolean setBoardPosition(ArrayList<ChessPiece> pieces, 
          ChessPiece.Color playerToMove)
    {
       ChessBoard temp = new ChessBoard(pieces);
+      this.playerToMove = playerToMove;
       if (temp.checkPositionIsLegal())
       {
          board = temp;
@@ -208,6 +205,13 @@ public class GameController implements Runnable
          return true;
       }
       return false;
+   }
+   
+   public void startNewGame()
+   {
+       playerToMove = ChessPiece.Color.WHITE;
+       setBoardPosition(new ChessBoard().getPieces(), playerToMove);
+       moveList.clear();
    }
    
    public ArrayList<ChessMove> solveForMate(ChessPiece.Color color, int moves, 
@@ -228,6 +232,7 @@ public class GameController implements Runnable
     */
    public boolean isGameOver()
    {
+      deepBlue = new AI(board, playerToMove);
       return deepBlue.isGameOver();
    }
 
@@ -248,34 +253,34 @@ public class GameController implements Runnable
 
     @return boolean - whether CPU was successful in making a move
     */
-   public boolean doCPUTurn()
-   {
-      ChessMove move = deepBlue.findBestMove();
-      //checking for checkmate
-      if (move == null)
-      {
-         //board.gameOver = true;
-         //moveList.get(moveList.size() - 1).givesMate = true;
-         return false;
-      }
-
-      int x = move.piece.getX();
-      int y = move.piece.getY();
-      //check for "type" of best move, if unoccupied simply move, else try to 
-      //capture
-      if (!move.captures)
-      {
-         ChessPiece cp = board.getPieceAt(x, y);
-         board.movePiece(cp, move.getXDest(), move.getYDest());
-      }
-      else// if (move.getMoveType() == MoveType.CAPTURE)
-      {
-         selectedPiece = board.getPieceAt(x, y);
-         board.capturePiece(selectedPiece, move.getXDest(), move.getYDest());
-      }
-      advanceTurn(move);
-      return true;
-   }
+//   public boolean doCPUTurn()
+//   {
+//      ChessMove move = deepBlue.findBestMove();
+//      //checking for checkmate
+//      if (move == null)
+//      {
+//         //board.gameOver = true;
+//         //moveList.get(moveList.size() - 1).givesMate = true;
+//         return false;
+//      }
+//
+//      int x = move.piece.getX();
+//      int y = move.piece.getY();
+//      //check for "type" of best move, if unoccupied simply move, else try to 
+//      //capture
+//      if (!move.captures)
+//      {
+//         ChessPiece cp = board.getPieceAt(x, y);
+//         board.movePiece(cp, move.getXDest(), move.getYDest());
+//      }
+//      else// if (move.getMoveType() == MoveType.CAPTURE)
+//      {
+//         selectedPiece = board.getPieceAt(x, y);
+//         board.capturePiece(selectedPiece, move.getXDest(), move.getYDest());
+//      }
+//      advanceTurn(move);
+//      return true;
+//   }
 
    private boolean tryToPromote()
    {

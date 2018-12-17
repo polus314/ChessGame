@@ -58,7 +58,6 @@ public class ModeMenu extends JMenu implements ActionListener
    @Override
    public void actionPerformed(ActionEvent event)
    {
-      GameMode oldMode = mode;
       String command = event.getActionCommand();
       switch (command)
       {

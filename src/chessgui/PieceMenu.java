@@ -117,7 +117,7 @@ public class PieceMenu extends JMenu implements ActionListener
 
    public ChessPiece getPiece()
    {
-      return chosenPiece;
+      return chosenPiece.copyOfThis();
    }
    
    public void setPiece(ChessPiece piece)
@@ -126,7 +126,7 @@ public class PieceMenu extends JMenu implements ActionListener
        {
            return;
        }
-       chosenPiece = piece;
+       chosenPiece = piece.copyOfThis();
    }
 
    @Override
