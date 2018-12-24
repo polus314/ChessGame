@@ -13,17 +13,22 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import javax.swing.Timer;
 
-public class GamePanel extends JPanel
+public class GamePanel extends JPanel implements ActionListener
 {
    public Checkerboard myBoard;
    private ArrayList<ChessMove> moveList;
+   private Scoreboard scoreboard;
+   private Timer updateTimer;
   
    /**
     Default constructor, initializes the Checkerboard
     */
-   public GamePanel()
+   public GamePanel(Scoreboard s)
    {
       myBoard = new Checkerboard();
       setBorder(BorderFactory.createLineBorder(Color.black));
@@ -33,7 +38,23 @@ public class GamePanel extends JPanel
       moveList = new ArrayList<>();
       myBoard.setX(250);
       myBoard.setY(100);
+      
+      scoreboard = s;
+      updateTimer = new Timer(1000, this);
+      updateTimer.setActionCommand("Update Timer");
+      updateTimer.start();
    }
+   
+   
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        if (!event.getActionCommand().equals("Update Timer"))
+        {
+            return;
+        }
+        scoreboard.update();
+        repaint();
+    }
    
    @Override
    public Dimension getPreferredSize()
@@ -54,6 +75,7 @@ public class GamePanel extends JPanel
       super.paintComponent(g);
 
       printMoveList(g);
+      scoreboard.redraw(g);
       myBoard.paintBoard(g);
    }
    

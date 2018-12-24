@@ -2,6 +2,8 @@ package chessgui;
 
 import chessgame.*;
 import java.awt.BorderLayout;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -166,6 +168,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
    public GameController controller;
    public ChessPiece.Color humanPlayer;
    private JLabel lbl_pieceToAdd;
+   private Scoreboard scoreboard;
    
    private BlockingQueue<GameRequest> tasks; // tasks that need to be done on the processing thread
    private BlockingQueue<GameRequest> responses; // responses to processing tasks
@@ -195,8 +198,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       humanPlayer = ChessPiece.Color.WHITE;
       
       setSize(FRAME_WIDTH, FRAME_HEIGHT);
-      
-       //loadFromFile("Easy mate.txt"); // DEBUG
    }
    
    private void initGameServer()
@@ -233,7 +234,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       colorMenu.addPropertyChangeListener(this);
       fileMenu.addPropertyChangeListener(this);
 
-      gamePanel = new GamePanel();
+      scoreboard = new Scoreboard(new Rectangle(200,600,400,100), modeMenu.getMode());
+      gamePanel = new GamePanel(scoreboard);
       add(gamePanel, BorderLayout.EAST);
       
       lbl_pieceToAdd = new JLabel("");
