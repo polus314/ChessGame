@@ -11,6 +11,7 @@ package chessgui;
 import chessgame.*;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +67,17 @@ public class Checkerboard
       yPos = 0;
       pieceImages = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
       initializeImages();
+   }
+   
+   public boolean containsPoint(Point p)
+   {
+       int width = NUM_COLS * SQUARE_WIDTH;
+       int height = NUM_ROWS * SQUARE_HEIGHT;
+       if (xPos <= p.x && p.x < xPos + width && yPos <= p.y && p.y < yPos + height)
+       {
+           return true;
+       }
+       return false;
    }
 
    /**

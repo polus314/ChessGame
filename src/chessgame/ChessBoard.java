@@ -15,7 +15,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 {
 
    // Length of board along x - axis, in number of squares
-
    public static final int WIDTH = 8;
    // Length of board along y - axis, in number of squares
    public static final int HEIGHT = 8;

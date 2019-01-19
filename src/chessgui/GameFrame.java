@@ -2,7 +2,6 @@ package chessgui;
 
 import chessgame.*;
 import java.awt.BorderLayout;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -147,6 +146,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                default : return new Pawn();
           }
       }
+      
+      @Override
+      public void mouseMoved(MouseEvent e)
+      {
+          gamePanel.mouseMoved(e);
+      }
    }
    
    private void initMouseListener()
@@ -154,6 +159,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
       MouseAdapter m = new MyMouseAdapter();
       addMouseListener(m);
       addMouseWheelListener(m);
+      addMouseMotionListener(m);
    }
    
    public static int __count = 0;

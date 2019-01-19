@@ -10,12 +10,16 @@ import chessgame.ChessMove;
 import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class GamePanel extends JPanel implements ActionListener
@@ -60,6 +64,20 @@ public class GamePanel extends JPanel implements ActionListener
    public Dimension getPreferredSize()
    {
       return new Dimension(750, 750);
+   }
+   
+   public void mouseMoved(MouseEvent e)
+   {
+       e = SwingUtilities.convertMouseEvent(null, e, this);
+       //setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); if (true) return;// DEBUG 
+        if (myBoard.containsPoint(e.getPoint()))
+        {
+          setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+        else
+        {
+          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
    }
 
    /**
