@@ -17,29 +17,31 @@ import javax.swing.JMenuItem;
  */
 public class FileMenu extends JMenu implements ActionListener
 {
+
     private JMenuItem load, save, solve;
+
     public FileMenu()
     {
-      super(" File ");
-      initComponents();
+        super(" File ");
+        initComponents();
     }
-    
+
     private void initComponents()
     {
-      load = new JMenuItem("Load Position");
-      load.setActionCommand("Load");
-      load.addActionListener(this);
-      add(load);
-      
-      save = new JMenuItem("Save Position");
-      save.setActionCommand("Save");
-      save.addActionListener(this);
-      add(save);
-      
-      solve = new JMenuItem("Solve for Mate");
-      solve.setActionCommand("Solve");
-      solve.addActionListener(this);
-      add(solve);
+        load = new JMenuItem("Load Position");
+        load.setActionCommand("Load");
+        load.addActionListener(this);
+        add(load);
+
+        save = new JMenuItem("Save Position");
+        save.setActionCommand("Save");
+        save.addActionListener(this);
+        add(save);
+
+        solve = new JMenuItem("Solve for Mate");
+        solve.setActionCommand("Solve");
+        solve.addActionListener(this);
+        add(solve);
     }
 
     public void enableAll()
@@ -49,10 +51,10 @@ public class FileMenu extends JMenu implements ActionListener
         save.setEnabled(true);
         solve.setEnabled(true);
     }
-    
+
     public void disable(GameMode mode)
     {
-        switch(mode)
+        switch (mode)
         {
             case SINGLE:
                 load.setEnabled(false);
@@ -60,9 +62,9 @@ public class FileMenu extends JMenu implements ActionListener
                 break;
         }
     }
-    
+
     @Override
-    public void actionPerformed(ActionEvent e) 
+    public void actionPerformed(ActionEvent e)
     {
         firePropertyChange(e.getActionCommand(), null, null);
     }

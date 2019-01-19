@@ -16,22 +16,23 @@ import javax.swing.Timer;
  *
  * @author John
  */
-public class Scoreboard  
+public class Scoreboard
 {
+
     private Timer updateTimer;
     private ChessPiece.Color playerToMove;
     private int whiteTime, blackTime;
     private final GameMode mode;
     private Rectangle bounds;
-    
-    public Scoreboard(Rectangle boundingBox, GameMode gm) 
+
+    public Scoreboard(Rectangle boundingBox, GameMode gm)
     {
         whiteTime = blackTime = 0;
         mode = gm;
         bounds = boundingBox;
         playerToMove = ChessPiece.Color.WHITE;
     }
-    
+
     public void update()
     {
         int offset = 1;
@@ -41,25 +42,24 @@ public class Scoreboard
             case VERSUS:
                 offset = -1;
         }
-        
+
         if (playerToMove == ChessPiece.Color.WHITE)
         {
             whiteTime += offset;
-        }
-        else if (playerToMove == ChessPiece.Color.BLACK)
+        } else if (playerToMove == ChessPiece.Color.BLACK)
         {
             blackTime += offset;
         }
-        
+
     }
-    
+
     public void redraw(Graphics g)
     {
         g.drawString("SCOREBOARD", bounds.x, bounds.y);
         g.drawString("White: " + getTimeString(whiteTime), bounds.x, bounds.y + 15);
         g.drawString("Black: " + getTimeString(blackTime), bounds.x + bounds.width - 50, bounds.y + 15);
     }
-    
+
     private String getTimeString(int sec)
     {
         int minutes = sec / 60;
