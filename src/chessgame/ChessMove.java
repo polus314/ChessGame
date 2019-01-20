@@ -159,7 +159,8 @@ public class ChessMove //implements Comparable<ChessMove>
         if (piece != null)
         {
             return piece.oneLetterIdentifier();
-        } else
+        }
+        else
         {
             return "???";
         }
@@ -180,7 +181,8 @@ public class ChessMove //implements Comparable<ChessMove>
                 if (!captures)
                 {
                     moveName = pieceToString() + intToColumn(xDest) + "" + intToRow(yDest);
-                } else
+                }
+                else
                 {
                     moveName = captureMoveToString();
                 }
@@ -197,7 +199,8 @@ public class ChessMove //implements Comparable<ChessMove>
         if (givesMate)
         {
             moveName += "#";
-        } else if (givesCheck)
+        }
+        else if (givesCheck)
         {
             moveName += "+";
         }

@@ -21,6 +21,21 @@ import javax.imageio.ImageIO;
 public class Checkerboard
 {
 
+    private class HighlightSquare
+    {
+
+        int x;
+        int y;
+        Color color;
+
+        public HighlightSquare(int x, int y, Color c)
+        {
+            this.x = x;
+            this.y = y;
+            this.color = c;
+        }
+    }
+
     public static final int NUM_ROWS = ChessBoard.HEIGHT;
     public static final int NUM_COLS = ChessBoard.WIDTH;
 
@@ -48,7 +63,7 @@ public class Checkerboard
     private static final int IMG_WIDTH = 30;
     private static final int IMG_HEIGHT = 30;
 
-    private Color lightSquareColor = Color.white;
+    private Color lightSquareColor = new Color(80, 80, 80);
     private Color darkSquareColor = Color.gray;
     private Color selectedPieceColor = Color.red;
     private Color darkPieceColor = Color.black;
@@ -60,6 +75,8 @@ public class Checkerboard
     private int yPos;
     private ChessPiece[][] pieces;
     public ChessPiece selectedPiece;
+    private ArrayList<HighlightSquare> possMoveSquares;
+    private ChessPiece possMovePiece;
 
     public Checkerboard()
     {
@@ -67,6 +84,8 @@ public class Checkerboard
         xPos = 0;
         yPos = 0;
         pieceImages = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
+        possMoveSquares = new ArrayList<>();
+        possMovePiece = null;
         initializeImages();
     }
 
@@ -77,6 +96,26 @@ public class Checkerboard
         if (xPos <= p.x && p.x < xPos + width && yPos <= p.y && p.y < yPos + height)
         {
             return true;
+        }
+        return false;
+    }
+
+    public boolean pointHasPiece(Point p)
+    {
+        if (containsPoint(p))
+        {
+            int col = (p.x - xPos) / SQUARE_WIDTH;
+            int row = (p.y - yPos) / SQUARE_HEIGHT;
+            try
+            {
+                if (pieces[col][row] != null)
+                {
+                    return true;
+                }
+            } catch (Exception e)
+            {
+                System.out.println("Error in Checkerboard.pointHasPiece: " + e.getMessage());
+            }
         }
         return false;
     }
@@ -132,8 +171,37 @@ public class Checkerboard
         return pieces[x][y];
     }
 
+    public ChessPiece getSelectedPiece()
+    {
+        return selectedPiece.copyOfThis();
+    }
+
+    public void highlightPossibleMoves(ArrayList<ChessMove> moves)
+    {
+        possMoveSquares.clear();
+        if (moves == null || moves.isEmpty())
+        {
+            return;
+        }
+        possMovePiece = moves.get(0).piece;
+        for (ChessMove move : moves)
+        {
+            Color color = Color.YELLOW;
+            if (move.getMoveType() == ChessMove.Type.CASTLE_KS || move.getMoveType() == ChessMove.Type.CASTLE_QS)
+            {
+                color = Color.BLUE;
+            }
+            else if (move.captures)
+            {
+                color = Color.RED;
+            }
+            possMoveSquares.add(new HighlightSquare(move.getXDest(), move.getYDest(),color));
+        }
+    }
+
     public void setSelectedPiece(ChessPiece cp)
     {
+        possMoveSquares.clear();
         selectedPiece = cp;
     }
 
@@ -224,6 +292,16 @@ public class Checkerboard
             }
         }
 
+        //highlights squares that can be moved to
+        boolean highlight = (selectedPiece != null) && (selectedPiece.equals(possMovePiece));
+        if (highlight)
+        {
+            for (HighlightSquare square : possMoveSquares)
+            {
+                drawHighlight(g, square);
+            }
+        }
+
         //paints all the pieces, checking if they are white, black or currently
         //selected
         ChessPiece thisPiece;
@@ -239,7 +317,8 @@ public class Checkerboard
                 if (thisPiece.getColor() == ChessPiece.Color.BLACK)
                 {
                     g.setColor(darkPieceColor);
-                } else //if (thisPiece.getColor() == Color.WHITE)
+                }
+                else //if (thisPiece.getColor() == Color.WHITE)
                 {
                     g.setColor(lightPieceColor);
                 }
@@ -252,6 +331,16 @@ public class Checkerboard
         g.drawRect(xPos, yPos, BOARD_WIDTH, BOARD_HEIGHT);
     }
 
+    private void drawHighlight(Graphics g, HighlightSquare square)
+    {
+        g.setColor(square.color);
+        int x = xPos + (square.x * SQUARE_WIDTH);
+        int y = yPos + (square.y * SQUARE_HEIGHT);
+        g.drawRect(x, y, SQUARE_WIDTH, SQUARE_HEIGHT);
+        g.drawRect(x + 1, y + 1, SQUARE_WIDTH - 2, SQUARE_HEIGHT - 2);
+        
+    }
+    
     /**
      * This method paints the piece cp as a letter (R for Rook, etc.) or a
      * circle if a pawn
@@ -304,19 +393,24 @@ public class Checkerboard
         if (c == Rook.class)
         {
             return IMG_ROOK;
-        } else if (c == Bishop.class)
+        }
+        else if (c == Bishop.class)
         {
             return IMG_BISHOP;
-        } else if (c == Knight.class)
+        }
+        else if (c == Knight.class)
         {
             return IMG_KNIGHT;
-        } else if (c == Queen.class)
+        }
+        else if (c == Queen.class)
         {
             return IMG_QUEEN;
-        } else if (c == King.class)
+        }
+        else if (c == King.class)
         {
             return IMG_KING;
-        } else if (c == Pawn.class)
+        }
+        else if (c == Pawn.class)
         {
             return IMG_PAWN;
         }
@@ -335,10 +429,12 @@ public class Checkerboard
         if (c == Color.red)
         {
             return IMG_RED;
-        } else if (c == Color.black)
+        }
+        else if (c == Color.black)
         {
             return IMG_BLACK;
-        } else
+        }
+        else
         {
             return IMG_WHITE;
         }

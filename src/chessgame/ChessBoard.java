@@ -196,7 +196,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 }
             }
             return false;
-        } else // cp is not a Pawn, so capturing is same as moving
+        }
+        else // cp is not a Pawn, so capturing is same as moving
         {
             if (cp.canMove(xDest, yDest)
                     && pathIsClear(cp, xDest, yDest))
@@ -388,7 +389,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 replacePiece(KING_X, y, K_KNIGHT_X, y);
                 replacePiece(K_ROOK_X, y, K_BISHOP_X, y);
                 return true;
-            } else if (canCastleQS(castler.getColor()) && move.getXDest() == Q_BISHOP_X)
+            }
+            else if (canCastleQS(castler.getColor()) && move.getXDest() == Q_BISHOP_X)
             {
                 move.setMoveType(ChessMove.Type.CASTLE_QS);
                 replacePiece(KING_X, y, Q_BISHOP_X, y);
@@ -655,7 +657,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         if (!(obj instanceof ChessBoard))
         {
             return false;
-        } else
+        }
+        else
         {
             ChessBoard cb = (ChessBoard) obj;
             ChessPiece lhs, rhs;
@@ -748,25 +751,22 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessMove> findMoves(ChessPiece cp)
     {
         ArrayList<ChessMove> moveList = new ArrayList<>();
-        ChessPiece.Color color = cp.getColor();
-        int xi = cp.xCoord;
-        int yi = cp.yCoord;
         for (int xf = 0; xf < WIDTH; xf++)
         {
             for (int yf = 0; yf < HEIGHT; yf++)
             {
-
                 ChessMove possMove = new ChessMove(cp, xf, yf);
-                if (leadsToCheck(possMove)) //if it puts mover in check, disregard
+                if (leadsToCheck(possMove))         //if it puts mover in check, disregard
                 {
                     continue;
                 }
                 if (cp.canMove(xf, yf) // piece moves this way
                         && pathIsClear(cp, xf, yf) // no pieces in the way
-                        && spaceIsEmpty(xf, yf))   // space is empty
+                        && spaceIsEmpty(xf, yf))    // space is empty
                 {
                     moveList.add(possMove);
-                } else if (canCapture(cp, xf, yf)
+                }
+                else if (canCapture(cp, xf, yf)
                         && !spaceIsEmpty(xf, yf)
                         && spaceIsOpen(xf, yf, cp.getColor()))
                 {
@@ -803,6 +803,50 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             }
         }
         return null;
+    }
+
+    public ChessMove getCastleKSMove(ChessPiece.Color color)
+    {
+        King king = findKing(color);
+        if (!canCastleKS(color))
+        {
+            return null;
+        }
+        int x = K_KNIGHT_X;
+        int y;
+        if (color == ChessPiece.Color.WHITE)
+        {
+            y = HOME_ROW_W;
+        }
+        else
+        {
+            y = HOME_ROW_B;
+        }
+        ChessMove move = new ChessMove(king, x, y);
+        move.setMoveType(ChessMove.Type.CASTLE_KS);
+        return move;
+    }
+
+    public ChessMove getCastleQSMove(ChessPiece.Color color)
+    {
+        King king = findKing(color);
+        if (!canCastleQS(color))
+        {
+            return null;
+        }
+        int x = Q_BISHOP_X;
+        int y;
+        if (color == ChessPiece.Color.WHITE)
+        {
+            y = HOME_ROW_W;
+        }
+        else
+        {
+            y = HOME_ROW_B;
+        }
+        ChessMove move = new ChessMove(king, x, y);
+        move.setMoveType(ChessMove.Type.CASTLE_QS);
+        return move;
     }
 
     /**
@@ -975,17 +1019,21 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             {
                 clear = spaceIsEmpty(xi, yi + 1);
             }
-        } else if (mover instanceof Rook)
+        }
+        else if (mover instanceof Rook)
         {
             clear = clearPathRook(xi, yi, x, y);
-        } else if (mover instanceof Bishop)
+        }
+        else if (mover instanceof Bishop)
         {
             clear = clearPathBishop(xi, yi, x, y);
-        } else if (mover instanceof Queen)
+        }
+        else if (mover instanceof Queen)
         {
             // Queen moves like a Bishop and Rook put together
             clear = clearPathBishop(xi, yi, x, y) && clearPathRook(xi, yi, x, y);
-        } else
+        }
+        else
         {
             clear = true; // King and Knight always have a clear path
         }
@@ -1079,7 +1127,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 if (cp == null)
                 {
                     string = string + "-- ";
-                } else
+                }
+                else
                 {
                     string = string + cp.getColor().oneLetter()
                             + cp.oneLetterIdentifier() + " ";
@@ -1116,7 +1165,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 {
                     move.setMoveType(ChessMove.Type.CASTLE_KS);
                     done = true;
-                } else if (canCastleQS(mover.getColor()) && xDest == Q_BISHOP_X)
+                }
+                else if (canCastleQS(mover.getColor()) && xDest == Q_BISHOP_X)
                 {
                     move.setMoveType(ChessMove.Type.CASTLE_QS);
                     done = true;

@@ -17,7 +17,6 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -36,6 +35,7 @@ public class GamePanel extends JPanel implements ActionListener
     public GamePanel(Scoreboard s)
     {
         myBoard = new Checkerboard();
+        setBackground(Color.lightGray);
         setBorder(BorderFactory.createLineBorder(Color.black));
         setMinimumSize(new Dimension(750, 750));
 
@@ -70,11 +70,11 @@ public class GamePanel extends JPanel implements ActionListener
     public void mouseMoved(MouseEvent e)
     {
         e = SwingUtilities.convertMouseEvent(null, e, this);
-        //setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); if (true) return;// DEBUG 
-        if (myBoard.containsPoint(e.getPoint()))
+        if (myBoard.pointHasPiece(e.getPoint()))
         {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else
+        }
+        else
         {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
@@ -108,7 +108,6 @@ public class GamePanel extends JPanel implements ActionListener
         moveList.addAll(moves);
     }
 
-    // KEPT FOR REFERENCE FOR WHEN I IMPLEMENT THIS SOMEWHERE ELSE ON THE FRAME
     /**
      * This method prints out the moves that are played. Only 20 moves are able
      * to be displayed at a time, so the 20 most recent are shown
@@ -137,7 +136,8 @@ public class GamePanel extends JPanel implements ActionListener
             {
                 g.drawString(((i / 2) + 1) + ": "
                         + moveList.get(i).toString(), 30, (10 * (i - start) + 40));
-            } else
+            }
+            else
             {
                 g.drawString(moveList.get(i).toString(), 130, (10 * (i - start) + 30));
             }

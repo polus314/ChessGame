@@ -183,10 +183,12 @@ public abstract class ChessPiece implements Comparable<ChessPiece>
         if (value < cp.value)
         {
             return -1;
-        } else if (value == cp.value)
+        }
+        else if (value == cp.value)
         {
             return 0;
-        } else //if(value > cp.value)
+        }
+        else //if(value > cp.value)
         {
             return 1;
         }

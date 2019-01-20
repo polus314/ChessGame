@@ -15,7 +15,6 @@ public class Rook extends ChessPiece
     /*
     This is the default constructor for a Rook
      */
-
     public Rook()
     {
         super();

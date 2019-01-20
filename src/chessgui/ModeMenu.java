@@ -24,7 +24,7 @@ public class ModeMenu extends JMenu implements ActionListener
         super("Modes");
         initComponents();
 
-        mode = GameMode.SET_UP;
+        mode = GameMode.SINGLE;
     }
 
     private void initComponents()

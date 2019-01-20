@@ -99,14 +99,16 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 ChessPiece newPiece = clicks > 0 ? getNextPieceType(pieceToAdd) : getPrevPieceType(pieceToAdd);
                 pieceMenu.setPiece(newPiece);
 
-            } else // change piece color
+            }
+            else // change piece color
             {
                 if (clicks != 0)
                 {
                     if (colorMenu.getColor() == null)
                     {
                         colorMenu.setColor(ChessPiece.Color.WHITE);
-                    } else
+                    }
+                    else
                     {
                         colorMenu.flipColor();
                     }
@@ -169,15 +171,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             gamePanel.mouseMoved(e);
         }
     }
-
-    private void initMouseListener()
-    {
-        MouseAdapter m = new MyMouseAdapter();
-        addMouseListener(m);
-        addMouseWheelListener(m);
-        addMouseMotionListener(m);
-    }
-
+    
     public static int __count = 0;
 
     private ModeMenu modeMenu;
@@ -222,10 +216,18 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
     }
 
+    private void initMouseListener()
+    {
+        MouseAdapter m = new MyMouseAdapter();
+        addMouseListener(m);
+        addMouseWheelListener(m);
+        addMouseMotionListener(m);
+    }
+    
     private void initGameServer()
     {
         // set up GUI's response timer
-        checkForResponseTimer = new Timer(100, this);
+        checkForResponseTimer = new Timer(50, this);
         checkForResponseTimer.setActionCommand("Response Queue Timer");
         checkForResponseTimer.start();
 
@@ -292,7 +294,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                     ChessPiece newPiece = pieceToAdd.copyOfThis();
                     newPiece.movePiece(a, b);
                     gamePanel.myBoard.setPieceAt(a, b, newPiece);
-                } else
+                }
+                else
                 {
                     gamePanel.myBoard.setPieceAt(a, b, null);
                 }
@@ -333,6 +336,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             if (clickedPiece != null && clickedPiece.getColor() == controller.getPlayerToMove())
             {
                 gamePanel.myBoard.setSelectedPiece(clickedPiece);
+                addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[] {gamePanel.myBoard.getPiecesList(), clickedPiece});
                 repaint();
             }
             return;
@@ -359,10 +363,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         if (winner == humanPlayer)
         {
             msg = GAME_WON_MSG;
-        } else if (winner == null)
+        }
+        else if (winner == null)
         {
             msg = GAME_TIED_MSG;
-        } else
+        }
+        else
         {
             msg = GAME_LOST_MSG;
         }
@@ -520,16 +526,20 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         if (text.endsWith(" ."))
         {
             text = text.concat(".");
-        } else if (text.endsWith(" .."))
+        }
+        else if (text.endsWith(" .."))
         {
             text = text.concat(".");
-        } else if (text.endsWith(" ..."))
+        }
+        else if (text.endsWith(" ..."))
         {
             text = text.concat(".");
-        } else if (text.endsWith(" ...."))
+        }
+        else if (text.endsWith(" ...."))
         {
             text = text.concat(".");
-        } else if (text.endsWith(" ....."))
+        }
+        else if (text.endsWith(" ....."))
         {
             text = text.substring(0, text.length() - 4);
         }
@@ -567,6 +577,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 addRequest(GameTask.SET_PLAYER_TO_MOVE, humanPlayer);
                 addRequest(GameTask.PLAY_MOVE, move);
                 break;
+            case FIND_MOVES_FOR_PIECE:
+                ArrayList<ChessMove> moves = (ArrayList<ChessMove>) response.info;
+                gamePanel.myBoard.highlightPossibleMoves(moves);
+                break;
             case FIND_BEST_MOVE:
                 move = (ChessMove) response.info;
                 lbl_pieceToAdd.setText("CPU's move is: " + move.toString());
@@ -589,7 +603,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                     lbl_pieceToAdd.setText("CPU is thinking ...");
                     addRequest(GameTask.FIND_BEST_MOVE, null);
                     boardEnabled = false;
-                } else // CPU took a turn
+                }
+                else // CPU took a turn
                 {
                     boardEnabled = true;
                 }
@@ -628,10 +643,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         if (settings.charAt(1) == 'b')
         {
             controller.deepBlue.algorithm = AI.Algorithm.BFS;
-        } else if (settings.charAt(1) == 'd')
+        }
+        else if (settings.charAt(1) == 'd')
         {
             controller.deepBlue.algorithm = AI.Algorithm.DFS;
-        } else
+        }
+        else
         {
             controller.deepBlue.algorithm = AI.Algorithm.GREEDY;
         }
@@ -644,14 +661,16 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
         {
             selectedFile = chooser.getSelectedFile();
-        } else
+        }
+        else
         {
             return;
         }
         if (GameController.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
         {
             System.out.println("Save Successful");
-        } else
+        }
+        else
         {
             System.out.println("Save Failed");
         }
@@ -707,7 +726,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             gamePanel.myBoard.setPieces(cb.getPieces());
             repaint();
             return true;
-        } else
+        }
+        else
         {
             return false;
         }
@@ -725,14 +745,16 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
         {
             selectedFile = chooser.getSelectedFile();
-        } else
+        }
+        else
         {
             return;
         }
         if (loadFromFile(selectedFile.getAbsolutePath()))
         {
             System.out.println("Load Successful");
-        } else
+        }
+        else
         {
             System.out.println("Load failed");
         }

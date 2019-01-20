@@ -19,10 +19,9 @@ public class GameController implements Runnable
 {
 
     private ChessBoard board;
-    private ChessPiece selectedPiece, pieceToAdd;
     private ChessPiece.Color playerToMove;
     public AI deepBlue;
-    private ArrayList<ChessMove> moveList;
+    private final ArrayList<ChessMove> moveList;
     private final BlockingQueue<GameRequest> tasks;
     private final BlockingQueue<GameRequest> responses;
 
@@ -30,7 +29,8 @@ public class GameController implements Runnable
      * Default constructor, sets board to standard starting position and human
      * player is White.
      *
-     * @param queue
+     * @param tasks
+     * @param responses
      */
     public GameController(BlockingQueue<GameRequest> tasks, BlockingQueue<GameRequest> responses)
     {
@@ -45,20 +45,20 @@ public class GameController implements Runnable
     public void run()
     {
         GameRequest task, response;
-        //int count = 0;
         while (true)
         {
-            //try {Thread.sleep(5000); } catch (Exception e) {}
-            //System.out.println(++count + ": I am processing stuff");
-            //if (true) continue;
             //check queue
             while ((task = tasks.poll()) != null)
             {
                 response = doTask(task);
-                responses.add(response);
+                sendResponse(response);
             }
-
         }
+    }
+
+    private void sendResponse(GameRequest response)
+    {
+        responses.add(response);
     }
 
     private GameRequest task_SetBoardPosition(GameRequest request)
@@ -85,10 +85,12 @@ public class GameController implements Runnable
         if (move.getMoveType() != ChessMove.Type.NORMAL)
         {
             response.success = board.castle(move);
-        } else if (move.captures)
+        }
+        else if (move.captures)
         {
             response.success = board.capturePiece(move.piece, move.getXDest(), move.getYDest());
-        } else // normal, non-capturing move
+        }
+        else // normal, non-capturing move
         {
             response.success = board.movePiece(move.piece, move.getXDest(), move.getYDest());
         }
@@ -139,6 +141,42 @@ public class GameController implements Runnable
         return response;
     }
 
+    private GameRequest task_FindMovesForPiece(GameRequest request)
+    {
+        GameRequest response = new GameRequest(request.task, null, false);
+        Object[] info = (Object[]) request.info;
+        // validate the info that was passed
+        if (info == null || info.length < 2)
+        {
+            return response; // bad info passed, task unsuccessful
+        }
+        ArrayList<ChessPiece> pieceList = (ArrayList<ChessPiece>) info[0];
+        ChessPiece selPiece = (ChessPiece) info[1];
+        if (pieceList == null || selPiece == null || !pieceList.contains(selPiece))
+        {
+            return response; // bad info passed, task unsuccessful
+        }
+
+        ChessBoard cb = new ChessBoard(pieceList);
+        // check for castling, since that is specifically excluded from cb.findMoves
+        ArrayList<ChessMove> moves = cb.findMoves(selPiece);
+        if (selPiece instanceof King)
+        {
+            ChessPiece.Color pieceColor = selPiece.getColor();
+            if (cb.canCastleKS(pieceColor))
+            {
+                moves.add(cb.getCastleKSMove(pieceColor));
+            }
+            if (cb.canCastleQS(pieceColor))
+            {
+                moves.add(cb.getCastleQSMove(pieceColor));
+            }
+        }
+        response.info = moves;
+        response.success = true;
+        return response;
+    }
+
     private GameRequest task_Default(GameRequest request)
     {
         return new GameRequest();
@@ -156,6 +194,8 @@ public class GameController implements Runnable
                 return task_PlayMove(request);
             case FIND_BEST_MOVE:
                 return task_FindBestMove(request);
+            case FIND_MOVES_FOR_PIECE:
+                return task_FindMovesForPiece(request);
             default:
                 return task_Default(request);
         }
@@ -244,40 +284,6 @@ public class GameController implements Runnable
         return deepBlue.getWinningSide();
     }
 
-    /**
-     * This method does most of the things done in the main GUI method, but for
-     * the computer player
-     *
-     * @return boolean - whether CPU was successful in making a move
-     */
-//   public boolean doCPUTurn()
-//   {
-//      ChessMove move = deepBlue.findBestMove();
-//      //checking for checkmate
-//      if (move == null)
-//      {
-//         //board.gameOver = true;
-//         //moveList.get(moveList.size() - 1).givesMate = true;
-//         return false;
-//      }
-//
-//      int x = move.piece.getX();
-//      int y = move.piece.getY();
-//      //check for "type" of best move, if unoccupied simply move, else try to 
-//      //capture
-//      if (!move.captures)
-//      {
-//         ChessPiece cp = board.getPieceAt(x, y);
-//         board.movePiece(cp, move.getXDest(), move.getYDest());
-//      }
-//      else// if (move.getMoveType() == MoveType.CAPTURE)
-//      {
-//         selectedPiece = board.getPieceAt(x, y);
-//         board.capturePiece(selectedPiece, move.getXDest(), move.getYDest());
-//      }
-//      advanceTurn(move);
-//      return true;
-//   }
     private boolean tryToPromote()
     {
         ChessPiece pawn = board.needPromotion();
@@ -316,7 +322,6 @@ public class GameController implements Runnable
         {
             move.givesMate = true;
         }
-        selectedPiece = null;
         playerToMove = playerToMove.opposite();
         deepBlue = new AI(board, playerToMove);
         moveList.add(move);
@@ -369,7 +374,8 @@ public class GameController implements Runnable
                     cp.xCoord = col;
                     cp.yCoord = row;
                     cb.setPieceAt(cp, col, row);
-                } else
+                }
+                else
                 {
                     cb.setPieceAt(null, col, row);
                 }
@@ -391,7 +397,8 @@ public class GameController implements Runnable
         if (loadString.charAt(0) == 'B')
         {
             color = ChessPiece.Color.BLACK;
-        } else
+        }
+        else
         {
             color = ChessPiece.Color.WHITE;
         }

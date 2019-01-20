@@ -27,7 +27,7 @@ public class Scoreboard
 
     public Scoreboard(Rectangle boundingBox, GameMode gm)
     {
-        whiteTime = blackTime = 0;
+        whiteTime = blackTime = 3000;
         mode = gm;
         bounds = boundingBox;
         playerToMove = ChessPiece.Color.WHITE;
@@ -46,7 +46,8 @@ public class Scoreboard
         if (playerToMove == ChessPiece.Color.WHITE)
         {
             whiteTime += offset;
-        } else if (playerToMove == ChessPiece.Color.BLACK)
+        }
+        else if (playerToMove == ChessPiece.Color.BLACK)
         {
             blackTime += offset;
         }
@@ -62,6 +63,10 @@ public class Scoreboard
 
     private String getTimeString(int sec)
     {
+        if (sec < 0)
+        {
+            sec = 0;
+        }
         int minutes = sec / 60;
         int seconds = sec % 60;
         String str = minutes > 9 ? "" : "0";

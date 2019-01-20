@@ -65,7 +65,8 @@ public class BoardRater
                         if (cp.color == ChessPiece.Color.BLACK && cp.yCoord + 1 == yDest)
                         {
                             isADefender = true;
-                        } else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
+                        }
+                        else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
                         {
                             isADefender = true;
                         }
@@ -167,13 +168,15 @@ public class BoardRater
                                     && cb.spaceIsEmpty(k, m))
                             {
                                 numMoves++;
-                            } else if (cp.canMove(k, m)
+                            }
+                            else if (cp.canMove(k, m)
                                     && cb.pathIsClear(cp, k, m)
                                     && cb.spaceIsOpen(k, m, cp.getColor())
                                     && !(cp instanceof Pawn))
                             {
                                 numMoves++;
-                            } else if (cp instanceof Pawn)
+                            }
+                            else if (cp instanceof Pawn)
                             {
                                 if (color == ChessPiece.Color.WHITE && j - m == 1
                                         && (i - k == 1 || k - i == 1)
@@ -242,7 +245,8 @@ public class BoardRater
                     if (piecesInAction.get(k).color == color)
                     {
                         defenders.add(piecesInAction.get(k));
-                    } else
+                    }
+                    else
                     {
                         attackers.add(piecesInAction.get(k));
                     }
@@ -251,7 +255,8 @@ public class BoardRater
                 if (attackers.isEmpty())
                 {
                     isHanging = false;
-                } else if (defenders.size() < attackers.size())
+                }
+                else if (defenders.size() < attackers.size())
                 {
                     isHanging = true;
                 } //this is rather confusing, but I think it works
@@ -262,7 +267,8 @@ public class BoardRater
                     {
                         isHanging = true;
                     }
-                } else if (defenders.size() > attackers.size())
+                }
+                else if (defenders.size() > attackers.size())
                 {
                     isHanging = false;
                 }

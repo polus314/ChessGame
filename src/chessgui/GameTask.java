@@ -9,6 +9,7 @@ public enum GameTask
 {
     CREATE_MOVE,
     FIND_BEST_MOVE,
+    FIND_MOVES_FOR_PIECE,
     PLAY_MOVE,
     NONE,
     SET_BOARD_POSITION,

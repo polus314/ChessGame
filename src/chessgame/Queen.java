@@ -14,7 +14,6 @@ public class Queen extends ChessPiece
     /*
     This is the default constructor for a Queen
      */
-
     public Queen()
     {
         super();

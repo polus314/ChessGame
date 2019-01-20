@@ -41,10 +41,12 @@ public class Tree<T extends Comparable<T>> implements Comparable<Tree<T>>
         if (info.equals(targetInfo))
         {
             return this;
-        } else if (children.isEmpty())
+        }
+        else if (children.isEmpty())
         {
             return null;
-        } else
+        }
+        else
         {
             for (Tree branch : children)
             {
@@ -92,7 +94,8 @@ public class Tree<T extends Comparable<T>> implements Comparable<Tree<T>>
         {
             Tree tree = (Tree) o;
             return info.equals(tree.info);// && children.equals(tree.children);
-        } else
+        }
+        else
         {
             return false;
         }

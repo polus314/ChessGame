@@ -246,10 +246,12 @@ public class AI
         if (gameBoard.checkForCheck(ChessPiece.Color.WHITE))
         {
             return ChessPiece.Color.BLACK;
-        } else if (gameBoard.checkForCheck(ChessPiece.Color.BLACK))
+        }
+        else if (gameBoard.checkForCheck(ChessPiece.Color.BLACK))
         {
             return ChessPiece.Color.WHITE;
-        } else
+        }
+        else
         {
             return null;
         }
@@ -314,7 +316,8 @@ public class AI
             gameTree.info.checkedForMiniMax = true;
             gameTree.info.miniMaxRating = 5 * cb.materialRating + 2 * cb.mobilityRating + 3 * cb.hangingRating;
             return gameTree.info.miniMaxRating;
-        } else // non-leaf nodes check their children
+        }
+        else // non-leaf nodes check their children
         {
             float childRating, extreme = 0.0f; // highest/lowest value seen so far
             for (Tree<GameState> child : gameTree.children)
