@@ -760,8 +760,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 {
                     continue;
                 }
-                if (cp.canMove(xf, yf) // piece moves this way
-                        && pathIsClear(cp, xf, yf) // no pieces in the way
+                if (cp.canMove(xf, yf)              // piece moves this way
+                        && pathIsClear(cp, xf, yf)  // no pieces in the way
                         && spaceIsEmpty(xf, yf))    // space is empty
                 {
                     moveList.add(possMove);

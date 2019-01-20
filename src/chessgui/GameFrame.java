@@ -336,7 +336,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             if (clickedPiece != null && clickedPiece.getColor() == controller.getPlayerToMove())
             {
                 gamePanel.myBoard.setSelectedPiece(clickedPiece);
-                addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[] {gamePanel.myBoard.getPiecesList(), clickedPiece});
+                addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[] { gamePanel.myBoard.getPiecesList(), clickedPiece });
                 repaint();
             }
             return;
@@ -523,25 +523,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         }
         String text = lbl_pieceToAdd.getText();
 
-        if (text.endsWith(" ."))
-        {
-            text = text.concat(".");
-        }
-        else if (text.endsWith(" .."))
-        {
-            text = text.concat(".");
-        }
-        else if (text.endsWith(" ..."))
-        {
-            text = text.concat(".");
-        }
-        else if (text.endsWith(" ...."))
-        {
-            text = text.concat(".");
-        }
-        else if (text.endsWith(" ....."))
+        if (text.endsWith(" ....."))
         {
             text = text.substring(0, text.length() - 4);
+        }
+        else if (text.endsWith("."))
+        {
+            text = text.concat(".");
         }
         lbl_pieceToAdd.setText(text);
     }
