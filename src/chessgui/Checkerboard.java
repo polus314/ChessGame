@@ -43,6 +43,7 @@ public class Checkerboard
     public static final int CENTERING_AMT_X = 12;
     public static final int SQUARE_WIDTH = 50;
     public static final int SQUARE_HEIGHT = 50;
+    public static final float CUSHION = 0.15f;
     public static final int BOARD_WIDTH = SQUARE_WIDTH * NUM_COLS;
     public static final int BOARD_HEIGHT = SQUARE_HEIGHT * NUM_ROWS;
 
@@ -100,7 +101,23 @@ public class Checkerboard
         return false;
     }
 
-    public boolean pointHasPiece(Point p)
+    public boolean showPieceCursor(Point p)
+    {
+        if (squareHasPiece(p))
+        {
+            int x = p.x % SQUARE_WIDTH;
+            int y = p.y % SQUARE_HEIGHT;
+
+            int xCushion = (int) (SQUARE_WIDTH * CUSHION);
+            int yCushion = (int) (SQUARE_HEIGHT * CUSHION);
+
+            return (xCushion < x && x < SQUARE_WIDTH - xCushion
+                    && yCushion < y && y < SQUARE_HEIGHT - yCushion);
+        }
+        return false;
+    }
+
+    private boolean squareHasPiece(Point p)
     {
         if (containsPoint(p))
         {
@@ -114,7 +131,7 @@ public class Checkerboard
                 }
             } catch (Exception e)
             {
-                System.out.println("Error in Checkerboard.pointHasPiece: " + e.getMessage());
+                System.err.println("Error in Checkerboard.pointHasPiece");
             }
         }
         return false;
@@ -195,7 +212,7 @@ public class Checkerboard
             {
                 color = Color.RED;
             }
-            possMoveSquares.add(new HighlightSquare(move.getXDest(), move.getYDest(),color));
+            possMoveSquares.add(new HighlightSquare(move.getXDest(), move.getYDest(), color));
         }
     }
 
@@ -338,9 +355,9 @@ public class Checkerboard
         int y = yPos + (square.y * SQUARE_HEIGHT);
         g.drawRect(x, y, SQUARE_WIDTH, SQUARE_HEIGHT);
         g.drawRect(x + 1, y + 1, SQUARE_WIDTH - 2, SQUARE_HEIGHT - 2);
-        
+
     }
-    
+
     /**
      * This method paints the piece cp as a letter (R for Rook, etc.) or a
      * circle if a pawn

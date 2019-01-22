@@ -9,8 +9,6 @@ import chessgame.ChessPiece;
 import chessgame.GameMode;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.ActionListener;
-import javax.swing.Timer;
 
 /**
  *
@@ -19,7 +17,6 @@ import javax.swing.Timer;
 public class Scoreboard
 {
 
-    private Timer updateTimer;
     private ChessPiece.Color playerToMove;
     private int whiteTime, blackTime;
     private final GameMode mode;
@@ -31,6 +28,24 @@ public class Scoreboard
         mode = gm;
         bounds = boundingBox;
         playerToMove = ChessPiece.Color.WHITE;
+    }
+
+    public ChessPiece.Color getPlayerToMove()
+    {
+        return playerToMove;
+    }
+
+    public void setPlayerToMove(ChessPiece.Color player)
+    {
+        if (player != null)
+        {
+            playerToMove = player;
+        }
+    }
+
+    public void switchPlayerToMove()
+    {
+        playerToMove = playerToMove.opposite();
     }
 
     public void update()

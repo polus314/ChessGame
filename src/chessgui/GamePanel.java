@@ -28,9 +28,12 @@ public class GamePanel extends JPanel implements ActionListener
     private ArrayList<ChessMove> moveList;
     private Scoreboard scoreboard;
     private Timer updateTimer;
+    private boolean timerStopped;
 
     /**
      * Default constructor, initializes the Checkerboard
+     *
+     * @param s keeps track of score and time for each player
      */
     public GamePanel(Scoreboard s)
     {
@@ -40,7 +43,6 @@ public class GamePanel extends JPanel implements ActionListener
         setMinimumSize(new Dimension(750, 750));
 
         myBoard.setPieces(new ChessBoard().getPieces());
-        moveList = new ArrayList<>();
         myBoard.setX(250);
         myBoard.setY(100);
 
@@ -48,6 +50,8 @@ public class GamePanel extends JPanel implements ActionListener
         updateTimer = new Timer(1000, this);
         updateTimer.setActionCommand("Update Timer");
         updateTimer.start();
+
+        timerStopped = false;
     }
 
     @Override
@@ -57,7 +61,10 @@ public class GamePanel extends JPanel implements ActionListener
         {
             return;
         }
-        scoreboard.update();
+        if (!timerStopped)
+        {
+            scoreboard.update();
+        }
         repaint();
     }
 
@@ -70,7 +77,7 @@ public class GamePanel extends JPanel implements ActionListener
     public void mouseMoved(MouseEvent e)
     {
         e = SwingUtilities.convertMouseEvent(null, e, this);
-        if (myBoard.pointHasPiece(e.getPoint()))
+        if (myBoard.showPieceCursor(e.getPoint()))
         {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
@@ -104,8 +111,22 @@ public class GamePanel extends JPanel implements ActionListener
 
     public void setMoveList(ArrayList<ChessMove> moves)
     {
-        moveList.clear();
-        moveList.addAll(moves);
+        moveList = moves;
+    }
+
+    public void switchPlayerToMove()
+    {
+        scoreboard.switchPlayerToMove();
+    }
+
+    public void startTimer()
+    {
+        timerStopped = false;
+    }
+
+    public void stopTimer()
+    {
+        timerStopped = true;
     }
 
     /**
@@ -124,22 +145,16 @@ public class GamePanel extends JPanel implements ActionListener
         g.setFont(myFont);
         g.setColor(Color.BLACK);
         g.drawString("Move List", 30, 20);
-        int start = 0;
+        int plies = moveList.size();
+        int numMovesEach = (plies + 1) / 2;               // add one to round up
+        int startPos = numMovesEach > 20 ? numMovesEach - 20 : 0;
 
-        if (moveList.size() > 40)
+        for (int i = startPos; i < numMovesEach; i++)
         {
-            start = moveList.size() - 40;
-        }
-        for (int i = start; i < moveList.size(); i++)
-        {
-            if (i % 2 == 0)
+            g.drawString((i + 1) + ": " + moveList.get(i * 2).toString(), 30, (17 * (i - startPos) + 40));
+            if (plies > i * 2 + 1)
             {
-                g.drawString(((i / 2) + 1) + ": "
-                        + moveList.get(i).toString(), 30, (10 * (i - start) + 40));
-            }
-            else
-            {
-                g.drawString(moveList.get(i).toString(), 130, (10 * (i - start) + 30));
+                g.drawString(moveList.get(i * 2 + 1).toString(), 130, (17 * (i - startPos) + 40));
             }
         }
     }

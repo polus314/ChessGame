@@ -171,7 +171,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             gamePanel.mouseMoved(e);
         }
     }
-    
+
     public static int __count = 0;
 
     private ModeMenu modeMenu;
@@ -223,20 +223,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         addMouseWheelListener(m);
         addMouseMotionListener(m);
     }
-    
-    private void initGameServer()
-    {
-        // set up GUI's response timer
-        checkForResponseTimer = new Timer(50, this);
-        checkForResponseTimer.setActionCommand("Response Queue Timer");
-        checkForResponseTimer.start();
-
-        // set up "server" to send messages to
-        tasks = new ArrayBlockingQueue(25);
-        responses = new ArrayBlockingQueue(25);
-        controller = new GameController(tasks, responses);
-        new Thread(controller).start();
-    }
 
     private void initComponents()
     {
@@ -266,6 +252,22 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         add(lbl_pieceToAdd);
 
         initMouseListener();
+    }
+
+    private void initGameServer()
+    {
+        // set up GUI's response timer
+        checkForResponseTimer = new Timer(50, this);
+        checkForResponseTimer.setActionCommand("Response Queue Timer");
+        checkForResponseTimer.start();
+
+        // set up "server" to send messages to
+        tasks = new ArrayBlockingQueue(25);
+        responses = new ArrayBlockingQueue(25);
+        controller = new GameController(tasks, responses);
+        new Thread(controller).start();
+
+        gamePanel.setMoveList(controller.getMoveList());
     }
 
     private void analyzeBoard()
@@ -336,7 +338,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             if (clickedPiece != null && clickedPiece.getColor() == controller.getPlayerToMove())
             {
                 gamePanel.myBoard.setSelectedPiece(clickedPiece);
-                addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[] { gamePanel.myBoard.getPiecesList(), clickedPiece });
+                addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[]
+                {
+                    gamePanel.myBoard.getPiecesList(), clickedPiece
+                });
                 repaint();
             }
             return;
@@ -579,11 +584,12 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 break;
             case PLAY_MOVE:
                 gamePanel.myBoard.setPieces(controller.getPiecesList());
-                gamePanel.setMoveList(controller.getMoveList());
+                gamePanel.switchPlayerToMove();
                 repaint();
                 if (controller.isGameOver())
                 {
                     displayEndGameMessage();
+                    gamePanel.stopTimer();
                     break;
                 }
                 if (controller.getPlayerToMove() != humanPlayer)
