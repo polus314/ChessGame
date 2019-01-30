@@ -34,6 +34,7 @@ public class ChessMove //implements Comparable<ChessMove>
     public boolean captures = false;
     public boolean promotes = false;
     public boolean takesWithEP = false;
+    public String promotionPiece;
 
     // used when more than one piece of this type can make this move
     public boolean specifyOriginRow = false;
@@ -192,9 +193,9 @@ public class ChessMove //implements Comparable<ChessMove>
         {
             moveName += "e.p.";
         }
-        if (promotes)
+        if (promotes && promotionPiece != null)
         {
-            moveName += "=Q";
+            moveName += "=" + promotionPiece;
         }
         if (givesMate)
         {

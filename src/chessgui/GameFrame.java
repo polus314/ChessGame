@@ -270,15 +270,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         gamePanel.setMoveList(controller.getMoveList());
     }
 
-    private void analyzeBoard()
-    {
-        ArrayList<ChessPiece> shownPieces = gamePanel.myBoard.getPiecesList();
-        addRequest(GameTask.SET_BOARD_POSITION, shownPieces);
-        addRequest(GameTask.SET_PLAYER_TO_MOVE, humanPlayer);
-        addRequest(GameTask.FIND_BEST_MOVE, null);
-        lbl_pieceToAdd.setText("CPU is thinking...");
-    }
-
     private void addRequest(GameTask task, Object info)
     {
         tasks.add(new GameRequest(task, info, false));
@@ -497,6 +488,27 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
 
     }
 
+    private ChessPiece promptForPieceType()
+    {
+        Object[] options =
+        {
+            "Queen", "Rook", "Bishop", "Knight"
+        };
+        int val = JOptionPane.showOptionDialog(this, "What piece to promote to?", "Promotion Time", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+        switch (val)
+        {
+            case 1:
+                return new Rook();
+            case 2:
+                return new Bishop();
+            case 3:
+                return new Knight();
+            default:
+                return new Queen();
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent event)
     {
@@ -571,6 +583,10 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 break;
             case FIND_BEST_MOVE:
                 move = (ChessMove) response.info;
+                if (move == null)
+                {
+                    return;
+                }
                 lbl_pieceToAdd.setText("CPU's move is: " + move.toString());
                 if (controller.getPlayerToMove() == humanPlayer.opposite())
                 {
@@ -578,6 +594,14 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 }
                 break;
             case PLAY_MOVE:
+                move = (ChessMove) response.info;
+                if (move != null && move.promotes)
+                {
+                    ChessPiece piece = promptForPieceType();
+                    piece.setColor(move.piece.getColor());
+                    controller.promoteToThisType(piece);
+                    move.promotionPiece = piece.oneLetterIdentifier();
+                }
                 gamePanel.myBoard.setPieces(controller.getPiecesList());
                 gamePanel.switchPlayerToMove();
                 repaint();
@@ -627,22 +651,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         }
     }
 
-    private void setSettings(String settings)
-    {
-        if (settings.charAt(1) == 'b')
-        {
-            controller.deepBlue.algorithm = AI.Algorithm.BFS;
-        }
-        else if (settings.charAt(1) == 'd')
-        {
-            controller.deepBlue.algorithm = AI.Algorithm.DFS;
-        }
-        else
-        {
-            controller.deepBlue.algorithm = AI.Algorithm.GREEDY;
-        }
-    }
-
     private void saveToFile()
     {
         JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
@@ -670,33 +678,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         ChessPiece piece = pieceMenu.getPiece();
         piece.setColor(colorMenu.getColor());
         return piece;
-    }
-
-    private void solveForMate()
-    {
-        boolean validNumber = false;
-        int x = 1;
-        while (!validNumber)
-        {
-            String moves = JOptionPane.showInputDialog("How many moves?");
-            if (moves == null) // user has chosen to cancel inputting a number
-            {
-                return;
-            }
-            try
-            {
-                x = Integer.parseInt(moves);
-                validNumber = true;
-            } catch (NumberFormatException e)
-            {
-            }
-        }
-        // use x in AI to solve for mate
-        System.out.println("Moves: " + x);
-        controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
-        ArrayList<ChessMove> moveList
-                = controller.solveForMate(humanPlayer, x, x > 1);
-        System.out.println("MoveList: " + moveList);
     }
 
     /**

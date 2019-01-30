@@ -95,16 +95,15 @@ public class GameController implements Runnable
             response.success = board.movePiece(move.piece, move.getXDest(), move.getYDest());
         }
         // check if any pawns made it to the opposite side of the board
-        Pawn pawn = (Pawn)board.needPromotion();
+        Pawn pawn = (Pawn) board.needPromotion();
         if (pawn != null)
         {
-            board.setPieceAt(new Queen(playerToMove), pawn.xCoord, pawn.yCoord);
             move.promotes = true;
         }
         move.givesMate = board.checkForMate(playerToMove.opposite());
         move.givesCheck = board.checkForCheck(playerToMove.opposite());
-        
-        response.info = board.getPieces();
+
+        response.info = move;
         if (response.success)
         {
             playerToMove = playerToMove.opposite();
@@ -229,6 +228,19 @@ public class GameController implements Runnable
     public ArrayList<ChessMove> getMoveList()
     {
         return moveList;
+    }
+
+    public boolean promoteToThisType(ChessPiece piece)
+    {
+        Pawn pawn = (Pawn) board.needPromotion();
+        if (pawn == null || pawn.getColor() != piece.getColor()
+                || piece instanceof King || piece instanceof Pawn)
+        {
+            return false;
+        }
+        ChessPiece newPiece = piece.copyOfThis();
+        board.setPieceAt(newPiece, pawn.xCoord, pawn.yCoord);
+        return true;
     }
 
     /**
