@@ -401,11 +401,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             case "Load":
                 load();
                 break;
-            case "Solve":
-                String settings = JOptionPane.showInputDialog(null, "Choose an algorithm and heuristic");
-                setSettings(settings);
-                solveForMate();
-                break;
             default:
                 break;
         }
@@ -590,7 +585,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 {
                     displayEndGameMessage();
                     gamePanel.stopTimer();
-                    break;
+                    return;
                 }
                 if (controller.getPlayerToMove() != humanPlayer)
                 {

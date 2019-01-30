@@ -94,6 +94,16 @@ public class GameController implements Runnable
         {
             response.success = board.movePiece(move.piece, move.getXDest(), move.getYDest());
         }
+        // check if any pawns made it to the opposite side of the board
+        Pawn pawn = (Pawn)board.needPromotion();
+        if (pawn != null)
+        {
+            board.setPieceAt(new Queen(playerToMove), pawn.xCoord, pawn.yCoord);
+            move.promotes = true;
+        }
+        move.givesMate = board.checkForMate(playerToMove.opposite());
+        move.givesCheck = board.checkForCheck(playerToMove.opposite());
+        
         response.info = board.getPieces();
         if (response.success)
         {
@@ -295,36 +305,6 @@ public class GameController implements Runnable
             return true;
         }
         return false;
-    }
-
-    /**
-     * Attempts to castle using the given move
-     *
-     * @param move - move used to attempt castling
-     * @return boolean - whether castling was successful or not
-     */
-    private boolean tryCastling(ChessMove move)
-    {
-        return board.castle(move);
-    }
-
-    private void advanceTurn(ChessMove move)
-    {
-        if (tryToPromote())
-        {
-            move.promotes = true;
-        }
-        if (board.checkForCheck(playerToMove.opposite()))
-        {
-            move.givesCheck = true;
-        }
-        if (board.checkForMate(playerToMove.opposite()))
-        {
-            move.givesMate = true;
-        }
-        playerToMove = playerToMove.opposite();
-        deepBlue = new AI(board, playerToMove);
-        moveList.add(move);
     }
 
     /**
