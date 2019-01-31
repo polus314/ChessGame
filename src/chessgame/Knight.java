@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the Knight chess piece. The Knight moves in a peculiar
  * way, two spaces in a direction then one in a perpendicular direction, like an
@@ -11,6 +13,8 @@ package chessgame;
  */
 public class Knight extends ChessPiece
 {
+
+    private static final HashSet<Vector> MOVE_SET = generateMoveList();
 
     /**
      * This is the default constructor for the knight piece
@@ -58,6 +62,26 @@ public class Knight extends ChessPiece
         yCoord = cp.yCoord;
     }
 
+    private static HashSet<Vector> generateMoveList()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+        moves.add(new Vector(2, 1));
+        moves.add(new Vector(1, 2));
+        moves.add(new Vector(-2, 1));
+        moves.add(new Vector(1, -2));
+        moves.add(new Vector(2, -1));
+        moves.add(new Vector(-1, 2));
+        moves.add(new Vector(-2, -1));
+        moves.add(new Vector(-1, -2));
+        return moves;
+    }
+
+    @Override
+    public final HashSet<Vector> getMoveSet()
+    {
+        return MOVE_SET;
+    }
+
     /**
      * Returns a string describing this knight
      *
@@ -81,49 +105,6 @@ public class Knight extends ChessPiece
     public String oneLetterIdentifier()
     {
         return "N";
-    }
-
-    /*
-    This method determines if this Knight can move to a selected 
-    square. If the Knight can move to the selected square the method returns
-    true, false otherwise
-     */
-    @Override
-    public boolean canMove(int x, int y)
-    {
-        if (xCoord + 2 == x && yCoord + 1 == y)
-        {
-            return true;
-        }
-        if (xCoord + 1 == x && yCoord + 2 == y)
-        {
-            return true;
-        }
-        if (xCoord - 2 == x && yCoord + 1 == y)
-        {
-            return true;
-        }
-        if (xCoord + 1 == x && yCoord - 2 == y)
-        {
-            return true;
-        }
-        if (xCoord + 2 == x && yCoord - 1 == y)
-        {
-            return true;
-        }
-        if (xCoord - 1 == x && yCoord + 2 == y)
-        {
-            return true;
-        }
-        if (xCoord - 2 == x && yCoord - 1 == y)
-        {
-            return true;
-        }
-        if (xCoord - 1 == x && yCoord - 2 == y)
-        {
-            return true;
-        }
-        return false;
     }
 
     @Override

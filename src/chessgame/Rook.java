@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the Rook chess piece. The Rook moves parallel to the
  * axes of the board, either vertical or horizontal, as far as it wants. The
@@ -11,6 +13,8 @@ package chessgame;
  */
 public class Rook extends ChessPiece
 {
+
+    private static final HashSet<Vector> MOVE_SET = generateMoveList();
 
     /*
     This is the default constructor for a Rook
@@ -58,6 +62,25 @@ public class Rook extends ChessPiece
         yCoord = cp.yCoord;
     }
 
+    private static HashSet<Vector> generateMoveList()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+        for (int i = 1; i < 8; i++)
+        {
+            moves.add(new Vector(0, i));
+            moves.add(new Vector(i, 0));
+            moves.add(new Vector(0, -i));
+            moves.add(new Vector(-i, 0));
+        }
+        return moves;
+    }
+
+    @Override
+    public final HashSet<Vector> getMoveSet()
+    {
+        return MOVE_SET;
+    }
+
     /**
      * Returns a string describing this rook
      *
@@ -81,17 +104,6 @@ public class Rook extends ChessPiece
     public String oneLetterIdentifier()
     {
         return "R";
-    }
-
-    /*
-    This method determines if a selected Rook can move to a selected 
-    square. If the rook can move to the selected square the method returns
-    true, false otherwise
-     */
-    @Override
-    public boolean canMove(int x, int y)
-    {
-        return xCoord == x || yCoord == y;
     }
 
     @Override

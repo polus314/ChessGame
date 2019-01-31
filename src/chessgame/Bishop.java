@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the Bishop piece in chess. A bishop can move diagonally
  * and is one of the "minor" pieces, along with the knight.
@@ -8,6 +10,8 @@ package chessgame;
  */
 public class Bishop extends ChessPiece
 {
+
+    private static final HashSet<Vector> MOVE_SET = generateMoveList();
 
     /**
      * This is the default constructor
@@ -55,6 +59,25 @@ public class Bishop extends ChessPiece
         yCoord = cp.yCoord;
     }
 
+    private static HashSet<Vector> generateMoveList()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+        for (int i = 1; i < 8; i++)
+        {
+            moves.add(new Vector(i, i));
+            moves.add(new Vector(-i, i));
+            moves.add(new Vector(i, -i));
+            moves.add(new Vector(-i, -i));
+        }
+        return moves;
+    }
+
+    @Override
+    public final HashSet<Vector> getMoveSet()
+    {
+        return MOVE_SET;
+    }
+
     /**
      * Returns a string describing this bishop
      *
@@ -80,27 +103,9 @@ public class Bishop extends ChessPiece
         return "B";
     }
 
-    /*
-    This method determines if this bishop can move to a selected 
-    square. If the bishop can move to the selected square the method returns
-    true, false otherwise
-   
-    @return boolean - whether the bishop can move to this space
-     */
-    @Override
-    public boolean canMove(int x, int y)
+    public HashSet<Vector> getMoves()
     {
-        for (int i = 1; i < 8; i++)
-        {
-            if ((xCoord + i == x && yCoord + i == y)
-                    || (xCoord - i == x && yCoord + i == y)
-                    || (xCoord + i == x && yCoord - i == y)
-                    || (xCoord - i == x && yCoord - i == y))
-            {
-                return true;
-            }
-        }
-        return false;
+        return (HashSet<Vector>) MOVE_SET.clone();
     }
 
     @Override

@@ -2,6 +2,7 @@ package chessgame;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 /**
  *
@@ -141,59 +142,47 @@ public class BoardRater
      */
     private int howManyMoves(ChessPiece.Color color, ChessBoard cb)
     {
-        // TODO - make this more efficient somehow, quadruple for loops is bad
-        // Big Picture: using vectors instead of checking every square will make
-        // checking a piece's moves faster, but would require re-doing a large
-        // chunk of the code.
-        // Similarly, storing the pieces in a list, rather than an array could
-        // also speed this up, might slow other things down though
         int numMoves = 0;
-        for (int i = 0; i < 8; i++)
+        ArrayList<ChessPiece> myPieces = cb.getPieces(color);
+        for (ChessPiece cp : myPieces)
         {
-            for (int j = 0; j < 8; j++)
+            int xi = cp.getX();
+            int yi = cp.getY();
+            HashSet<Vector> moves = cp.getMoveSet();
+            for (Vector move : moves)
             {
-                ChessPiece cp = cb.getCopyOfPieceAt(i, j);
-                if (cp == null)
+                int xf = xi + move.getXDiff();
+                int yf = yi + move.getYDiff();
+                if (!cb.areIndicesInBounds(xf, yf))
                 {
                     continue;
                 }
-                if (cp.getColor() == color)
+                if (cb.pathIsClear(cp, xf, yf) && cb.spaceIsEmpty(xf, yf))
                 {
-                    for (int k = 0; k < 8; k++)
+                    numMoves++;
+                }
+                else if (cb.pathIsClear(cp, xf, yf) 
+                        && cb.spaceIsOpen(xf, yf, cp.getColor())
+                        && !(cp instanceof Pawn))
+                {
+                    numMoves++;
+                }
+                else if (cp instanceof Pawn)
+                {
+                    ChessPiece opposingPiece = cb.getCopyOfPieceAt(xf, yf);
+                    if (color == ChessPiece.Color.WHITE && yi - yf == 1
+                            && (xi - xf == 1 || xf - xi == 1)
+                            && opposingPiece != null
+                            && opposingPiece.getColor() == ChessPiece.Color.BLACK)
                     {
-                        for (int m = 0; m < 8; m++)
-                        {
-                            if (cp.canMove(k, m)
-                                    && cb.pathIsClear(cp, k, m)
-                                    && cb.spaceIsEmpty(k, m))
-                            {
-                                numMoves++;
-                            }
-                            else if (cp.canMove(k, m)
-                                    && cb.pathIsClear(cp, k, m)
-                                    && cb.spaceIsOpen(k, m, cp.getColor())
-                                    && !(cp instanceof Pawn))
-                            {
-                                numMoves++;
-                            }
-                            else if (cp instanceof Pawn)
-                            {
-                                if (color == ChessPiece.Color.WHITE && j - m == 1
-                                        && (i - k == 1 || k - i == 1)
-                                        && cb.getCopyOfPieceAt(k, m) != null
-                                        && cb.getCopyOfPieceAt(k, m).getColor() == ChessPiece.Color.BLACK)
-                                {
-                                    numMoves++;
-                                }
-                                if (color == ChessPiece.Color.BLACK && m - j == 1
-                                        && (i - k == 1 || k - i == 1)
-                                        && cb.getCopyOfPieceAt(k, m) != null
-                                        && cb.getCopyOfPieceAt(k, m).getColor() == ChessPiece.Color.WHITE)
-                                {
-                                    numMoves++;
-                                }
-                            }
-                        }
+                        numMoves++;
+                    }
+                    else if (color == ChessPiece.Color.BLACK && yf - yi == 1
+                            && (xi - xf == 1 || xf - xi == 1)
+                            && opposingPiece != null
+                            && opposingPiece.getColor() == ChessPiece.Color.WHITE)
+                    {
+                        numMoves++;
                     }
                 }
             }

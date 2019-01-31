@@ -93,11 +93,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece current = template.getCopyOfPieceAt(i, j);
-                if (current != null)
-                {
-                    setPieceAt(current, i, j);
-                }
+                setPieceAt(template.getCopyOfPieceAt(i, j),i,j);
             }
         }
     }
@@ -268,7 +264,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
         //check to see if King and Rook are present and unmoved
         ChessPiece cp = getCopyOfPieceAt(KING_X, y);
-        if (cp == null || cp.hasMoved ||!(cp instanceof King))
+        if (cp == null || cp.hasMoved || !(cp instanceof King))
         {
             return false;
         }
@@ -347,7 +343,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             return false;
         }
-        
+
         ChessBoard movedBoard = new ChessBoard(this);
         ChessPiece defender = movedBoard.getCopyOfPieceAt(x, y);
         if (movedBoard.canCapture(myAttacker, x, y) && defender != null
@@ -724,6 +720,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessMove> findAllMoves(ChessPiece.Color color)
     {
         ArrayList<ChessMove> moveList = new ArrayList<>();
+        
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
@@ -861,7 +858,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     {
         return pieceArray[row][col];
     }
-    
+
     public ChessPiece getCopyOfPieceAt(int row, int col)
     {
         ChessPiece piece = getPieceAt(row, col);
@@ -1084,6 +1081,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public void setPieceAt(ChessPiece cp, int x, int y)
     {
+        if (!areIndicesInBounds(x, y))
+        {
+            return;
+        }
         ChessPiece myPiece;
         if (cp != null)
         {
@@ -1102,15 +1103,29 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      *
      * @param x x coordinate to be checked for a piece
      * @param y y coordinate to be checked for a piece
-     * @return boolean - true if a piece is present, false otherwise
+     * @return boolean - true if no piece is present, false otherwise
      */
     public boolean spaceIsEmpty(int x, int y)
     {
+        if (!areIndicesInBounds(x, y))
+        {
+            return true;
+        }
         return pieceArray[x][y] == null;
+    }
+
+    public boolean areIndicesInBounds(int x, int y)
+    {
+        return (0 <= x && x <= 7 && 0 <= y && y <= 7);
+
     }
 
     public boolean spaceIsEnemy(int x, int y, ChessPiece.Color color)
     {
+        if (!areIndicesInBounds(x, y))
+        {
+            return false;
+        }
         return pieceArray[x][y] != null && pieceArray[x][y].getColor() == color.opposite();
     }
 

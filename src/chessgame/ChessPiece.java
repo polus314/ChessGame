@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the data and behavior of a generic chess piece. It
  * specifies several things about pieces, like they have a value, a position,
@@ -112,7 +114,18 @@ public abstract class ChessPiece implements Comparable<ChessPiece>
     This method takes an x and y coordinate as input and returns whether or not
     this chess piece can move to those coordinates
      */
-    public abstract boolean canMove(int x, int y);
+    public boolean canMove(int x, int y)
+    {
+        if (x < 0 || 7 < x || y < 0 || 7 < y)
+        {
+            return false;
+        }
+        Vector possMove = new Vector(x - xCoord, y - yCoord);
+        HashSet<Vector> moveSet = getMoveSet();
+        return moveSet.contains(possMove);
+    }
+
+    public abstract HashSet<Vector> getMoveSet();
 
     /*
     This will input a chess piece and copy all the attributes to the 

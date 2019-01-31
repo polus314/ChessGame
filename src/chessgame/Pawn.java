@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the Pawn chess piece. The Pawn is the weakest and most
  * common piece in Chess. At the beginning of the game, there are eight pawns
@@ -56,6 +58,31 @@ public class Pawn extends ChessPiece
         value = cp.value;
         xCoord = cp.xCoord;
         yCoord = cp.yCoord;
+    }
+
+    @Override
+    public final HashSet<Vector> getMoveSet()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+
+        // White pawns move in -y direction
+        if (color == ChessPiece.Color.WHITE)
+        {
+            moves.add(new Vector(0, -1));
+            if (yCoord == 6)
+            {
+                moves.add(new Vector(0, -2));
+            }
+        }
+        else // Black pawns move in +y direction
+        {
+            moves.add(new Vector(0, 1));
+            if (yCoord == 1)
+            {
+                moves.add(new Vector(0, 2));
+            }
+        }
+        return moves;
     }
 
     /**

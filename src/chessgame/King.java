@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.util.HashSet;
+
 /**
  * This class represents the King piece in chess. The King is the most
  * important, though not most powerful, piece in the game. An attack on the King
@@ -12,6 +14,8 @@ package chessgame;
  */
 public class King extends ChessPiece
 {
+
+    private static final HashSet<Vector> MOVE_SET = generateMoveList();
 
     /*
     This is the default constructor for the King piece
@@ -61,6 +65,26 @@ public class King extends ChessPiece
         yCoord = cp.yCoord;
     }
 
+    private static HashSet<Vector> generateMoveList()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+        moves.add(new Vector(0, 1));
+        moves.add(new Vector(1, 1));
+        moves.add(new Vector(1, 0));
+        moves.add(new Vector(1, -1));
+        moves.add(new Vector(0, -1));
+        moves.add(new Vector(-1, -1));
+        moves.add(new Vector(-1, 0));
+        moves.add(new Vector(-1, 1));
+        return moves;
+    }
+
+    @Override
+    public final HashSet<Vector> getMoveSet()
+    {
+        return MOVE_SET;
+    }
+
     /**
      * Returns a string describing this king
      *
@@ -84,24 +108,6 @@ public class King extends ChessPiece
     public String oneLetterIdentifier()
     {
         return "K";
-    }
-
-    /*
-    This method determines if this king can move to a selected 
-    square. If the king can move to the selected square the method returns
-    true, false otherwise
-     */
-    @Override
-    public boolean canMove(int x, int y)
-    {
-        if (-1 <= x - xCoord && x - xCoord <= 1)
-        {
-            if (-1 <= y - yCoord && y - yCoord <= 1)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
