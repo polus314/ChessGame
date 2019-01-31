@@ -2,6 +2,7 @@ package chessgame;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -93,7 +94,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                setPieceAt(template.getCopyOfPieceAt(i, j),i,j);
+                setPieceAt(template.getCopyOfPieceAt(i, j), i, j);
             }
         }
     }
@@ -697,14 +698,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             return null;
         }
-        for (int i = 0; i < WIDTH; i++)
+        for (ChessPiece piece : getPieces())
         {
-            for (int j = 0; j < HEIGHT; j++)
+            if (cp.equals(piece))
             {
-                if (cp.equals(getCopyOfPieceAt(i, j)))
-                {
-                    return getCopyOfPieceAt(i, j);
-                }
+                return piece;
             }
         }
         return null;
@@ -720,21 +718,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessMove> findAllMoves(ChessPiece.Color color)
     {
         ArrayList<ChessMove> moveList = new ArrayList<>();
-        
-        for (int i = 0; i < WIDTH; i++)
+        for (ChessPiece current : getPieces(color))
         {
-            for (int j = 0; j < HEIGHT; j++)
-            {
-                ChessPiece current = getCopyOfPieceAt(i, j);
-                if (current == null)
-                {
-                    continue;
-                }
-                if (current.getColor() == color)
-                {
-                    moveList.addAll(findMoves(current));
-                }
-            }
+            moveList.addAll(findMoves(current));
         }
         return moveList;
     }
@@ -749,28 +735,28 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessMove> findMoves(ChessPiece cp)
     {
         ArrayList<ChessMove> moveList = new ArrayList<>();
-        for (int xf = 0; xf < WIDTH; xf++)
+
+        HashSet<Vector> moveVectors = cp.getMoveSet();
+        for (Vector vector : moveVectors)
         {
-            for (int yf = 0; yf < HEIGHT; yf++)
+            int xf = vector.getXDiff() + cp.getX();
+            int yf = vector.getYDiff() + cp.getY();
+
+            ChessMove possMove = new ChessMove(cp, xf, yf);
+            if (leadsToCheck(possMove))         //if it puts mover in check, disregard
             {
-                ChessMove possMove = new ChessMove(cp, xf, yf);
-                if (leadsToCheck(possMove))         //if it puts mover in check, disregard
-                {
-                    continue;
-                }
-                if (cp.canMove(xf, yf) // piece moves this way
-                        && pathIsClear(cp, xf, yf) // no pieces in the way
-                        && spaceIsEmpty(xf, yf))    // space is empty
-                {
-                    moveList.add(possMove);
-                }
-                else if (canCapture(cp, xf, yf)
-                        && !spaceIsEmpty(xf, yf)
-                        && spaceIsOpen(xf, yf, cp.getColor()))
-                {
-                    possMove.captures = true;
-                    moveList.add(possMove);
-                }
+                continue;
+            }
+            if (pathIsClear(cp, xf, yf) // no pieces in the way
+                    && spaceIsEmpty(xf, yf))    // space is empty
+            {
+                moveList.add(possMove);
+            }
+            else if (canCapture(cp, xf, yf)
+                    && spaceIsEnemy(xf, yf, cp.getColor()))
+            {
+                possMove.captures = true;
+                moveList.add(possMove);
             }
         }
         return moveList;
@@ -785,19 +771,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     private King findKing(ChessPiece.Color c)
     {
-        for (int i = 0; i < WIDTH; i++)
+        for (ChessPiece current : getPieces(c))
         {
-            for (int j = 0; j < HEIGHT; j++)
+            if (current instanceof King)
             {
-                ChessPiece current = getCopyOfPieceAt(i, j);
-                if (current == null)
-                {
-                    continue;
-                }
-                if (current instanceof King && current.getColor() == c)
-                {
-                    return (King) current;
-                }
+                return (King) current;
             }
         }
         return null;

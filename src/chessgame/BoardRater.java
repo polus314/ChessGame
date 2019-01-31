@@ -40,44 +40,36 @@ public class BoardRater
     private ArrayList<ChessPiece> aimedHere(ChessBoard cb, int xDest, int yDest)
     {
         ArrayList<ChessPiece> defenders = new ArrayList<>();
-        for (int i = 0; i < 8; i++)
+        for (ChessPiece cp : cb.getPieces())
         {
-            for (int j = 0; j < 8; j++)
-            {
-                boolean isADefender = false;
-                ChessPiece cp = cb.getCopyOfPieceAt(i, j);
-                if (cp == null) // if no piece, don't check for anything
-                {
-                    continue;
-                }
+            boolean isADefender = false;
 
-                // if regular non-empty piece, check if it can move here and the
-                // path is clear
-                if (!(cp instanceof Pawn))
+            // if regular non-empty piece, check if it can move here and the
+            // path is clear
+            if (!(cp instanceof Pawn))
+            {
+                isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
+            } // if a pawn, they capture differently than they move
+            else
+            {
+                // square must be one column to the left or right
+                if (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
                 {
-                    isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
-                } // if a pawn, they capture differently than they move
-                else
-                {
-                    // square must be one column to the left or right
-                    if (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
+                    // Black captures down, White captures up
+                    if (cp.color == ChessPiece.Color.BLACK && cp.yCoord + 1 == yDest)
                     {
-                        // Black captures down, White captures up
-                        if (cp.color == ChessPiece.Color.BLACK && cp.yCoord + 1 == yDest)
-                        {
-                            isADefender = true;
-                        }
-                        else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
-                        {
-                            isADefender = true;
-                        }
+                        isADefender = true;
+                    }
+                    else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
+                    {
+                        isADefender = true;
                     }
                 }
+            }
 
-                if (isADefender)
-                {
-                    defenders.add(cp);
-                }
+            if (isADefender)
+            {
+                defenders.add(cp);
             }
         }
         return defenders;
