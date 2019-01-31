@@ -174,18 +174,28 @@ public class Checkerboard
         this.pieces = new ChessPiece[NUM_COLS][NUM_ROWS];
         for (ChessPiece piece : pieces)
         {
-            this.pieces[piece.getX()][piece.getY()] = piece;
+            setPieceAt(piece.getX(), piece.getY(), piece);
         }
     }
 
     public void setPieceAt(int x, int y, ChessPiece cp)
     {
-        this.pieces[x][y] = cp;
+        ChessPiece myPiece = cp;
+        if (cp != null)
+        {
+            myPiece = cp.copyOfThis();
+        }
+        this.pieces[x][y] = myPiece;
     }
 
     public ChessPiece getPieceAt(int x, int y)
     {
-        return pieces[x][y];
+        ChessPiece piece = pieces[x][y];
+        if (piece != null)
+        {
+            piece = piece.copyOfThis();
+        }
+        return piece;
     }
 
     public ChessPiece getSelectedPiece()
@@ -219,7 +229,12 @@ public class Checkerboard
     public void setSelectedPiece(ChessPiece cp)
     {
         possMoveSquares.clear();
-        selectedPiece = cp;
+        ChessPiece newSelPiece = cp;
+        if (newSelPiece != null)
+        {
+            newSelPiece = newSelPiece.copyOfThis();
+        }
+        selectedPiece = newSelPiece;
     }
 
     public ArrayList<ChessPiece> getPiecesList()

@@ -284,9 +284,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             case MouseEvent.BUTTON1: // Place piece
                 if (pieceToAdd != null)
                 {
-                    ChessPiece newPiece = pieceToAdd.copyOfThis();
-                    newPiece.movePiece(a, b);
-                    gamePanel.myBoard.setPieceAt(a, b, newPiece);
+                    pieceToAdd.movePiece(a, b);
+                    gamePanel.myBoard.setPieceAt(a, b, pieceToAdd);
                 }
                 else
                 {

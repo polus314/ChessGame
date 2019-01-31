@@ -44,7 +44,7 @@ public class BoardRater
             for (int j = 0; j < 8; j++)
             {
                 boolean isADefender = false;
-                ChessPiece cp = cb.getPieceAt(i, j);
+                ChessPiece cp = cb.getCopyOfPieceAt(i, j);
                 if (cp == null) // if no piece, don't check for anything
                 {
                     continue;
@@ -152,7 +152,7 @@ public class BoardRater
         {
             for (int j = 0; j < 8; j++)
             {
-                ChessPiece cp = cb.getPieceAt(i, j);
+                ChessPiece cp = cb.getCopyOfPieceAt(i, j);
                 if (cp == null)
                 {
                     continue;
@@ -180,15 +180,15 @@ public class BoardRater
                             {
                                 if (color == ChessPiece.Color.WHITE && j - m == 1
                                         && (i - k == 1 || k - i == 1)
-                                        && cb.getPieceAt(k, m) != null
-                                        && cb.getPieceAt(k, m).getColor() == ChessPiece.Color.BLACK)
+                                        && cb.getCopyOfPieceAt(k, m) != null
+                                        && cb.getCopyOfPieceAt(k, m).getColor() == ChessPiece.Color.BLACK)
                                 {
                                     numMoves++;
                                 }
                                 if (color == ChessPiece.Color.BLACK && m - j == 1
                                         && (i - k == 1 || k - i == 1)
-                                        && cb.getPieceAt(k, m) != null
-                                        && cb.getPieceAt(k, m).getColor() == ChessPiece.Color.WHITE)
+                                        && cb.getCopyOfPieceAt(k, m) != null
+                                        && cb.getCopyOfPieceAt(k, m).getColor() == ChessPiece.Color.WHITE)
                                 {
                                     numMoves++;
                                 }

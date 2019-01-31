@@ -233,13 +233,11 @@ public class GameController implements Runnable
     public boolean promoteToThisType(ChessPiece piece)
     {
         Pawn pawn = (Pawn) board.needPromotion();
-        if (pawn == null || pawn.getColor() != piece.getColor()
-                || piece instanceof King || piece instanceof Pawn)
+        if (pawn == null || piece instanceof King || piece instanceof Pawn)
         {
             return false;
         }
-        ChessPiece newPiece = piece.copyOfThis();
-        board.setPieceAt(newPiece, pawn.xCoord, pawn.yCoord);
+        board.setPieceAt(piece, pawn.xCoord, pawn.yCoord);
         return true;
     }
 
@@ -304,19 +302,6 @@ public class GameController implements Runnable
     public ChessPiece.Color getWinningSide()
     {
         return deepBlue.getWinningSide();
-    }
-
-    private boolean tryToPromote()
-    {
-        ChessPiece pawn = board.needPromotion();
-        if (pawn != null)
-        {
-            int xCoord = pawn.getX(), yCoord = pawn.getY();
-            ChessPiece queen = new Queen(pawn.getColor(), xCoord, yCoord);
-            board.setPieceAt(queen, xCoord, yCoord);
-            return true;
-        }
-        return false;
     }
 
     /**

@@ -93,10 +93,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece current = template.getPieceAt(i, j);
+                ChessPiece current = template.getCopyOfPieceAt(i, j);
                 if (current != null)
                 {
-                    setPieceAt(current.copyOfThis(), i, j);
+                    setPieceAt(current, i, j);
                 }
             }
         }
@@ -153,11 +153,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         yf = cm.getYDest();
         nextNode.replacePiece(xi, yi, xf, yf);
         //TODO - consider castling, where two pieces are moved
-        if (nextNode.getPieceAt(xf, yf) instanceof King // castling concerns
-                || nextNode.getPieceAt(xf, yf) instanceof Rook)
-        {
-            nextNode.getPieceAt(xf, yf).hasMoved = true;
-        }
         return nextNode;
     }
 
@@ -221,14 +216,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
         //check to see if King and Rook are present and unmoved
-        ChessPiece cp = getPieceAt(KING_X, y);
-        if (!(cp instanceof King) || cp.hasMoved)
+        ChessPiece cp = getCopyOfPieceAt(KING_X, y);
+        if (cp == null || cp.hasMoved || !(cp instanceof King))
         {
             return false;
         }
 
-        cp = getPieceAt(K_ROOK_X, y);
-        if (!(cp instanceof Rook) || cp.hasMoved)
+        cp = getCopyOfPieceAt(K_ROOK_X, y);
+        if (cp == null || cp.hasMoved || !(cp instanceof Rook))
         {
             return false;
         }
@@ -246,7 +241,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 {
                     continue;
                 }
-                cp = getPieceAt(i, j);
+                cp = getCopyOfPieceAt(i, j);
                 if (cp.getColor() == color.opposite()
                         && (canCapture(cp, KING_X, y)
                         || canCapture(cp, K_BISHOP_X, y)
@@ -272,14 +267,14 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
         //check to see if King and Rook are present and unmoved
-        ChessPiece cp = getPieceAt(KING_X, y);
-        if (!(cp instanceof King) || cp.hasMoved)
+        ChessPiece cp = getCopyOfPieceAt(KING_X, y);
+        if (cp == null || cp.hasMoved ||!(cp instanceof King))
         {
             return false;
         }
 
-        cp = getPieceAt(Q_ROOK_X, y);
-        if (!(cp instanceof Rook) || cp.hasMoved)
+        cp = getCopyOfPieceAt(Q_ROOK_X, y);
+        if (cp == null || cp.hasMoved || !(cp instanceof Rook))
         {
             return false;
         }
@@ -298,7 +293,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                     continue;
                 }
 
-                cp = getPieceAt(i, j);
+                cp = getCopyOfPieceAt(i, j);
                 if (cp.getColor() == color.opposite()
                         && (canCapture(cp, Q_BISHOP_X, y)
                         || canCapture(cp, QUEEN_X, y)
@@ -345,23 +340,23 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             return false;
         }
-
         int xAtt = attacker.getX();
         int yAtt = attacker.getY();
+        ChessPiece myAttacker = getCopyOfPieceAt(xAtt, yAtt);
+        if (myAttacker == null)
+        {
+            return false;
+        }
+        
         ChessBoard movedBoard = new ChessBoard(this);
-        ChessPiece defender = movedBoard.getPieceAt(x, y);
-        if (movedBoard.canCapture(attacker, x, y) && defender != null
-                && defender.getColor() != attacker.getColor())
+        ChessPiece defender = movedBoard.getCopyOfPieceAt(x, y);
+        if (movedBoard.canCapture(myAttacker, x, y) && defender != null
+                && defender.getColor() != myAttacker.getColor())
         {
             movedBoard.replacePiece(xAtt, yAtt, x, y);
-            if (!movedBoard.checkForCheck(attacker.getColor()))
+            if (!movedBoard.checkForCheck(myAttacker.getColor()))
             {
                 replacePiece(xAtt, yAtt, x, y);
-                if (getPieceAt(x, y) instanceof King
-                        || getPieceAt(x, y) instanceof Rook)
-                {
-                    getPieceAt(x, y).hasMoved = true;
-                }
                 return true;   // piece captured successfully
             }
             return false;     // capture causes check to attacker
@@ -417,13 +412,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             return false;
         }
 
+        ChessPiece piece;
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (!spaceIsEmpty(i, j)
-                        && canCapture(getPieceAt(i, j), king.xCoord, king.yCoord)
-                        && getPieceAt(i, j).getColor() != color)
+                piece = getCopyOfPieceAt(i, j);
+                if (piece != null
+                        && canCapture(piece, king.xCoord, king.yCoord)
+                        && piece.getColor() != color)
                 {
                     return true;
                 }
@@ -479,7 +476,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece current = getPieceAt(i, j);
+                ChessPiece current = getCopyOfPieceAt(i, j);
                 if (current == null)
                 {
                     continue;
@@ -487,6 +484,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
                 if (current instanceof King && current.getColor() == c)
                 {
                     numKings++;
+                    if (numKings > 1)
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -666,8 +667,8 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    lhs = getPieceAt(i, j);
-                    rhs = cb.getPieceAt(i, j);
+                    lhs = getCopyOfPieceAt(i, j);
+                    rhs = cb.getCopyOfPieceAt(i, j);
                     if (lhs == null && rhs == null)
                     {
                         continue;
@@ -704,9 +705,9 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (cp.equals(getPieceAt(i, j)))
+                if (cp.equals(getCopyOfPieceAt(i, j)))
                 {
-                    return getPieceAt(i, j);
+                    return getCopyOfPieceAt(i, j);
                 }
             }
         }
@@ -727,7 +728,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece current = getPieceAt(i, j);
+                ChessPiece current = getCopyOfPieceAt(i, j);
                 if (current == null)
                 {
                     continue;
@@ -791,7 +792,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece current = getPieceAt(i, j);
+                ChessPiece current = getCopyOfPieceAt(i, j);
                 if (current == null)
                 {
                     continue;
@@ -856,9 +857,19 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      * @param col column of piece, columns start at 0
      * @return ChessPiece - chess piece that is at the given coordinates
      */
-    public final ChessPiece getPieceAt(int row, int col)
+    private ChessPiece getPieceAt(int row, int col)
     {
         return pieceArray[row][col];
+    }
+    
+    public ChessPiece getCopyOfPieceAt(int row, int col)
+    {
+        ChessPiece piece = getPieceAt(row, col);
+        if (piece != null)
+        {
+            piece = piece.copyOfThis();
+        }
+        return piece;
     }
 
     /**
@@ -869,13 +880,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessPiece> getPieces()
     {
         ArrayList<ChessPiece> tempList = new ArrayList<>();
+        ChessPiece piece;
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (getPieceAt(i, j) != null)
+                piece = getCopyOfPieceAt(i, j);
+                if (piece != null)
                 {
-                    tempList.add(getPieceAt(i, j));
+                    tempList.add(piece);
                 }
             }
         }
@@ -891,17 +904,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ArrayList<ChessPiece> getPieces(ChessPiece.Color color)
     {
         ArrayList<ChessPiece> pieces = new ArrayList<>();
+        ChessPiece piece;
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (getPieceAt(i, j) == null)
+                piece = getCopyOfPieceAt(i, j);
+                if (piece != null && piece.getColor() == color)
                 {
-                    continue;
-                }
-                if (getPieceAt(i, j).getColor() == color)
-                {
-                    pieces.add(getPieceAt(i, j));
+                    pieces.add(piece);
                 }
             }
         }
@@ -918,13 +929,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ChessPiece[][] getPiecesArray()
     {
         ChessPiece[][] copy = new ChessPiece[WIDTH][HEIGHT];
+        ChessPiece piece;
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (getPieceAt(i, j) != null)
+                piece = getCopyOfPieceAt(i, j);
+                if (piece != null)
                 {
-                    copy[i][j] = getPieceAt(i, j);
+                    copy[i][j] = piece;
                 }
             }
         }
@@ -957,10 +970,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     {
         int xi = mover.getX();
         int yi = mover.getY();
-        if (canMovePiece(mover, xf, yf))
+        ChessPiece myMover = getCopyOfPieceAt(xi, yi);
+        if (myMover != null && canMovePiece(myMover, xf, yf))
         {
             replacePiece(xi, yi, xf, yf);
-            mover.hasMoved = true;
             return true;
         }
         return false;
@@ -976,13 +989,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     {
         for (int i = 0; i < WIDTH; i++)
         {
-            ChessPiece pawn = getPieceAt(i, HOME_ROW_B);
+            ChessPiece pawn = getCopyOfPieceAt(i, HOME_ROW_B);
             if (pawn instanceof Pawn
                     && pawn.getColor() == ChessPiece.Color.WHITE)
             {
                 return pawn;
             }
-            pawn = getPieceAt(i, HOME_ROW_W);
+            pawn = getCopyOfPieceAt(i, HOME_ROW_W);
             if (pawn instanceof Pawn
                     && pawn.getColor() == ChessPiece.Color.BLACK)
             {
@@ -1050,13 +1063,15 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      * @param xf final x coordinate
      * @param yf final y coordinate
      */
-    public void replacePiece(int xi, int yi, int xf, int yf)
+    private void replacePiece(int xi, int yi, int xf, int yf)
     {
-        if (getPieceAt(xi, yi) != null)
+        ChessPiece piece = getPieceAt(xi, yi);
+        if (piece != null)
         {
-            getPieceAt(xi, yi).movePiece(xf, yf);
+            piece.movePiece(xf, yf);
+            piece.hasMoved = true;
         }
-        setPieceAt(getPieceAt(xi, yi), xf, yf);
+        setPieceAt(piece, xf, yf);
         setPieceAt(null, xi, yi);
     }
 
@@ -1067,13 +1082,19 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      * @param x column piece is in, columns start at 0
      * @param y row piece is in, rows start at 0
      */
-    public final void setPieceAt(ChessPiece cp, int x, int y)
+    public void setPieceAt(ChessPiece cp, int x, int y)
     {
-        pieceArray[x][y] = cp;
+        ChessPiece myPiece;
         if (cp != null)
         {
-            cp.movePiece(x, y);
+            myPiece = cp.copyOfThis();
+            myPiece.movePiece(x, y);
         }
+        else
+        {
+            myPiece = null;
+        }
+        pieceArray[x][y] = myPiece;
     }
 
     /**
@@ -1123,7 +1144,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             string += "\n";
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece cp = getPieceAt(j, i);
+                ChessPiece cp = getCopyOfPieceAt(j, i);
                 if (cp == null)
                 {
                     string = string + "-- ";
@@ -1159,7 +1180,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         int xDest = move.getXDest(), yDest = move.getYDest();
         if (spaceIsEmpty(move.getXDest(), move.getYDest()))
         {
-            if (move.piece instanceof King) // try to castle
+            if (mover instanceof King) // try to castle
             {
                 if (canCastleKS(mover.getColor()) && xDest == K_KNIGHT_X)
                 {
