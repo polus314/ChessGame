@@ -319,7 +319,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         {
             return;
         }
-
+        
+        gamePanel.myBoard.removePreviousMoveHighlight();
         ChessPiece selPiece = gamePanel.myBoard.selectedPiece;
         ChessPiece clickedPiece = gamePanel.myBoard.getPieceAt(a, b);
         // select a piece
@@ -603,6 +604,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 }
                 gamePanel.myBoard.setPieces(controller.getPiecesList());
                 gamePanel.switchPlayerToMove();
+                gamePanel.myBoard.highlightPreviousMove(move);
                 repaint();
                 if (controller.isGameOver())
                 {

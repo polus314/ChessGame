@@ -155,7 +155,7 @@ public class GameController implements Runnable
         GameRequest response = new GameRequest(request.task, null, false);
         Object[] info = (Object[]) request.info;
         // validate the info that was passed
-        if (info == null || info.length < 2)
+        if (info == null || info.length != 2)
         {
             return response; // bad info passed, task unsuccessful
         }

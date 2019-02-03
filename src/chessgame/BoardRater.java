@@ -1,5 +1,6 @@
 package chessgame;
 
+import chessgame.AI.GameState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,14 +19,20 @@ public class BoardRater
      * hanging rating.
      *
      * @param player
-     * @param cb
+     * @param gs
      */
-    public void rateBoard(ChessBoard cb, ChessPiece.Color player)
+    public void rateBoard(GameState gs, ChessPiece.Color player)
     {
-        cb.materialRating = matRating(cb);
-        cb.mobilityRating = mobRating(cb);
-        cb.hangingRating = hangRating(cb);
-        cb.overallRating = cb.materialRating * 0.75f + cb.mobilityRating * 0.25f;
+        if (gs == null || gs.board == null)
+        {
+            return;
+        }
+        
+        ChessBoard cb = gs.board;
+        gs.materialRating = matRating(cb);
+        gs.mobilityRating = mobRating(cb);
+        gs.hangingRating = hangRating(cb);
+        gs.overallRating = gs.materialRating * 0.75f + gs.mobilityRating * 0.25f;
     }
 
     /**

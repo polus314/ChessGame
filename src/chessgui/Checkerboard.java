@@ -69,6 +69,8 @@ public class Checkerboard
     private Color selectedPieceColor = Color.red;
     private Color darkPieceColor = Color.black;
     private Color lightPieceColor = Color.white;
+    
+    private static Color HIGHLIGHT_COLOR = Color.YELLOW;
 
     private final BufferedImage[] pieceImages;
 
@@ -78,6 +80,7 @@ public class Checkerboard
     public ChessPiece selectedPiece;
     private ArrayList<HighlightSquare> possMoveSquares;
     private ChessPiece possMovePiece;
+    private HighlightSquare previousMove;
 
     public Checkerboard()
     {
@@ -87,6 +90,7 @@ public class Checkerboard
         pieceImages = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
         possMoveSquares = new ArrayList<>();
         possMovePiece = null;
+        previousMove = null;
         initializeImages();
     }
 
@@ -115,6 +119,20 @@ public class Checkerboard
                     && yCushion < y && y < SQUARE_HEIGHT - yCushion);
         }
         return false;
+    }
+    
+    public void highlightPreviousMove(ChessMove cm)
+    {
+        if (cm == null)
+        {
+            return;
+        }
+        previousMove = new HighlightSquare(cm.getXDest(), cm.getYDest(), HIGHLIGHT_COLOR);
+    }
+    
+    public void removePreviousMoveHighlight()
+    {
+        previousMove = null;
     }
 
     private boolean squareHasPiece(Point p)
@@ -332,6 +350,11 @@ public class Checkerboard
             {
                 drawHighlight(g, square);
             }
+        }
+        
+        if (previousMove != null)
+        {
+            drawHighlight(g, previousMove);
         }
 
         //paints all the pieces, checking if they are white, black or currently

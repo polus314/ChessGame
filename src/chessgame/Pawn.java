@@ -84,6 +84,24 @@ public class Pawn extends ChessPiece
         }
         return moves;
     }
+    
+    public final HashSet<Vector> getCaptureMoveSet()
+    {
+        HashSet<Vector> moves = new HashSet<>();
+
+        // White pawns move in -y direction
+        if (color == ChessPiece.Color.WHITE)
+        {
+            moves.add(new Vector(-1, -1));
+            moves.add(new Vector(1, -1));
+        }
+        else // Black pawns move in +y direction
+        {
+            moves.add(new Vector(1, 1));
+            moves.add(new Vector(-1, 1));
+        }
+        return moves;
+    }
 
     /**
      * Returns a string describing this pawn

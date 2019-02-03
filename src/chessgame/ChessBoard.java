@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author John Polus
  */
-public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard>
+public class ChessBoard
 {
 
     // Length of board along x - axis, in number of squares
@@ -36,17 +36,12 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
     private final ChessPiece[][] pieceArray;
 
-    public float overallRating;
-    public float mobilityRating;
-    public float materialRating;
-    public float hangingRating;
-
     /**
      * This constructor sets up a standard chess game on the board
      */
     public ChessBoard()
     {
-        pieceArray = new ChessPiece[8][8];
+        pieceArray = new ChessPiece[WIDTH][HEIGHT];
         //set up pieces on each side
         for (int i = 0; i < WIDTH; i++)
         {
@@ -77,8 +72,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
         pieceArray[3][0] = new Queen(ChessPiece.Color.BLACK, 3, 0);
         pieceArray[4][0] = new King(ChessPiece.Color.BLACK, 4, 0);
-
-        materialRating = 0;
     }
 
     /**
@@ -90,6 +83,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ChessBoard(ChessBoard template)
     {
         pieceArray = new ChessPiece[WIDTH][HEIGHT];
+        if (template == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
@@ -109,6 +107,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ChessBoard(ChessPiece[][] pieces)
     {
         pieceArray = new ChessPiece[WIDTH][HEIGHT];
+        if (pieces == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
@@ -143,6 +146,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     public ChessBoard advancePosition(ChessMove cm)
     {
         ChessBoard nextNode = new ChessBoard(this);
+        if (cm == null)
+        {
+            return nextNode;
+        }
         int xi, xf, yi, yf;
         xi = cm.piece.xCoord;
         yi = cm.piece.yCoord;
@@ -305,6 +312,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
 
     public boolean canMovePiece(ChessPiece mover, int xf, int yf)
     {
+        if (mover == null)
+        {
+            return false;
+        }
         int xi = mover.getX();
         int yi = mover.getY();
         ChessBoard movedBoard = new ChessBoard(this);
@@ -370,6 +381,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public boolean castle(ChessMove move)
     {
+        if (move == null)
+        {
+            return false;
+        }
         ChessPiece castler = move.piece;
         if (castler instanceof King)
         {
@@ -425,6 +440,11 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
         }
         return false;
     }
+    
+    public boolean checkForGameOver(ChessPiece.Color playerToMove)
+    {
+        return findAllMoves(playerToMove).isEmpty();
+    }
 
     /**
      * Checks the current board position to see if one side is checkmated
@@ -436,6 +456,12 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     {
         int numMoves = findAllMoves(playerToMove).size();
         return numMoves == 0 && checkForCheck(playerToMove);
+    }
+    
+    public boolean checkForStalemate(ChessPiece.Color playerToMove)
+    {
+        int numMoves = findAllMoves(playerToMove).size();
+        return numMoves == 0 && !checkForCheck(playerToMove);
     }
 
     /**
@@ -605,44 +631,6 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
     }
 
     /**
-     * Compares two chessboards to see which one is greater. Compares first both
-     * boards' material rating, then if those are equal looks at both boards'
-     * mobility rating.
-     *
-     * @param cb1 first board to be compared
-     * @param cb2 second board to be compared
-     * @return int - 1 if second board is greater, 0 if both are equal, -1
-     * otherwise
-     */
-    @Override
-    public int compare(ChessBoard cb1, ChessBoard cb2)
-    {
-        if (cb1.overallRating > cb2.overallRating)
-        {
-            return 1;
-        }
-        return cb1.overallRating == cb2.overallRating ? 0 : -1;
-    }
-
-    /**
-     * This method compares this to a given Chess Board cb to see which is
-     * greater. Compares first the material rating, if both boards' are equal,
-     * checks their mobility rating.
-     *
-     * @param cb board to compare this to
-     * @return -1 if this is less, 0 if equal, 1 if this is greater
-     */
-    @Override
-    public int compareTo(ChessBoard cb)
-    {
-        if (overallRating > cb.overallRating)
-        {
-            return 1;
-        }
-        return overallRating == cb.overallRating ? 0 : -1;
-    }
-
-    /**
      * Two ChessBoards are equal if for each square, both boards have equal
      * pieces at that location
      *
@@ -734,6 +722,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public ArrayList<ChessMove> findMoves(ChessPiece cp)
     {
+        if (cp == null)
+        {
+            return null;
+        }
         ArrayList<ChessMove> moveList = new ArrayList<>();
 
         HashSet<Vector> moveVectors = cp.getMoveSet();
@@ -743,7 +735,7 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             int yf = vector.getYDiff() + cp.getY();
 
             ChessMove possMove = new ChessMove(cp, xf, yf);
-            if (leadsToCheck(possMove))         //if it puts mover in check, disregard
+            if (leadsToCheck(possMove) || !areIndicesInBounds(xf, yf))         //if it puts mover in check, disregard
             {
                 continue;
             }
@@ -757,6 +749,22 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
             {
                 possMove.captures = true;
                 moveList.add(possMove);
+            }
+        }
+        // Pawns are the only piece that capture differently than they move
+        if (cp instanceof Pawn)
+        {
+            for (Vector vector : ((Pawn) cp).getCaptureMoveSet())
+            {
+                int xf = vector.getXDiff() + cp.getX();
+                int yf = vector.getYDiff() + cp.getY();
+                
+                ChessMove possMove = new ChessMove(cp, xf, yf);
+                if (spaceIsEnemy(xf, yf, cp.getColor()))
+                {
+                    possMove.captures = true;
+                    moveList.add(possMove);
+                }
             }
         }
         return moveList;
@@ -928,6 +936,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public boolean leadsToCheck(ChessMove cm)
     {
+        if (cm == null)
+        {
+            return false;
+        }
         ChessBoard temp = advancePosition(cm);
         return temp.checkForCheck(cm.piece.getColor());
     }
@@ -943,6 +955,10 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public boolean movePiece(ChessPiece mover, int xf, int yf)
     {
+        if (mover == null)
+        {
+            return false;
+        }
         int xi = mover.getX();
         int yi = mover.getY();
         ChessPiece myMover = getCopyOfPieceAt(xi, yi);
@@ -992,10 +1008,13 @@ public class ChessBoard implements Comparator<ChessBoard>, Comparable<ChessBoard
      */
     public boolean pathIsClear(ChessPiece mover, int x, int y)
     {
+        if (mover == null)
+        {
+            return false;
+        }
         boolean clear = true;
         int xi = mover.getX();
         int yi = mover.getY();
-        Class c = mover.getClass();
         if (mover instanceof Pawn)
         {
             // check to make sure initial 2-space move is unobstructed

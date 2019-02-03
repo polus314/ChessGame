@@ -41,6 +41,10 @@ public class AI
         // miniMaxRating is the rating given to this node, inherited from its
         // child
         public float miniMaxRating;
+        public float overallRating;
+        public float materialRating;
+        public float mobilityRating;
+        public float hangingRating;
 
         public boolean checkedForMiniMax;
 
@@ -60,10 +64,25 @@ public class AI
             checkedForMiniMax = false;
         }
 
+        /**
+         * This method compares this to a given GameState gs to see which is
+         * greater. Compares their overall rating
+         *
+         * @param rhs board to compare this to
+         * @return -1 if this is less, 0 if equal, 1 if this is greater
+         */
         @Override
         public int compareTo(GameState rhs)
         {
-            return board.compareTo(rhs.board);
+            if (rhs == null)
+            {
+                return 1;
+            }
+            if (overallRating > rhs.overallRating)
+            {
+                return 1;
+            }
+            return overallRating == rhs.overallRating ? 0 : -1;
         }
     }
 
@@ -108,10 +127,10 @@ public class AI
             for (Tree<GameState> tree : gameTree.children)
             {
                 String str = tree.info.move.toString();
-                str += "\tOVR: " + tree.info.board.overallRating;
-                str += "\tMATERIAL: " + tree.info.board.materialRating;
-                str += "\tMOBILITY: " + tree.info.board.mobilityRating;
-                str += "\tHANGING : " + tree.info.board.hangingRating;
+                str += "\tOVR: " + tree.info.overallRating;
+                str += "\tMATERIAL: " + tree.info.materialRating;
+                str += "\tMOBILITY: " + tree.info.mobilityRating;
+                str += "\tHANGING : " + tree.info.hangingRating;
                 writer.println(str);
             }
             writer.println("One level of Game Tree printed successfully");
@@ -172,8 +191,9 @@ public class AI
         {
             ChessMove move = moveList.get(i);
             ChessBoard newBoard = curBoard.advancePosition(move);
-            rater.rateBoard(newBoard, color.opposite());
-            Tree<GameState> child = new Tree<>(new GameState(newBoard, move));
+            GameState newState = new GameState(newBoard, move);
+            rater.rateBoard(newState, color.opposite());
+            Tree<GameState> child = new Tree<>(newState);
             parentTree.children.add(child);
         }
 
@@ -193,8 +213,9 @@ public class AI
         ChessPiece.Color playerColor = playerToMove;
 
         // create the root node
-        rater.rateBoard(gameBoard, playerToMove);
-        Tree<GameState> gameTree = new Tree<>(new GameState(gameBoard, null));
+        GameState root = new GameState(gameBoard, null);
+        rater.rateBoard(root, playerToMove);
+        Tree<GameState> gameTree = new Tree<>(root);
 
         // maintain a list of current level nodes and a list of all their children
         ArrayList<Tree<GameState>> curLevel = new ArrayList<>();
@@ -259,13 +280,13 @@ public class AI
 
     /**
      * Returns whether or not the game on gameBoard is over, whether that be
-     * win, draw or tie.
+     * win, draw or loss.
      *
      * @return boolean - true if play should halt, false otherwise
      */
     public boolean isGameOver()
     {
-        return gameBoard.checkForMate(playerToMove);
+        return gameBoard.checkForGameOver(playerToMove);
     }
 
     private ChessMove miniMaxBestMove(Tree<GameState> gameTree)
@@ -288,8 +309,8 @@ public class AI
         for (int i = 0; i < gameTree.children.size(); i++)
         {
             Tree<GameState> child = gameTree.children.get(i);
-            if ((max && child.info.board.materialRating > bestRating)
-                    || (!max && child.info.board.materialRating < bestRating))
+            if ((max && child.info.materialRating > bestRating)
+                    || (!max && child.info.materialRating < bestRating))
             {
                 indexOfBest = i;
             }
@@ -312,9 +333,9 @@ public class AI
         // leaf nodes just set their own value, not a problem
         if (gameTree.children == null || gameTree.children.isEmpty())
         {
-            ChessBoard cb = gameTree.info.board;
+            GameState gs = gameTree.info;
             gameTree.info.checkedForMiniMax = true;
-            gameTree.info.miniMaxRating = 5 * cb.materialRating + 2 * cb.mobilityRating + 3 * cb.hangingRating;
+            gameTree.info.miniMaxRating = 5 * gs.materialRating + 2 * gs.mobilityRating + 3 * gs.hangingRating;
             return gameTree.info.miniMaxRating;
         }
         else // non-leaf nodes check their children
@@ -358,7 +379,7 @@ public class AI
         float bestRank = max ? -1.0f : 1.0f;
         for (Tree<GameState> tree : gameTree.children)
         {
-            float childRating = tree.info.board.overallRating;
+            float childRating = tree.info.overallRating;
             if ((max && childRating > bestRank)
                     || (!max && childRating < bestRank))
             {
