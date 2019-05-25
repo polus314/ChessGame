@@ -2,7 +2,6 @@ package chessgui;
 
 import chessgame.*;
 import java.awt.BorderLayout;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -243,9 +242,9 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         colorMenu.addPropertyChangeListener(this);
         fileMenu.addPropertyChangeListener(this);
 
-        scoreboard = new Scoreboard(new Rectangle(200, 600, 400, 100), modeMenu.getMode());
+        scoreboard = new Scoreboard(modeMenu.getMode());
         gamePanel = new GamePanel(scoreboard);
-        add(gamePanel, BorderLayout.EAST);
+        add(gamePanel, BorderLayout.NORTH);
 
         lbl_pieceToAdd = new JLabel("");
         add(lbl_pieceToAdd);
@@ -318,7 +317,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         {
             return;
         }
-        
+
         gamePanel.myBoard.removePreviousMoveHighlight();
         ChessPiece selPiece = gamePanel.myBoard.selectedPiece;
         ChessPiece clickedPiece = gamePanel.myBoard.getPieceAt(a, b);

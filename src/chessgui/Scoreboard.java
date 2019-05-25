@@ -7,6 +7,7 @@ package chessgui;
 
 import chessgame.ChessPiece;
 import chessgame.GameMode;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
@@ -16,18 +17,29 @@ import java.awt.Rectangle;
  */
 public class Scoreboard
 {
-
     private ChessPiece.Color playerToMove;
     private int whiteTime, blackTime;
     private final GameMode mode;
     private Rectangle bounds;
 
-    public Scoreboard(Rectangle boundingBox, GameMode gm)
+    private static final int FONT_HEIGHT = 25;
+    
+    public Scoreboard(GameMode gm)
     {
         whiteTime = blackTime = 3000;
         mode = gm;
-        bounds = boundingBox;
         playerToMove = ChessPiece.Color.WHITE;
+    }
+
+    public Scoreboard(Rectangle boundingBox, GameMode gm)
+    {
+        this(gm);
+        bounds = boundingBox;
+    }
+
+    public void setBoundingBox(Rectangle bb)
+    {
+        bounds = new Rectangle(bb);
     }
 
     public ChessPiece.Color getPlayerToMove()
@@ -71,9 +83,16 @@ public class Scoreboard
 
     public void redraw(Graphics g)
     {
-        g.drawString("SCOREBOARD", bounds.x, bounds.y);
-        g.drawString("White: " + getTimeString(whiteTime), bounds.x, bounds.y + 15);
-        g.drawString("Black: " + getTimeString(blackTime), bounds.x + bounds.width - 50, bounds.y + 15);
+        Color blackColor, whiteColor;
+        boolean whiteToMove = playerToMove == ChessPiece.Color.WHITE;
+        blackColor = whiteToMove ? Color.BLACK : Color.RED;
+        whiteColor = whiteToMove ? Color.RED : Color.BLACK;
+
+        g.setColor(whiteColor);
+        g.drawString("White: " + getTimeString(whiteTime), bounds.x, bounds.y + bounds.height - FONT_HEIGHT);
+        g.setColor(blackColor);
+        g.drawString("Black: " + getTimeString(blackTime), bounds.x, bounds.y + FONT_HEIGHT);
+        
     }
 
     private String getTimeString(int sec)

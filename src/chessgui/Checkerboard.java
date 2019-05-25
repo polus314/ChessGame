@@ -13,10 +13,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
 
 public class Checkerboard
 {
@@ -39,7 +37,7 @@ public class Checkerboard
     public static final int NUM_ROWS = ChessBoard.HEIGHT;
     public static final int NUM_COLS = ChessBoard.WIDTH;
 
-    public static final int CENTERING_AMT_Y = 25;
+    public static final int CENTERING_AMT_Y = 12;
     public static final int CENTERING_AMT_X = 12;
     public static final int SQUARE_WIDTH = 50;
     public static final int SQUARE_HEIGHT = 50;
@@ -47,32 +45,15 @@ public class Checkerboard
     public static final int BOARD_WIDTH = SQUARE_WIDTH * NUM_COLS;
     public static final int BOARD_HEIGHT = SQUARE_HEIGHT * NUM_ROWS;
 
-    // used for accessing piece images
-    private static final int IMG_WHITE = 0;
-    private static final int IMG_BLACK = 1;
-    private static final int IMG_RED = 2;
-    private static final int NUM_COLORS = 3;
-
-    private static final int IMG_KING = 0;
-    private static final int IMG_QUEEN = 1;
-    private static final int IMG_ROOK = 2;
-    private static final int IMG_BISHOP = 3;
-    private static final int IMG_KNIGHT = 4;
-    private static final int IMG_PAWN = 5;
-    private static final int NUM_PIECE_TYPES = 6;
-
-    private static final int IMG_WIDTH = 30;
-    private static final int IMG_HEIGHT = 30;
-
-    private Color lightSquareColor = new Color(80, 80, 80);
-    private Color darkSquareColor = Color.gray;
-    private Color selectedPieceColor = Color.red;
-    private Color darkPieceColor = Color.black;
-    private Color lightPieceColor = Color.white;
     
-    private static Color HIGHLIGHT_COLOR = Color.YELLOW;
 
-    private final BufferedImage[] pieceImages;
+    private final Color lightSquareColor = new Color(80, 80, 80);
+    private final Color darkSquareColor = Color.gray;
+    private final Color selectedPieceColor = Color.red;
+    private final Color darkPieceColor = Color.black;
+    private final Color lightPieceColor = Color.white;
+    
+    private static final Color HIGHLIGHT_COLOR = Color.YELLOW;
 
     private int xPos;
     private int yPos;
@@ -87,11 +68,10 @@ public class Checkerboard
         pieces = new ChessPiece[NUM_COLS][NUM_ROWS];
         xPos = 0;
         yPos = 0;
-        pieceImages = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
+        
         possMoveSquares = new ArrayList<>();
         possMovePiece = null;
         previousMove = null;
-        initializeImages();
     }
 
     public boolean containsPoint(Point p)
@@ -153,38 +133,6 @@ public class Checkerboard
             }
         }
         return false;
-    }
-
-    /**
-     * Populates the images that will be used to display the chess pieces.
-     */
-    private void initializeImages()
-    {
-        String[] pieceTypes =
-        {
-            "king", "queen", "rook", "bishop", "knight", "pawn"
-        };
-        String[] colors =
-        {
-            "w", "b", "r"
-        };
-
-        String imgFolderPath = "resources/";
-        int count = 0;
-        for (String piece : pieceTypes)
-        {
-            for (String color : colors)
-            {
-                try
-                {
-                    String filepath = imgFolderPath + piece + "_" + color + ".png";
-                    pieceImages[count++] = ImageIO.read(new File(filepath));
-                } catch (Exception e)
-                {
-                    System.out.println("Error loading piece images");
-                }
-            }
-        }
     }
 
     public void setPieces(List<ChessPiece> pieces)
@@ -416,82 +364,9 @@ public class Checkerboard
         }
 
         pieceXPos = xPos + SQUARE_WIDTH * cp.getX() + CENTERING_AMT_X;
-        pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_X;
+        pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_Y;
 
-        int imageIndex = getImageIndex(cp, g.getColor());
-        img = pieceImages[imageIndex];
-        g.drawImage(img, pieceXPos, pieceYPos, IMG_WIDTH, IMG_HEIGHT, null);
-    }
-
-    /**
-     * Finds the image for a piece of this type and color in the image array.
-     * Images are organized first by type and then by color
-     *
-     * @param cp - chess piece of the type to display
-     * @param c - color of piece to display
-     * @return int - index of image to display
-     */
-    private int getImageIndex(ChessPiece cp, Color c)
-    {
-        return getPieceOffset(cp) * NUM_COLORS + getColorOffset(c);
-    }
-
-    /**
-     * Returns the pieceOffset for this piece in the image array
-     *
-     * @param cp - chess piece for which image is being retrieved
-     * @return int - pieceOffset of image
-     */
-    private int getPieceOffset(ChessPiece cp)
-    {
-        Class c = cp.getClass();
-        if (c == Rook.class)
-        {
-            return IMG_ROOK;
-        }
-        else if (c == Bishop.class)
-        {
-            return IMG_BISHOP;
-        }
-        else if (c == Knight.class)
-        {
-            return IMG_KNIGHT;
-        }
-        else if (c == Queen.class)
-        {
-            return IMG_QUEEN;
-        }
-        else if (c == King.class)
-        {
-            return IMG_KING;
-        }
-        else if (c == Pawn.class)
-        {
-            return IMG_PAWN;
-        }
-
-        return 0;
-    }
-
-    /**
-     * Returns the colorOffset for a piece of the given Color
-     *
-     * @param c - color of the piece for which an image is being found
-     * @return int - colorOffset for image
-     */
-    private int getColorOffset(Color c)
-    {
-        if (c == Color.red)
-        {
-            return IMG_RED;
-        }
-        else if (c == Color.black)
-        {
-            return IMG_BLACK;
-        }
-        else
-        {
-            return IMG_WHITE;
-        }
+        img = PieceImages.getPieceImage(cp, g.getColor());
+        g.drawImage(img, pieceXPos, pieceYPos, PieceImages.IMG_WIDTH, PieceImages.IMG_HEIGHT, null);
     }
 }

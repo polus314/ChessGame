@@ -14,6 +14,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -29,6 +30,10 @@ public class GamePanel extends JPanel implements ActionListener
     private Scoreboard scoreboard;
     private Timer updateTimer;
     private boolean timerStopped;
+    
+    private static final int MARGIN = 10;
+    private static final int MIN_WIDTH = 750;
+    private static final int MIN_HEIGHT = 750;
 
     /**
      * Default constructor, initializes the Checkerboard
@@ -40,12 +45,13 @@ public class GamePanel extends JPanel implements ActionListener
         myBoard = new Checkerboard();
         setBackground(Color.lightGray);
         setBorder(BorderFactory.createLineBorder(Color.black));
-        setMinimumSize(new Dimension(750, 750));
+        setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
         myBoard.setPieces(new ChessBoard().getPieces());
-        myBoard.setX(250);
-        myBoard.setY(100);
+        myBoard.setX(5);
+        myBoard.setY(5);
 
+        s.setBoundingBox(new Rectangle(Checkerboard.BOARD_WIDTH + MARGIN, 0, MIN_WIDTH - Checkerboard.BOARD_WIDTH - MARGIN, Checkerboard.BOARD_HEIGHT));
         scoreboard = s;
         updateTimer = new Timer(1000, this);
         updateTimer.setActionCommand("Update Timer");
