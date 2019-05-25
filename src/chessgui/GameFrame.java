@@ -60,7 +60,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         @Override
         public void mousePressed(MouseEvent e)
         {
-            //tasks.add(new GameRequest(GameRequest.GameTask.MOVE_PIECE, null, false));
             e = SwingUtilities.convertMouseEvent(null, e, gamePanel);
             int x = e.getX() - gamePanel.myBoard.getX();
             int y = e.getY() - gamePanel.myBoard.getY();
@@ -436,6 +435,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                     modeMenu.setMode(oldMode);
                     return;
                 }
+                break;
             default:
                 break;
         }
@@ -610,6 +610,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 {
                     displayEndGameMessage();
                     gamePanel.stopTimer();
+                    modeMenu.setMode(GameMode.UNDECIDED);
                     return;
                 }
                 if (controller.getPlayerToMove() != humanPlayer)

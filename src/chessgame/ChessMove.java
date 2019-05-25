@@ -1,5 +1,7 @@
 package chessgame;
 
+import java.io.Serializable;
+
 /**
  * This class represents a move that is taken in chess. It has an associated
  * piece that is moving, where that piece is moving to, and what type of move it
@@ -7,7 +9,7 @@ package chessgame;
  *
  * @author John Polus
  */
-public class ChessMove //implements Comparable<ChessMove>
+public class ChessMove implements Serializable
 {
 
     /**

@@ -16,47 +16,56 @@ import java.net.Socket;
 public class Server
 {
 
-    public static int PORT_NUMBER = 12345;
+    public static int PORT_NUMBER = 52645;
 
     private ServerSocket serveSock;
 
     private void listenToSocket(Socket s)
     {
-        System.out.println("Listening to socket");
-        try
+        while (true)
         {
-            InputStream is = s.getInputStream();
-            while (is.available() > 0)
+            try
             {
-                System.out.print((char) is.read());
+                InputStream is = s.getInputStream();
+                while (is.available() > 0)
+                {
+                    System.out.println((char) is.read());
+                }
+            } catch (Exception e)
+            {
+                System.out.println("Error in Socket: " + e);
             }
-            System.out.println("");
-        } catch (Exception e)
-        {
-            System.out.println("Error in Socket: " + s);
         }
     }
 
     public Server()
     {
         System.out.println("Starting Server");
+        boolean success = false;
+        Socket sock = null;
         try
         {
             serveSock = new ServerSocket(PORT_NUMBER);
-            while (true)
+            System.out.println("Server port is: " + serveSock.getLocalPort());
+            while (!success)
             {
-                Socket sock = serveSock.accept();
-                listenToSocket(sock);
+                sock = serveSock.accept();
+                success = true;
             }
         } catch (Exception e)
         {
             System.out.println("Error in Server Initialization");
         }
+        if (sock == null)
+        {
+            return;
+        }
+        System.out.println("Listening to socket");
+        listenToSocket(sock);
     }
 
     public static void main(String args[])
     {
-        new Thread(new Client()).start();
         Server s = new Server();
     }
 }

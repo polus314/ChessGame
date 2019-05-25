@@ -1,7 +1,7 @@
 package chessgame;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author John Polus
  */
-public class ChessBoard
+public class ChessBoard implements Serializable
 {
 
     // Length of board along x - axis, in number of squares
@@ -146,7 +146,7 @@ public class ChessBoard
     public ChessBoard advancePosition(ChessMove cm)
     {
         ChessBoard nextNode = new ChessBoard(this);
-        if (cm == null)
+        if (cm == null || cm.piece == null)
         {
             return nextNode;
         }

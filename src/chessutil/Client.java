@@ -6,8 +6,8 @@
 package chessutil;
 
 import java.net.Socket;
-import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.InetAddress;
 
 /**
  *
@@ -16,26 +16,40 @@ import java.io.PrintStream;
 public class Client implements Runnable
 {
 
-    private static int serialNumber = 0;
-
     @Override
     public void run()
     {
         System.out.println("Starting Client");
+        boolean success = false;
+        Socket sock = null;
+        while (!success)
+        {
+            try
+            {
+                InetAddress ia = InetAddress.getByName("192.168.0.100");
+                sock = new Socket(ia, Server.PORT_NUMBER, true);
+                success = true;
+            } catch (Exception e)
+            {
+                System.out.println("Client error: " + e);
+            }
+        }
         while (true)
         {
             try
             {
-                Socket sock = new Socket("localhost", Server.PORT_NUMBER, true);
-                OutputStream stream = sock.getOutputStream();
-                PrintStream ps = new PrintStream(stream);
-                ps.print(++serialNumber + ": Hello World");
+                PrintStream ps = new PrintStream(sock.getOutputStream());
+                ps.print("Hi There");
                 ps.flush();
-                Thread.sleep(1000);
             } catch (Exception e)
             {
-                System.out.println("Client error");
             }
         }
+    }
+
+    public static void main(String args[])
+    {
+        Client c = new Client();
+        new Thread(c).start();
     }
 }

@@ -1,5 +1,6 @@
 package chessgame;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
 /**
@@ -10,7 +11,7 @@ import java.util.HashSet;
  *
  * @author John Polus
  */
-public abstract class ChessPiece implements Comparable<ChessPiece>
+public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
 {
 
     /**
