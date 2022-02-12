@@ -45,7 +45,7 @@ public final class PieceImages
     public static final int SMALL_WIDTH = 8;
     public static final int SMALL_HEIGHT = 8;
     
-    private static final BufferedImage pieceImages[] = initializeImages();
+    private static final BufferedImage [] pieceImages = initializeImages();
     
     private PieceImages() { }
     
@@ -54,7 +54,7 @@ public final class PieceImages
      */
     private static BufferedImage[] initializeImages()
     {
-        BufferedImage images[] = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
+        BufferedImage [] images = new BufferedImage[NUM_COLORS * NUM_PIECE_TYPES];
         String[] pieceTypes =
         {
             "king", "queen", "rook", "bishop", "knight", "pawn"

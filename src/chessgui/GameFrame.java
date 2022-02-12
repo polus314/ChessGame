@@ -255,13 +255,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
     private void initGameServer()
     {
         // set up GUI's response timer
-        checkForResponseTimer = new Timer(50, this);
+        checkForResponseTimer = new Timer(1, this);
         checkForResponseTimer.setActionCommand("Response Queue Timer");
         checkForResponseTimer.start();
 
         // set up "server" to send messages to
-        tasks = new ArrayBlockingQueue(25);
-        responses = new ArrayBlockingQueue(25);
+        tasks = new ArrayBlockingQueue<GameRequest>(25);
+        responses = new ArrayBlockingQueue<GameRequest>(25);
         controller = new GameController(tasks, responses);
         new Thread(controller).start();
 
