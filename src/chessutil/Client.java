@@ -38,20 +38,21 @@ public class Client implements Runnable
                 System.out.println("Client error: " + e);
             }
         }
-        while (true)
-        {
-            try
-            {
-                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-                GameRequest gameRequest = new GameRequest();
-                gameRequest.task = GameTask.PLAY_MOVE;
-                oos.writeObject(gameRequest);
 
+        try
+        {
+            ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+            GameRequest gameRequest = new GameRequest();
+            gameRequest.task = GameTask.PLAY_MOVE;
+            while (true) {
+                oos.writeObject(gameRequest);
                 oos.flush();
+
+                Thread.sleep(1000);
             }
-            catch (Exception e)
-            {
-            }
+        }
+        catch (Exception e)
+        {
         }
     }
 
