@@ -5,10 +5,16 @@
  */
 package chessutil;
 
+import chessgame.GameController;
+import chessgui.GameRequest;
+
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  *
@@ -23,20 +29,34 @@ public class Server
 
     private void listenToSocket(Socket s)
     {
-        while (true)
+        ArrayBlockingQueue<GameRequest> tasks = new ArrayBlockingQueue<GameRequest>(25);
+        ArrayBlockingQueue<GameRequest> responses = new ArrayBlockingQueue<GameRequest>(25);
+        GameController gameController = new GameController(tasks, responses);
+        new Thread(gameController).start();
+
+        try
         {
-            try
+            ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(s.getOutputStream());
+            while (true)
             {
-                ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
-                while (objectInputStream.available() > 0)
-                {
-                    Object obj = objectInputStream.readObject();
-                    System.out.println(obj.toString());
+                Object obj = objectInputStream.readObject();
+                System.out.println("[" + new Date().toString() + "] Receiving request: " + obj);
+                tasks.add((GameRequest)obj);
+
+                while (responses.isEmpty()) { Thread.sleep(100); }
+                while (!responses.isEmpty()) {
+                    Object objToSend = responses.remove();
+                    objectOutputStream.writeObject(objToSend);
+                    objectOutputStream.flush();
+
+                    System.out.println("[" + new Date().toString() + "] Sending response: " + objToSend);
                 }
-            } catch (Exception e)
-            {
-                System.out.println("Error in Socket: " + e);
+
             }
+        } catch (Exception e)
+        {
+            System.out.println("Error in Socket: " + e);
         }
     }
 

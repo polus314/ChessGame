@@ -1,6 +1,8 @@
 package chessgame;
 
 import chessgame.AI.GameState;
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,7 +29,9 @@ public class BoardRater
         {
             return;
         }
-        
+        if (gs.board.getPieces().size() < 8){
+            gs.overallRating = getEndgameRating(gs, player);
+        }
         ChessBoard cb = gs.board;
         gs.materialRating = matRating(cb);
         gs.mobilityRating = mobRating(cb);
@@ -194,7 +198,6 @@ public class BoardRater
      * "hanging" or insufficiently defended
      *
      * @param cb
-     * @param color
      * @return int - value of pieces that are not defended sufficiently
      */
     private float hangRating(ChessBoard cb)
@@ -290,5 +293,73 @@ public class BoardRater
             sum += pieces.get(i).value;
         }
         return sum;
+    }
+
+    private float getEndgameRating(GameState gs, ChessPiece.Color player){
+        float matRating = matRating(gs.board);
+        float kingProx = kingProximity(gs);
+        float oppKingMob = kingMobility(gs, player);
+
+        return matRating * 0.5f + kingProx * 0.25f + oppKingMob * 0.25f;
+    }
+
+    private float MAX_DISTANCE = 9.8995f;
+
+    private float kingProximity(GameState gs) {
+        King whiteKing = (King)gs.board.find(new King(ChessPiece.Color.WHITE));
+        King blackKing = (King)gs.board.find(new King(ChessPiece.Color.BLACK));
+
+        if (whiteKing == null || blackKing == null) {
+            return 0.0f;
+        }
+        float xDiff = Math.abs(whiteKing.xCoord - blackKing.xCoord);
+        float yDiff = Math.abs(whiteKing.yCoord - blackKing.yCoord);
+
+        float distance = (float)Math.sqrt(Math.pow(xDiff, 2.0) + Math.pow(yDiff, 2.0));
+
+        // normalize between 0.0 and 1.0, lower distance is good (i.e. closer to 1)
+        return 1.0f - (distance / MAX_DISTANCE);
+    }
+
+    private float kingMobility(GameState gs, ChessPiece.Color player) {
+        King oppKing = (King)gs.board.find(new King(player.opposite()));
+        if (oppKing == null) {
+            return 0.0f;
+        }
+
+        int xInitial = oppKing.xCoord;
+        int yInitial = oppKing.yCoord;
+
+        // Find all squares king can move to (without passing through check)
+        HashSet<Vector> moveSet = oppKing.getMoveSet();
+        HashSet<Pair<Integer, Integer>> availableSquares = new HashSet<>();
+        ArrayList<Pair<Integer, Integer>> newSquares = new ArrayList<>();
+        availableSquares.add(new Pair<>(oppKing.xCoord, oppKing.yCoord));
+        newSquares.add(new Pair<>(oppKing.xCoord, oppKing.yCoord));
+
+        while (!newSquares.isEmpty()) {
+            Pair<Integer, Integer> nextSquare = newSquares.remove(0);
+            int xNext = nextSquare.getKey();
+            int yNext = nextSquare.getValue();
+            gs.board.setPieceAt(null, oppKing.xCoord, oppKing.yCoord);
+            oppKing.movePiece(xNext, yNext);
+            gs.board.setPieceAt(oppKing, xNext, yNext);
+
+            for (Vector move : moveSet) {
+                int xf = move.getXDiff() + oppKing.xCoord;
+                int yf = move.getYDiff() + oppKing.yCoord;
+
+                // if there is a legal square that we haven't looked at yet, increment count
+                if (gs.board.canMovePiece(oppKing, xf, yf) && !availableSquares.contains(new Pair<>(xf, yf))) {
+                    availableSquares.add(new Pair<>(xf, yf));
+                    newSquares.add(new Pair<>(xf, yf));
+                }
+            }
+        }
+
+        gs.board.setPieceAt(null, oppKing.xCoord, oppKing.yCoord);
+        gs.board.setPieceAt(oppKing, xInitial, yInitial);
+
+        return 1.0f - (availableSquares.size() / 64.0f);
     }
 }

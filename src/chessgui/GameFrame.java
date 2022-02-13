@@ -579,6 +579,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             case FIND_MOVES_FOR_PIECE:
                 ArrayList<ChessMove> moves = (ArrayList<ChessMove>) response.info;
                 gamePanel.myBoard.highlightPossibleMoves(moves);
+                repaint();
                 break;
             case FIND_BEST_MOVE:
                 move = (ChessMove) response.info;

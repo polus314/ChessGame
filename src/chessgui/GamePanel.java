@@ -26,7 +26,6 @@ public class GamePanel extends JPanel implements ActionListener
 {
 
     public Checkerboard myBoard;
-    private ArrayList<ChessMove> moveList;
     private Scoreboard scoreboard;
     private Timer updateTimer;
     private boolean timerStopped;
@@ -50,6 +49,7 @@ public class GamePanel extends JPanel implements ActionListener
         myBoard.setPieces(new ChessBoard().getPieces());
         myBoard.setX(5);
         myBoard.setY(5);
+
 
         s.setBoundingBox(new Rectangle(Checkerboard.BOARD_WIDTH + MARGIN, 0, MIN_WIDTH - Checkerboard.BOARD_WIDTH - MARGIN, Checkerboard.BOARD_HEIGHT));
         scoreboard = s;
@@ -105,19 +105,13 @@ public class GamePanel extends JPanel implements ActionListener
     {
         super.paintComponent(g);
 
-        printMoveList(g);
         scoreboard.redraw(g);
         myBoard.paintBoard(g);
     }
 
-    public void addMove(ChessMove move)
-    {
-        moveList.add(move);
-    }
-
     public void setMoveList(ArrayList<ChessMove> moves)
     {
-        moveList = moves;
+        scoreboard.setMoveList(moves);
     }
 
     public void switchPlayerToMove()
@@ -135,33 +129,5 @@ public class GamePanel extends JPanel implements ActionListener
         timerStopped = true;
     }
 
-    /**
-     * This method prints out the moves that are played. Only 20 moves are able
-     * to be displayed at a time, so the 20 most recent are shown
-     *
-     * @param g - graphics object moveList will be drawn on
-     */
-    public void printMoveList(Graphics g)
-    {
-        if (moveList == null)
-        {
-            return;
-        }
-        Font myFont = new Font("Arial", Font.PLAIN, 15);
-        g.setFont(myFont);
-        g.setColor(Color.BLACK);
-        g.drawString("Move List", 30, 20);
-        int plies = moveList.size();
-        int numMovesEach = (plies + 1) / 2;               // add one to round up
-        int startPos = numMovesEach > 20 ? numMovesEach - 20 : 0;
 
-        for (int i = startPos; i < numMovesEach; i++)
-        {
-            g.drawString((i + 1) + ": " + moveList.get(i * 2).toString(), 30, (17 * (i - startPos) + 40));
-            if (plies > i * 2 + 1)
-            {
-                g.drawString(moveList.get(i * 2 + 1).toString(), 130, (17 * (i - startPos) + 40));
-            }
-        }
-    }
 }
