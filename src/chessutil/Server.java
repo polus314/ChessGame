@@ -6,6 +6,7 @@
 package chessutil;
 
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -26,10 +27,11 @@ public class Server
         {
             try
             {
-                InputStream is = s.getInputStream();
-                while (is.available() > 0)
+                ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
+                while (objectInputStream.available() > 0)
                 {
-                    System.out.println((char) is.read());
+                    Object obj = objectInputStream.readObject();
+                    System.out.println(obj.toString());
                 }
             } catch (Exception e)
             {

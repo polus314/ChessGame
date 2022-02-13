@@ -5,6 +5,10 @@
  */
 package chessutil;
 
+import chessgui.GameRequest;
+import chessgui.GameTask;
+
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -26,8 +30,8 @@ public class Client implements Runnable
         {
             try
             {
-                InetAddress ia = InetAddress.getByName("192.168.0.100");
-                sock = new Socket(ia, Server.PORT_NUMBER, true);
+                InetAddress ia = InetAddress.getByName("192.168.0.108");
+                sock = new Socket(ia, Server.PORT_NUMBER);
                 success = true;
             } catch (Exception e)
             {
@@ -38,16 +42,20 @@ public class Client implements Runnable
         {
             try
             {
-                PrintStream ps = new PrintStream(sock.getOutputStream());
-                ps.print("Hi There");
-                ps.flush();
-            } catch (Exception e)
+                ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
+                GameRequest gameRequest = new GameRequest();
+                gameRequest.task = GameTask.PLAY_MOVE;
+                oos.writeObject(gameRequest);
+
+                oos.flush();
+            }
+            catch (Exception e)
             {
             }
         }
     }
 
-    public static void main(String args[])
+    public static void main(String[] args)
     {
         Client c = new Client();
         new Thread(c).start();

@@ -5,11 +5,13 @@
  */
 package chessgui;
 
+import java.io.Serializable;
+
 /**
  *
  * @author John
  */
-public class GameRequest
+public class GameRequest implements Serializable
 {
 
     public GameTask task;
