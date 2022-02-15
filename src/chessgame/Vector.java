@@ -12,13 +12,13 @@ package chessgame;
 public class Vector
 {
 
-    private final int xDiff;
-    private final int yDiff;
+    public final int dx;
+    public final int dy;
 
     public Vector(int x, int y)
     {
-        xDiff = x;
-        yDiff = y;
+        dx = x;
+        dy = y;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class Vector
         if (rhs instanceof Vector)
         {
             Vector vec = (Vector) rhs;
-            return this.xDiff == vec.xDiff && this.yDiff == vec.yDiff;
+            return this.dx == vec.dx && this.dy == vec.dy;
         }
         return false;
     }
@@ -35,16 +35,6 @@ public class Vector
     @Override
     public int hashCode()
     {
-        return 17 * xDiff + 31 * yDiff;
-    }
-    
-    public int getXDiff()
-    {
-        return xDiff;
-    }
-    
-    public int getYDiff()
-    {
-        return yDiff;
+        return 17 * dx + 31 * dy;
     }
 }

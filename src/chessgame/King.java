@@ -26,22 +26,7 @@ public class King extends ChessPiece
     }
 
     /*
-    This constructor takes an input of the piece color and the starting
-    position for the king
-     */
-    public King(Color c, int xC, int yC)
-    {
-        super();
-        hasMoved = false;
-        value = 10;
-        xCoord = xC;
-        yCoord = yC;
-        color = c;
-    }
-
-    /*
-    This constructor takes a piece color and sets the starting 
-    position as the default king position
+    This constructor takes a piece color
      */
     public King(Color c)
     {
@@ -61,8 +46,6 @@ public class King extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     private static HashSet<Vector> generateMoveList()
@@ -125,9 +108,7 @@ public class King extends ChessPiece
         if (obj instanceof King)
         {
             King cp = (King) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }

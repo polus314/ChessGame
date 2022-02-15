@@ -42,8 +42,6 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
     }
 
     protected int value;
-    protected int xCoord;
-    protected int yCoord;
     protected Color color;
     protected boolean hasMoved;
 
@@ -53,8 +51,6 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
     public ChessPiece()
     {
         value = 0;
-        xCoord = 0;
-        yCoord = 0;
         hasMoved = false;
         color = Color.WHITE;
     }
@@ -68,34 +64,6 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
-    }
-
-    /*
-    This method inputs an new x index and a new y index and sets them as the
-    new x coordinate and new y coordinate
-     */
-    public void movePiece(int x, int y)
-    {
-        xCoord = x;
-        yCoord = y;
-    }
-
-    /*
-    This returns the x coordinate
-     */
-    public int getX()
-    {
-        return xCoord;
-    }
-
-    /*
-    This returns the Y coordinate
-     */
-    public int getY()
-    {
-        return yCoord;
     }
 
     /*
@@ -115,15 +83,14 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
     This method takes an x and y coordinate as input and returns whether or not
     this chess piece can move to those coordinates
      */
-    public boolean canMove(int x, int y)
+    public boolean canMove(Vector move)
     {
-        if (x < 0 || 7 < x || y < 0 || 7 < y)
+        if (Math.abs(move.dx) > 7 || Math.abs(move.dy) > 7)
         {
             return false;
         }
-        Vector possMove = new Vector(x - xCoord, y - yCoord);
         HashSet<Vector> moveSet = getMoveSet();
-        return moveSet.contains(possMove);
+        return moveSet.contains(move);
     }
 
     public abstract HashSet<Vector> getMoveSet();
@@ -137,8 +104,6 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     /**
@@ -178,9 +143,7 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
         if (obj instanceof ChessPiece)
         {
             ChessPiece cp = (ChessPiece) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }
@@ -202,7 +165,7 @@ public abstract class ChessPiece implements Comparable<ChessPiece>, Serializable
         {
             return 0;
         }
-        else //if(value > cp.value)
+        else //if (value > cp.value)
         {
             return 1;
         }

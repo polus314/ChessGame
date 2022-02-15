@@ -3,6 +3,7 @@ package chessgame;
 import chessgame.AI.GameState;
 import javafx.util.Pair;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ public class BoardRater
         }
         if (gs.board.getPieces().size() < 8){
             gs.overallRating = getEndgameRating(gs, player);
+            return;
         }
         ChessBoard cb = gs.board;
         gs.materialRating = matRating(cb);
@@ -50,39 +52,21 @@ public class BoardRater
      */
     private ArrayList<ChessPiece> aimedHere(ChessBoard cb, int xDest, int yDest)
     {
+        Point dest = new Point(xDest, yDest);
         ArrayList<ChessPiece> defenders = new ArrayList<>();
-        for (ChessPiece cp : cb.getPieces())
-        {
-            boolean isADefender = false;
+        for (int i = 0; i < ChessBoard.WIDTH; i++) {
+            for (int j = 0; j < ChessBoard.HEIGHT; j++) {
+                Point cpSpace = new Point(i, j);
+                ChessPiece cp = cb.getCopyOfPieceAt(cpSpace);
 
-            // if regular non-empty piece, check if it can move here and the
-            // path is clear
-            if (!(cp instanceof Pawn))
-            {
-                isADefender = cp.canMove(xDest, yDest) && cb.pathIsClear(cp, xDest, yDest);
-            } // if a pawn, they capture differently than they move
-            else
-            {
-                // square must be one column to the left or right
-                if (cp.xCoord - 1 == xDest || cp.xCoord + 1 == xDest)
-                {
-                    // Black captures down, White captures up
-                    if (cp.color == ChessPiece.Color.BLACK && cp.yCoord + 1 == yDest)
-                    {
-                        isADefender = true;
-                    }
-                    else if (cp.color == ChessPiece.Color.WHITE && cp.yCoord - 1 == yDest)
-                    {
-                        isADefender = true;
-                    }
+                // if regular non-empty piece, check if it can move here and the
+                // path is clear
+                if (cb.canCapture(cp, cpSpace, dest)) {
+                    defenders.add(cp);
                 }
             }
-
-            if (isADefender)
-            {
-                defenders.add(cp);
-            }
         }
+
         return defenders;
     }
 
@@ -145,52 +129,7 @@ public class BoardRater
      */
     private int howManyMoves(ChessPiece.Color color, ChessBoard cb)
     {
-        int numMoves = 0;
-        ArrayList<ChessPiece> myPieces = cb.getPieces(color);
-        for (ChessPiece cp : myPieces)
-        {
-            int xi = cp.getX();
-            int yi = cp.getY();
-            HashSet<Vector> moves = cp.getMoveSet();
-            for (Vector move : moves)
-            {
-                int xf = xi + move.getXDiff();
-                int yf = yi + move.getYDiff();
-                if (!cb.areIndicesInBounds(xf, yf))
-                {
-                    continue;
-                }
-                if (cb.pathIsClear(cp, xf, yf) && cb.spaceIsEmpty(xf, yf))
-                {
-                    numMoves++;
-                }
-                else if (cb.pathIsClear(cp, xf, yf) 
-                        && cb.spaceIsOpen(xf, yf, cp.getColor())
-                        && !(cp instanceof Pawn))
-                {
-                    numMoves++;
-                }
-                else if (cp instanceof Pawn)
-                {
-                    ChessPiece opposingPiece = cb.getCopyOfPieceAt(xf, yf);
-                    if (color == ChessPiece.Color.WHITE && yi - yf == 1
-                            && (xi - xf == 1 || xf - xi == 1)
-                            && opposingPiece != null
-                            && opposingPiece.getColor() == ChessPiece.Color.BLACK)
-                    {
-                        numMoves++;
-                    }
-                    else if (color == ChessPiece.Color.BLACK && yf - yi == 1
-                            && (xi - xf == 1 || xf - xi == 1)
-                            && opposingPiece != null
-                            && opposingPiece.getColor() == ChessPiece.Color.WHITE)
-                    {
-                        numMoves++;
-                    }
-                }
-            }
-        }
-        return numMoves;
+        return cb.findAllMoves(color).size();
     }
 
     /**
@@ -210,23 +149,28 @@ public class BoardRater
     private int hangValue(ChessBoard cb, ChessPiece.Color color)
     {
         int valueOfHanging = 0;
-        ArrayList<ChessPiece> goodPieces = cb.getPieces(color);
-        ArrayList<ChessPiece> badPieces = cb.getPieces(color.opposite());
-        for (int i = 0; i < goodPieces.size(); i++)
+        ArrayList<Point> goodPieceSpaces = cb.getPieceSpaces(color);
+        ArrayList<Point> badPieceSpaces = cb.getPieceSpaces(color.opposite());
+        for (int i = 0; i < goodPieceSpaces.size(); i++)
         {
             boolean isHanging = false;
-            ChessPiece goodCP = goodPieces.get(i);
-            for (int j = 0; j < badPieces.size(); j++)
+
+            Point goodSpace = goodPieceSpaces.get(i);
+            ChessPiece goodCP = cb.getCopyOfPieceAt(goodSpace);
+            for (int j = 0; j < badPieceSpaces.size(); j++)
             {
+                Point badSpace = badPieceSpaces.get(j);
+                ChessPiece badCP = cb.getCopyOfPieceAt(badSpace);
+
                 //case 1: piece is attacked by a lower valued piece
-                if (cb.canCapture(badPieces.get(j), goodCP.xCoord, goodCP.yCoord)
-                        && badPieces.get(j).value < goodCP.value)
+                if (cb.canCapture(badCP, badSpace, goodSpace)
+                        && badCP.value < goodCP.value)
                 {
                     isHanging = true;
                 }
                 //case 2: piece's attackers are worth less than the defenders
             }
-            ArrayList<ChessPiece> piecesInAction = aimedHere(cb, goodCP.xCoord, goodCP.yCoord);
+            ArrayList<ChessPiece> piecesInAction = aimedHere(cb, goodSpace.x, goodSpace.y);
             if (!isHanging)
             {
                 ArrayList<ChessPiece> attackers = new ArrayList<>();
@@ -266,7 +210,7 @@ public class BoardRater
             }
             if (isHanging)
             {
-                valueOfHanging += goodPieces.get(i).value;
+                valueOfHanging += goodCP.value;
             }
         }
         return valueOfHanging;
@@ -299,21 +243,22 @@ public class BoardRater
         float matRating = matRating(gs.board);
         float kingProx = kingProximity(gs);
         float oppKingMob = kingMobility(gs, player);
+        float hangRating = hangRating(gs.board);
 
-        return matRating * 0.5f + kingProx * 0.25f + oppKingMob * 0.25f;
+        return hangRating * 0.15f + matRating * 0.15f + kingProx * 0.65f + oppKingMob * 0.05f;
     }
 
     private float MAX_DISTANCE = 9.8995f;
 
     private float kingProximity(GameState gs) {
-        King whiteKing = (King)gs.board.find(new King(ChessPiece.Color.WHITE));
-        King blackKing = (King)gs.board.find(new King(ChessPiece.Color.BLACK));
+        Point spWhiteKing = gs.board.find(new King(ChessPiece.Color.WHITE));
+        Point spBlackKing = gs.board.find(new King(ChessPiece.Color.BLACK));
 
-        if (whiteKing == null || blackKing == null) {
+        if (spWhiteKing == null || spBlackKing == null) {
             return 0.0f;
         }
-        float xDiff = Math.abs(whiteKing.xCoord - blackKing.xCoord);
-        float yDiff = Math.abs(whiteKing.yCoord - blackKing.yCoord);
+        float xDiff = Math.abs(spWhiteKing.x - spBlackKing.x);
+        float yDiff = Math.abs(spWhiteKing.y - spBlackKing.y);
 
         float distance = (float)Math.sqrt(Math.pow(xDiff, 2.0) + Math.pow(yDiff, 2.0));
 
@@ -322,43 +267,41 @@ public class BoardRater
     }
 
     private float kingMobility(GameState gs, ChessPiece.Color player) {
-        King oppKing = (King)gs.board.find(new King(player.opposite()));
-        if (oppKing == null) {
+        ChessBoard board = new ChessBoard(gs.board);
+
+        Point spOppKing = board.find(new King(player.opposite()));
+        if (spOppKing == null) {
             return 0.0f;
         }
 
-        int xInitial = oppKing.xCoord;
-        int yInitial = oppKing.yCoord;
+        Point initialSpace = spOppKing;
+        King oppKing = (King)board.getCopyOfPieceAt(spOppKing);
 
         // Find all squares king can move to (without passing through check)
         HashSet<Vector> moveSet = oppKing.getMoveSet();
-        HashSet<Pair<Integer, Integer>> availableSquares = new HashSet<>();
-        ArrayList<Pair<Integer, Integer>> newSquares = new ArrayList<>();
-        availableSquares.add(new Pair<>(oppKing.xCoord, oppKing.yCoord));
-        newSquares.add(new Pair<>(oppKing.xCoord, oppKing.yCoord));
+        HashSet<Point> availableSquares = new HashSet<>();
+        ArrayList<Point> newSquares = new ArrayList<>();
+        availableSquares.add(spOppKing);
+        newSquares.add(spOppKing);
 
         while (!newSquares.isEmpty()) {
-            Pair<Integer, Integer> nextSquare = newSquares.remove(0);
-            int xNext = nextSquare.getKey();
-            int yNext = nextSquare.getValue();
-            gs.board.setPieceAt(null, oppKing.xCoord, oppKing.yCoord);
-            oppKing.movePiece(xNext, yNext);
-            gs.board.setPieceAt(oppKing, xNext, yNext);
+            Point nextSpace = newSquares.remove(0);
+            board.setPieceAt(null, spOppKing);
+            board.setPieceAt(oppKing, nextSpace);
+            spOppKing = nextSpace;
 
             for (Vector move : moveSet) {
-                int xf = move.getXDiff() + oppKing.xCoord;
-                int yf = move.getYDiff() + oppKing.yCoord;
+                int xf = move.dx + spOppKing.x;
+                int yf = move.dy + spOppKing.y;
+                Point possDest = new Point(xf, yf);
 
                 // if there is a legal square that we haven't looked at yet, increment count
-                if (gs.board.canMovePiece(oppKing, xf, yf) && !availableSquares.contains(new Pair<>(xf, yf))) {
-                    availableSquares.add(new Pair<>(xf, yf));
-                    newSquares.add(new Pair<>(xf, yf));
+                if (board.canMovePiece(oppKing, spOppKing, possDest) && !availableSquares.contains(possDest)) {
+                    availableSquares.add(possDest);
+                    newSquares.add(possDest);
                 }
             }
         }
-
-        gs.board.setPieceAt(null, oppKing.xCoord, oppKing.yCoord);
-        gs.board.setPieceAt(oppKing, xInitial, yInitial);
 
         return 1.0f - (availableSquares.size() / 64.0f);
     }

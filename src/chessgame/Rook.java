@@ -25,19 +25,6 @@ public class Rook extends ChessPiece
     }
 
     /*
-    This constructor takes an input of the piece color and the starting
-    position for the Rook
-     */
-    public Rook(Color c, int xC, int yC)
-    {
-        super();
-        value = 5;
-        xCoord = xC;
-        yCoord = yC;
-        color = c;
-    }
-
-    /*
     This constructor takes a piece color and sets the starting 
     position as the default Rook position
      */
@@ -58,8 +45,6 @@ public class Rook extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     private static HashSet<Vector> generateMoveList()
@@ -121,9 +106,7 @@ public class Rook extends ChessPiece
         if (obj instanceof Rook)
         {
             Rook cp = (Rook) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }

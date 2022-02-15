@@ -1,5 +1,6 @@
 package chessgame;
 
+import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,35 +44,31 @@ public class ChessBoard implements Serializable
     {
         pieceArray = new ChessPiece[WIDTH][HEIGHT];
         //set up pieces on each side
+        ChessPiece.Color white = ChessPiece.Color.WHITE;
+        pieceArray[0][HOME_ROW_W] = new Rook(white);
+        pieceArray[1][HOME_ROW_W] = new Knight(white);
+        pieceArray[2][HOME_ROW_W] = new Bishop(white);
+        pieceArray[3][HOME_ROW_W] = new Queen(white);
+        pieceArray[4][HOME_ROW_W] = new King(white);
+        pieceArray[5][HOME_ROW_W] = new Bishop(white);
+        pieceArray[6][HOME_ROW_W] = new Knight(white);
+        pieceArray[7][HOME_ROW_W] = new Rook(white);
+
+        ChessPiece.Color black = ChessPiece.Color.BLACK;
+        pieceArray[0][HOME_ROW_B] = new Rook(black);
+        pieceArray[1][HOME_ROW_B] = new Knight(black);
+        pieceArray[2][HOME_ROW_B] = new Bishop(black);
+        pieceArray[3][HOME_ROW_B] = new Queen(black);
+        pieceArray[4][HOME_ROW_B] = new King(black);
+        pieceArray[5][HOME_ROW_B] = new Bishop(black);
+        pieceArray[6][HOME_ROW_B] = new Knight(black);
+        pieceArray[7][HOME_ROW_B] = new Rook(black);
+
         for (int i = 0; i < WIDTH; i++)
         {
-            pieceArray[i][PAWN_ROW_W] = new Pawn(ChessPiece.Color.WHITE, i, 6);
-            pieceArray[i][PAWN_ROW_B] = new Pawn(ChessPiece.Color.BLACK, i, 1);
+            pieceArray[i][PAWN_ROW_W] = new Pawn(white);
+            pieceArray[i][PAWN_ROW_B] = new Pawn(black);
         }
-
-        for (int i = 0; i < 8; i += 7)
-        {
-            pieceArray[i][7] = new Rook(ChessPiece.Color.WHITE, i, 7);
-            pieceArray[i][0] = new Rook(ChessPiece.Color.BLACK, i, 0);
-        }
-
-        for (int i = 1; i < 7; i += 5)
-        {
-            pieceArray[i][7] = new Knight(ChessPiece.Color.WHITE, i, 7);
-            pieceArray[i][0] = new Knight(ChessPiece.Color.BLACK, i, 0);
-        }
-
-        for (int i = 2; i < 6; i += 3)
-        {
-            pieceArray[i][7] = new Bishop(ChessPiece.Color.WHITE, i, 7);
-            pieceArray[i][0] = new Bishop(ChessPiece.Color.BLACK, i, 0);
-        }
-
-        pieceArray[3][7] = new Queen(ChessPiece.Color.WHITE, 3, 7);
-        pieceArray[4][7] = new King(ChessPiece.Color.WHITE, 4, 7);
-
-        pieceArray[3][0] = new Queen(ChessPiece.Color.BLACK, 3, 0);
-        pieceArray[4][0] = new King(ChessPiece.Color.BLACK, 4, 0);
     }
 
     /**
@@ -92,7 +89,8 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                setPieceAt(template.getCopyOfPieceAt(i, j), i, j);
+                Point space = new Point(i,j);
+                setPieceAt(template.getCopyOfPieceAt(space), space);
             }
         }
     }
@@ -116,23 +114,9 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                setPieceAt(pieces[i][j], i, j);
+                Point space = new Point(i,j);
+                setPieceAt(pieces[i][j], space);
             }
-        }
-    }
-
-    /**
-     * Constructor that takes a list of pieces and places them on the board in
-     * the position specified by each piece's x and y values.
-     *
-     * @param pieces list of pieces to place on board
-     */
-    public ChessBoard(List<ChessPiece> pieces)
-    {
-        pieceArray = new ChessPiece[WIDTH][HEIGHT];
-        for (ChessPiece piece : pieces)
-        {
-            setPieceAt(piece, piece.getX(), piece.getY());
         }
     }
 
@@ -150,12 +134,7 @@ public class ChessBoard implements Serializable
         {
             return nextNode;
         }
-        int xi, xf, yi, yf;
-        xi = cm.piece.xCoord;
-        yi = cm.piece.yCoord;
-        xf = cm.getXDest();
-        yf = cm.getYDest();
-        nextNode.replacePiece(xi, yi, xf, yf);
+        nextNode.replacePiece(cm.orig, cm.dest);
         //TODO - consider castling, where two pieces are moved
         return nextNode;
     }
@@ -167,12 +146,12 @@ public class ChessBoard implements Serializable
      * opposite color. Does check that path is clear though.
      *
      * @param cp piece that is potentially capturing
-     * @param xDest x index of square being attacked
-     * @param yDest y index of square being attacked
+     * @param orig current coordinates of piece
+     * @param dest coordinates of square being attacked
      * @return boolean - whether this piece could capture a piece at the given
      * square
      */
-    public boolean canCapture(ChessPiece cp, int xDest, int yDest)
+    public boolean canCapture(ChessPiece cp, Point orig, Point dest)
     {
         if (cp == null)
         {
@@ -180,16 +159,16 @@ public class ChessBoard implements Serializable
         }
         if (cp instanceof Pawn)
         {
-            if (cp.yCoord + 1 == yDest && cp.color == ChessPiece.Color.BLACK)
+            if (orig.y + 1 == dest.y && cp.color == ChessPiece.Color.BLACK)
             {
-                if (cp.xCoord + 1 == xDest || cp.xCoord - 1 == xDest)
+                if (orig.x + 1 == dest.x || orig.x - 1 == dest.x)
                 {
                     return true;
                 }
             }
-            if (cp.yCoord - 1 == yDest && cp.color == ChessPiece.Color.WHITE)
+            if (orig.y - 1 == dest.y && cp.color == ChessPiece.Color.WHITE)
             {
-                if (cp.xCoord + 1 == xDest || cp.xCoord - 1 == xDest)
+                if (orig.x + 1 == dest.x || orig.x - 1 == dest.x)
                 {
                     return true;
                 }
@@ -198,8 +177,8 @@ public class ChessBoard implements Serializable
         }
         else // cp is not a Pawn, so capturing is same as moving
         {
-            if (cp.canMove(xDest, yDest)
-                    && pathIsClear(cp, xDest, yDest))
+            Vector possMove = new Vector(dest.x - orig.x, dest.y - orig.y);
+            if (cp.canMove(possMove) && pathIsClear(cp, orig, dest))
             {
                 return true;
             }
@@ -219,20 +198,25 @@ public class ChessBoard implements Serializable
     {
         int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
+        Point spKing = new Point(KING_X, y);
+        Point spBishop = new Point(K_BISHOP_X, y);
+        Point spKnight = new Point(K_KNIGHT_X, y);
+        Point spRook = new Point(K_ROOK_X, y);
+
         //check to see if King and Rook are present and unmoved
-        ChessPiece cp = getCopyOfPieceAt(KING_X, y);
+        ChessPiece cp = getCopyOfPieceAt(spKing);
         if (cp == null || cp.hasMoved || !(cp instanceof King))
         {
             return false;
         }
 
-        cp = getCopyOfPieceAt(K_ROOK_X, y);
+        cp = getCopyOfPieceAt(spRook);
         if (cp == null || cp.hasMoved || !(cp instanceof Rook))
         {
             return false;
         }
 
-        if (!spaceIsEmpty(K_BISHOP_X, y) || !spaceIsEmpty(K_KNIGHT_X, y))
+        if (!spaceIsEmpty(spBishop) || !spaceIsEmpty(spKnight))
         {
             return false;
         }
@@ -241,15 +225,16 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (spaceIsEmpty(i, j))
+                Point space = new Point(i,j);
+                if (spaceIsEmpty(space))
                 {
                     continue;
                 }
-                cp = getCopyOfPieceAt(i, j);
+                cp = getCopyOfPieceAt(space);
                 if (cp.getColor() == color.opposite()
-                        && (canCapture(cp, KING_X, y)
-                        || canCapture(cp, K_BISHOP_X, y)
-                        || canCapture(cp, K_KNIGHT_X, y)))
+                        && (canCapture(cp, space, spKing)
+                        || canCapture(cp, space, spBishop)
+                        || canCapture(cp, space, spKnight)))
                 {
                     return false;
                 }
@@ -270,21 +255,27 @@ public class ChessBoard implements Serializable
     {
         int y = color == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
+        Point spKing = new Point(KING_X, y);
+        Point spQueen = new Point(QUEEN_X, y);
+        Point spBishop = new Point(Q_BISHOP_X, y);
+        Point spKnight = new Point(Q_KNIGHT_X, y);
+        Point spRook = new Point(Q_ROOK_X, y);
+
         //check to see if King and Rook are present and unmoved
-        ChessPiece cp = getCopyOfPieceAt(KING_X, y);
+        ChessPiece cp = getCopyOfPieceAt(spKing);
         if (cp == null || cp.hasMoved || !(cp instanceof King))
         {
             return false;
         }
 
-        cp = getCopyOfPieceAt(Q_ROOK_X, y);
+        cp = getCopyOfPieceAt(spRook);
         if (cp == null || cp.hasMoved || !(cp instanceof Rook))
         {
             return false;
         }
 
-        if (!spaceIsEmpty(Q_KNIGHT_X, y) || !spaceIsEmpty(Q_BISHOP_X, y)
-                || !spaceIsEmpty(QUEEN_X, y))
+        if (!spaceIsEmpty(spKnight) || !spaceIsEmpty(spBishop)
+                || !spaceIsEmpty(spQueen))
         {
             return false;
         }
@@ -292,16 +283,17 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                if (spaceIsEmpty(i, j))
+                Point space = new Point(i,j);
+                if (spaceIsEmpty(space))
                 {
                     continue;
                 }
 
-                cp = getCopyOfPieceAt(i, j);
+                cp = getCopyOfPieceAt(space);
                 if (cp.getColor() == color.opposite()
-                        && (canCapture(cp, Q_BISHOP_X, y)
-                        || canCapture(cp, QUEEN_X, y)
-                        || canCapture(cp, KING_X, y)))
+                        && (canCapture(cp, space, spBishop)
+                        || canCapture(cp, space, spQueen)
+                        || canCapture(cp, space, spKing)))
                 {
                     return false;
                 }
@@ -310,19 +302,19 @@ public class ChessBoard implements Serializable
         return true;
     }
 
-    public boolean canMovePiece(ChessPiece mover, int xf, int yf)
+    public boolean canMovePiece(ChessPiece mover, Point orig, Point dest)
     {
         if (mover == null)
         {
             return false;
         }
-        int xi = mover.getX();
-        int yi = mover.getY();
+
         ChessBoard movedBoard = new ChessBoard(this);
-        if (mover.canMove(xf, yf) && pathIsClear(mover, xf, yf)
-                && spaceIsEmpty(xf, yf))
+        Vector possMove = new Vector(dest.x - orig.x, dest.y - orig.y);
+        if (mover.canMove(possMove) && pathIsClear(mover, orig, dest)
+                && spaceIsEmpty(dest) && areIndicesInBounds(dest.x, dest.y))
         {
-            movedBoard.replacePiece(xi, yi, xf, yf);
+            movedBoard.replacePiece(orig,dest);
             if (!movedBoard.checkForCheck(mover.getColor()))
             {
                 return true;   // move is successful
@@ -338,33 +330,31 @@ public class ChessBoard implements Serializable
      * won't put this player in check).
      *
      * @param attacker piece attempting the capture
-     * @param x x coordinate of piece being attacked
-     * @param y y coordinate of piece being attacked
+     * @param orig coordinates of attacking piece
+     * @param dest coordinates of piece being attacked
      * @return boolean - whether attacker successfully captured
      */
-    public boolean capturePiece(ChessPiece attacker, int x, int y)
+    public boolean capturePiece(ChessPiece attacker, Point orig, Point dest)
     {
         if (attacker == null)
         {
             return false;
         }
-        int xAtt = attacker.getX();
-        int yAtt = attacker.getY();
-        ChessPiece myAttacker = getCopyOfPieceAt(xAtt, yAtt);
+        ChessPiece myAttacker = getCopyOfPieceAt(orig);
         if (myAttacker == null)
         {
             return false;
         }
 
         ChessBoard movedBoard = new ChessBoard(this);
-        ChessPiece defender = movedBoard.getCopyOfPieceAt(x, y);
-        if (movedBoard.canCapture(myAttacker, x, y) && defender != null
+        ChessPiece defender = movedBoard.getCopyOfPieceAt(dest);
+        if (movedBoard.canCapture(myAttacker, orig, dest) && defender != null
                 && defender.getColor() != myAttacker.getColor())
         {
-            movedBoard.replacePiece(xAtt, yAtt, x, y);
+            movedBoard.replacePiece(orig, dest);
             if (!movedBoard.checkForCheck(myAttacker.getColor()))
             {
-                replacePiece(xAtt, yAtt, x, y);
+                replacePiece(orig, dest);
                 return true;   // piece captured successfully
             }
             return false;     // capture causes check to attacker
@@ -390,18 +380,18 @@ public class ChessBoard implements Serializable
         {
             int y = castler.getColor() == ChessPiece.Color.BLACK ? HOME_ROW_B : HOME_ROW_W;
 
-            if (canCastleKS(castler.getColor()) && move.getXDest() == K_KNIGHT_X)
+            if (canCastleKS(castler.getColor()) && move.dest.x == K_KNIGHT_X)
             {
                 move.setMoveType(ChessMove.Type.CASTLE_KS);
-                replacePiece(KING_X, y, K_KNIGHT_X, y);
-                replacePiece(K_ROOK_X, y, K_BISHOP_X, y);
+                replacePiece(new Point(KING_X, y), new Point(K_KNIGHT_X, y));
+                replacePiece(new Point(K_ROOK_X, y), new Point(K_BISHOP_X, y));
                 return true;
             }
-            else if (canCastleQS(castler.getColor()) && move.getXDest() == Q_BISHOP_X)
+            else if (canCastleQS(castler.getColor()) && move.dest.x == Q_BISHOP_X)
             {
                 move.setMoveType(ChessMove.Type.CASTLE_QS);
-                replacePiece(KING_X, y, Q_BISHOP_X, y);
-                replacePiece(Q_ROOK_X, y, QUEEN_X, y);
+                replacePiece(new Point(KING_X, y), new Point(Q_BISHOP_X, y));
+                replacePiece(new Point(Q_ROOK_X, y), new Point(QUEEN_X, y));
                 return true;
             }
         }
@@ -418,8 +408,8 @@ public class ChessBoard implements Serializable
      */
     public boolean checkForCheck(ChessPiece.Color color)
     {
-        King king = findKing(color);
-        if (king == null)
+        Point spKing = findKing(color);
+        if (spKing == null)
         {
             return false;
         }
@@ -429,9 +419,10 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                piece = getCopyOfPieceAt(i, j);
+                Point space = new Point(i, j);
+                piece = getCopyOfPieceAt(space);
                 if (piece != null
-                        && canCapture(piece, king.xCoord, king.yCoord)
+                        && canCapture(piece, space, spKing)
                         && piece.getColor() != color)
                 {
                     return true;
@@ -495,25 +486,13 @@ public class ChessBoard implements Serializable
     private boolean checkSingleKing(ChessPiece.Color c)
     {
         int numKings = 0;
-        for (int i = 0; i < WIDTH; i++)
-        {
-            for (int j = 0; j < HEIGHT; j++)
-            {
-                ChessPiece current = getCopyOfPieceAt(i, j);
-                if (current == null)
-                {
-                    continue;
-                }
-                if (current instanceof King && current.getColor() == c)
-                {
-                    numKings++;
-                    if (numKings > 1)
-                    {
-                        return false;
-                    }
-                }
+        ArrayList<ChessPiece> pieces = getPieces(c);
+        for (ChessPiece piece : pieces) {
+            if (piece instanceof King) {
+                numKings++;
             }
         }
+
         return numKings == 1;
     }
 
@@ -652,8 +631,8 @@ public class ChessBoard implements Serializable
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    lhs = getCopyOfPieceAt(i, j);
-                    rhs = cb.getCopyOfPieceAt(i, j);
+                    lhs = getPieceAt(i, j);
+                    rhs = cb.getPieceAt(i, j);
                     if (lhs == null && rhs == null)
                     {
                         continue;
@@ -676,21 +655,22 @@ public class ChessBoard implements Serializable
      * Finds a piece on the this board. See ChessPiece for what makes two pieces
      * "equal".
      *
-     * @param cp piece to be found
+     * @param cpToFind piece to be found
      * @return ChessPiece first ChessPiece on the ChessBoard that matches cp, or
      * null if piece is not found
      */
-    public ChessPiece find(ChessPiece cp)
+    public Point find(ChessPiece cpToFind)
     {
-        if (cp == null)
-        {
+        if (cpToFind == null) {
             return null;
         }
-        for (ChessPiece piece : getPieces())
-        {
-            if (cp.equals(piece))
-            {
-                return piece;
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                Point space = new Point(x, y);
+                ChessPiece piece = getPieceAt(space);
+                if (piece != null && piece.equals(cpToFind)) {
+                    return space;
+                }
             }
         }
         return null;
@@ -706,10 +686,17 @@ public class ChessBoard implements Serializable
     public ArrayList<ChessMove> findAllMoves(ChessPiece.Color color)
     {
         ArrayList<ChessMove> moveList = new ArrayList<>();
-        for (ChessPiece current : getPieces(color))
-        {
-            moveList.addAll(findMoves(current));
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                Point space = new Point(i, j);
+                ChessPiece cp = getPieceAt(space);
+
+                if (cp != null && cp.color == color) {
+                    moveList.addAll(findMoves(cp, space));
+                }
+            }
         }
+
         return moveList;
     }
 
@@ -718,9 +705,10 @@ public class ChessBoard implements Serializable
      * consider castling or en passant.
      *
      * @param cp piece whose moves are being generated
+     * @param space coordinates of cp on the board
      * @return ArrayList - list of all moves that cp can legally take
      */
-    public ArrayList<ChessMove> findMoves(ChessPiece cp)
+    public ArrayList<ChessMove> findMoves(ChessPiece cp, Point space)
     {
         if (cp == null)
         {
@@ -731,21 +719,22 @@ public class ChessBoard implements Serializable
         HashSet<Vector> moveVectors = cp.getMoveSet();
         for (Vector vector : moveVectors)
         {
-            int xf = vector.getXDiff() + cp.getX();
-            int yf = vector.getYDiff() + cp.getY();
+            int xf = vector.dx + space.x;
+            int yf = vector.dy + space.y;
+            Point dest = new Point(xf, yf);
 
-            ChessMove possMove = new ChessMove(cp, xf, yf);
+            ChessMove possMove = new ChessMove(cp, space, dest);
             if (leadsToCheck(possMove) || !areIndicesInBounds(xf, yf))         //if it puts mover in check, disregard
             {
                 continue;
             }
-            if (pathIsClear(cp, xf, yf) // no pieces in the way
-                    && spaceIsEmpty(xf, yf))    // space is empty
+            if (pathIsClear(cp, space, dest) // no pieces in the way
+                    && spaceIsEmpty(dest))    // space is empty
             {
                 moveList.add(possMove);
             }
-            else if (canCapture(cp, xf, yf)
-                    && spaceIsEnemy(xf, yf, cp.getColor()))
+            else if (canCapture(cp, space, dest)
+                    && spaceIsEnemy(dest, cp.getColor()))
             {
                 possMove.captures = true;
                 moveList.add(possMove);
@@ -756,11 +745,12 @@ public class ChessBoard implements Serializable
         {
             for (Vector vector : ((Pawn) cp).getCaptureMoveSet())
             {
-                int xf = vector.getXDiff() + cp.getX();
-                int yf = vector.getYDiff() + cp.getY();
+                int xf = vector.dx + space.x;
+                int yf = vector.dy + space.y;
+                Point dest = new Point(xf, yf);
                 
-                ChessMove possMove = new ChessMove(cp, xf, yf);
-                if (spaceIsEnemy(xf, yf, cp.getColor()))
+                ChessMove possMove = new ChessMove(cp,space, dest);
+                if (spaceIsEnemy(dest, cp.getColor()))
                 {
                     possMove.captures = true;
                     moveList.add(possMove);
@@ -775,15 +765,18 @@ public class ChessBoard implements Serializable
      * coordinates ahead of time
      *
      * @param c color of King to find
-     * @return King - king of this color or null if not found
+     * @return point - coordinates for king of this color or null if not found
      */
-    private King findKing(ChessPiece.Color c)
+    private Point findKing(ChessPiece.Color c)
     {
-        for (ChessPiece current : getPieces(c))
-        {
-            if (current instanceof King)
-            {
-                return (King) current;
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                Point space = new Point (i,j);
+                ChessPiece cp = getPieceAt(space);
+
+                if (cp instanceof King && cp.color == c) {
+                    return space;
+                }
             }
         }
         return null;
@@ -791,44 +784,33 @@ public class ChessBoard implements Serializable
 
     public ChessMove getCastleKSMove(ChessPiece.Color color)
     {
-        King king = findKing(color);
-        if (!canCastleKS(color))
+        Point spKing = findKing(color);
+        King king = (King)getPieceAt(spKing);
+        if (!canCastleKS(color) || king == null)
         {
             return null;
         }
         int x = K_KNIGHT_X;
-        int y;
-        if (color == ChessPiece.Color.WHITE)
-        {
-            y = HOME_ROW_W;
-        }
-        else
-        {
-            y = HOME_ROW_B;
-        }
-        ChessMove move = new ChessMove(king, x, y);
+        int y = (color == ChessPiece.Color.WHITE) ? HOME_ROW_W : HOME_ROW_B;
+
+        Point dest = new Point(x, y);
+        ChessMove move = new ChessMove(king, spKing, dest);
         move.setMoveType(ChessMove.Type.CASTLE_KS);
         return move;
     }
 
     public ChessMove getCastleQSMove(ChessPiece.Color color)
     {
-        King king = findKing(color);
-        if (!canCastleQS(color))
+        Point spKing = findKing(color);
+        King king = (King)getPieceAt(spKing);
+        if (!canCastleQS(color) || king == null)
         {
             return null;
         }
         int x = Q_BISHOP_X;
-        int y;
-        if (color == ChessPiece.Color.WHITE)
-        {
-            y = HOME_ROW_W;
-        }
-        else
-        {
-            y = HOME_ROW_B;
-        }
-        ChessMove move = new ChessMove(king, x, y);
+        int y = (color == ChessPiece.Color.WHITE) ? HOME_ROW_W : HOME_ROW_B;
+        Point dest = new Point(x, y);
+        ChessMove move = new ChessMove(king, spKing, dest);
         move.setMoveType(ChessMove.Type.CASTLE_QS);
         return move;
     }
@@ -836,18 +818,37 @@ public class ChessBoard implements Serializable
     /**
      * Returns the piece at the given board coordinates
      *
-     * @param row row of piece, rows start at 0
-     * @param col column of piece, columns start at 0
+     * @param space row and column of piece, both are 0-indexed
      * @return ChessPiece - chess piece that is at the given coordinates
      */
-    private ChessPiece getPieceAt(int row, int col)
+    private ChessPiece getPieceAt(Point space)
     {
-        return pieceArray[row][col];
+        return getPieceAt(space.x, space.y);
     }
 
-    public ChessPiece getCopyOfPieceAt(int row, int col)
+    /**
+     * Returns the piece at the given board coordinates
+     *
+     * @param x row of piece, 0-indexed
+     * @param y col of piece, 0-indexed
+     * @return ChessPiece - chess piece that is at the given coordinates
+     */
+    private ChessPiece getPieceAt(int x, int y)
     {
-        ChessPiece piece = getPieceAt(row, col);
+        if (areIndicesInBounds(x, y)) {
+            return pieceArray[x][y];
+        }
+        return null;
+    }
+
+
+    public ChessPiece getCopyOfPieceAt(Point space)
+    {
+        return getCopyOfPieceAt(space.x, space.y);
+    }
+
+    public ChessPiece getCopyOfPieceAt(int x, int y) {
+        ChessPiece piece = getPieceAt(x, y);
         if (piece != null)
         {
             piece = piece.copyOfThis();
@@ -887,12 +888,10 @@ public class ChessBoard implements Serializable
     public ArrayList<ChessPiece> getPieces(ChessPiece.Color color)
     {
         ArrayList<ChessPiece> pieces = new ArrayList<>();
-        ChessPiece piece;
-        for (int i = 0; i < WIDTH; i++)
-        {
-            for (int j = 0; j < HEIGHT; j++)
-            {
-                piece = getCopyOfPieceAt(i, j);
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                Point space = new Point(i, j);
+                ChessPiece piece = getPieceAt(space);
                 if (piece != null && piece.getColor() == color)
                 {
                     pieces.add(piece);
@@ -900,6 +899,20 @@ public class ChessBoard implements Serializable
             }
         }
         return pieces;
+    }
+
+    public ArrayList<Point> getPieceSpaces(ChessPiece.Color color) {
+        ArrayList<Point> spaces = new ArrayList<>();
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                Point space = new Point(i, j);
+                ChessPiece piece = getPieceAt(space);
+                if (piece != null && piece.getColor() == color) {
+                    spaces.add(space);
+                }
+            }
+        }
+        return spaces;
     }
 
     /**
@@ -917,7 +930,8 @@ public class ChessBoard implements Serializable
         {
             for (int j = 0; j < HEIGHT; j++)
             {
-                piece = getCopyOfPieceAt(i, j);
+                Point space = new Point(i, j);
+                piece = getCopyOfPieceAt(space);
                 if (piece != null)
                 {
                     copy[i][j] = piece;
@@ -949,22 +963,21 @@ public class ChessBoard implements Serializable
      * move. If move is not legal, board is not changed and returns false.
      *
      * @param mover piece trying to move
-     * @param xf destination x coordinate
-     * @param yf destination y coordinate
+     * @param orig current coordinates of piece
+     * @param dest coordinates of destination
      * @return boolean - whether or not a legal move was executed
      */
-    public boolean movePiece(ChessPiece mover, int xf, int yf)
+    public boolean movePiece(ChessPiece mover, Point orig, Point dest)
     {
         if (mover == null)
         {
             return false;
         }
-        int xi = mover.getX();
-        int yi = mover.getY();
-        ChessPiece myMover = getCopyOfPieceAt(xi, yi);
-        if (myMover != null && canMovePiece(myMover, xf, yf))
+
+        ChessPiece myMover = getCopyOfPieceAt(orig);
+        if (myMover != null && canMovePiece(myMover, orig, dest))
         {
-            replacePiece(xi, yi, xf, yf);
+            replacePiece(orig, dest);
             return true;
         }
         return false;
@@ -974,23 +987,23 @@ public class ChessBoard implements Serializable
      * Checks to see if there any pawns that have reached the other side of the
      * board and thus need to be promoted.
      *
-     * @return ChessPiece - the pawn that needs promoting, else null
+     * @return space - coordinates of the pawn that needs promoting, else null
      */
-    public ChessPiece needPromotion()
+    public Point needPromotion()
     {
         for (int i = 0; i < WIDTH; i++)
         {
-            ChessPiece pawn = getCopyOfPieceAt(i, HOME_ROW_B);
-            if (pawn instanceof Pawn
-                    && pawn.getColor() == ChessPiece.Color.WHITE)
+            ChessPiece cp = getPieceAt(i, HOME_ROW_B);
+            if (cp instanceof Pawn
+                    && cp.getColor() == ChessPiece.Color.WHITE)
             {
-                return pawn;
+                return new Point(i, HOME_ROW_B);
             }
-            pawn = getCopyOfPieceAt(i, HOME_ROW_W);
-            if (pawn instanceof Pawn
-                    && pawn.getColor() == ChessPiece.Color.BLACK)
+            cp = getPieceAt(i, HOME_ROW_W);
+            if (cp instanceof Pawn
+                    && cp.getColor() == ChessPiece.Color.BLACK)
             {
-                return pawn;
+                return new Point(i, HOME_ROW_W);
             }
         }
         return null;
@@ -1001,44 +1014,46 @@ public class ChessBoard implements Serializable
      * It is assumed that the coordinates constitute a valid move for that piece
      *
      * @param mover piece whose path is being examined
-     * @param x x coordinate of destination
-     * @param y y coordinate of destination
+     * @param orig coordinates of piece currently
+     * @param dest coordinates of destination
      * @return boolean - true if the piece has nothing blocking it, false
      * otherwise
      */
-    public boolean pathIsClear(ChessPiece mover, int x, int y)
+    public boolean pathIsClear(ChessPiece mover, Point orig, Point dest)
     {
         if (mover == null)
         {
             return false;
         }
         boolean clear = true;
-        int xi = mover.getX();
-        int yi = mover.getY();
+        int xi = orig.x;
+        int yi = orig.y;
+        int xf = dest.x;
+        int yf = dest.y;
         if (mover instanceof Pawn)
         {
             // check to make sure initial 2-space move is unobstructed
-            if (mover.getColor() == ChessPiece.Color.WHITE && yi == 6 && y == 4)
+            if (mover.getColor() == ChessPiece.Color.WHITE && yi == 6 && yf == 4)
             {
-                clear = spaceIsEmpty(xi, yi - 1);
+                clear = spaceIsEmpty(new Point(xi, yi - 1));
             }
-            if (mover.getColor() == ChessPiece.Color.BLACK && yi == 1 && y == 3)
+            if (mover.getColor() == ChessPiece.Color.BLACK && yi == 1 && yf == 3)
             {
-                clear = spaceIsEmpty(xi, yi + 1);
+                clear = spaceIsEmpty(new Point(xi, yi + 1));
             }
         }
         else if (mover instanceof Rook)
         {
-            clear = clearPathRook(xi, yi, x, y);
+            clear = clearPathRook(xi, yi, xf, yf);
         }
         else if (mover instanceof Bishop)
         {
-            clear = clearPathBishop(xi, yi, x, y);
+            clear = clearPathBishop(xi, yi, xf, yf);
         }
         else if (mover instanceof Queen)
         {
             // Queen moves like a Bishop and Rook put together
-            clear = clearPathBishop(xi, yi, x, y) && clearPathRook(xi, yi, x, y);
+            clear = clearPathBishop(xi, yi, xf, yf) && clearPathRook(xi, yi, xf, yf);
         }
         else
         {
@@ -1052,33 +1067,29 @@ public class ChessBoard implements Serializable
      * Places the piece currently at (xi, yi) at (xf, yf) and makes (xi, yi)
      * empty.
      *
-     * @param xi initial x coordinate
-     * @param yi initial y coordinate
-     * @param xf final x coordinate
-     * @param yf final y coordinate
+     * @param orig initial coordinates
+     * @param dest final coordinates
      */
-    private void replacePiece(int xi, int yi, int xf, int yf)
+    private void replacePiece(Point orig, Point dest)
     {
-        ChessPiece piece = getPieceAt(xi, yi);
+        ChessPiece piece = getPieceAt(orig);
         if (piece != null)
         {
-            piece.movePiece(xf, yf);
             piece.hasMoved = true;
         }
-        setPieceAt(piece, xf, yf);
-        setPieceAt(null, xi, yi);
+        setPieceAt(piece, dest);
+        setPieceAt(null, orig);
     }
 
     /**
      * Sets the piece at the given board coordinates
      *
      * @param cp chess piece to place at these coordinates
-     * @param x column piece is in, columns start at 0
-     * @param y row piece is in, rows start at 0
+     * @param space row and column piece is in, both are 0-indexed
      */
-    public void setPieceAt(ChessPiece cp, int x, int y)
+    public void setPieceAt(ChessPiece cp, Point space)
     {
-        if (!areIndicesInBounds(x, y))
+        if (!areIndicesInBounds(space.x, space.y))
         {
             return;
         }
@@ -1086,24 +1097,26 @@ public class ChessBoard implements Serializable
         if (cp != null)
         {
             myPiece = cp.copyOfThis();
-            myPiece.movePiece(x, y);
         }
         else
         {
             myPiece = null;
         }
-        pieceArray[x][y] = myPiece;
+        pieceArray[space.x][space.y] = myPiece;
     }
 
     /**
      * Returns whether there is a piece present at the given coordinates
      *
-     * @param x x coordinate to be checked for a piece
-     * @param y y coordinate to be checked for a piece
+     * @param space set of coordinates to be checked for a piece
      * @return boolean - true if no piece is present, false otherwise
      */
-    public boolean spaceIsEmpty(int x, int y)
+    public boolean spaceIsEmpty(Point space)
     {
+        return spaceIsEmpty(space.x, space.y);
+    }
+
+    public boolean spaceIsEmpty(int x, int y) {
         if (!areIndicesInBounds(x, y))
         {
             return true;
@@ -1117,8 +1130,11 @@ public class ChessBoard implements Serializable
 
     }
 
-    public boolean spaceIsEnemy(int x, int y, ChessPiece.Color color)
+    public boolean spaceIsEnemy(Point space, ChessPiece.Color color)
     {
+        int x = space.x;
+        int y = space.y;
+
         if (!areIndicesInBounds(x, y))
         {
             return false;
@@ -1130,16 +1146,15 @@ public class ChessBoard implements Serializable
      * Like spaceIsEmpty but also allows a piece of the opposite color to be on
      * the square
      *
-     * @param x x coordinate to be checked for a piece
-     * @param y y coordinate to be checked for a piece
+     * @param space coordinates to be checked for a piece
      * @param color color of piece moving to this space, so opposite colored
      * piece can be present
      * @return boolean - true if no piece or piece of opposite color, false
      * otherwise
      */
-    public boolean spaceIsOpen(int x, int y, ChessPiece.Color color)
+    public boolean spaceIsOpen(Point space, ChessPiece.Color color)
     {
-        return spaceIsEmpty(x, y) || spaceIsEnemy(x, y, color);
+        return spaceIsEmpty(space) || spaceIsEnemy(space, color);
     }
 
     /**
@@ -1156,7 +1171,7 @@ public class ChessBoard implements Serializable
             string += "\n";
             for (int j = 0; j < HEIGHT; j++)
             {
-                ChessPiece cp = getCopyOfPieceAt(j, i);
+                ChessPiece cp = getCopyOfPieceAt(new Point(j, i));
                 if (cp == null)
                 {
                     string = string + "-- ";
@@ -1189,17 +1204,18 @@ public class ChessBoard implements Serializable
         }
 
         boolean done = false;
-        int xDest = move.getXDest(), yDest = move.getYDest();
-        if (spaceIsEmpty(move.getXDest(), move.getYDest()))
+        Point orig = move.orig;
+        Point dest = move.dest;
+        if (spaceIsEmpty(dest))
         {
             if (mover instanceof King) // try to castle
             {
-                if (canCastleKS(mover.getColor()) && xDest == K_KNIGHT_X)
+                if (canCastleKS(mover.getColor()) && dest.x == K_KNIGHT_X)
                 {
                     move.setMoveType(ChessMove.Type.CASTLE_KS);
                     done = true;
                 }
-                else if (canCastleQS(mover.getColor()) && xDest == Q_BISHOP_X)
+                else if (canCastleQS(mover.getColor()) && dest.x == Q_BISHOP_X)
                 {
                     move.setMoveType(ChessMove.Type.CASTLE_QS);
                     done = true;
@@ -1207,14 +1223,14 @@ public class ChessBoard implements Serializable
             }
             if (!done)
             {
-                if (canMovePiece(mover, xDest, yDest))
+                if (canMovePiece(mover, orig, dest))
                 {
                     move.setMoveType(ChessMove.Type.NORMAL);
                     done = true;
                 }
             }
         }
-        if (!done && canCapture(mover, xDest, yDest) && spaceIsEnemy(xDest, yDest, mover.getColor()))
+        if (!done && canCapture(mover, orig, dest) && spaceIsEnemy(dest, mover.getColor()))
         {
             move.setMoveType(ChessMove.Type.NORMAL);
             move.captures = true;

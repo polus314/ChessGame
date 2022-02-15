@@ -23,21 +23,7 @@ public class Pawn extends ChessPiece
     }
 
     /*
-    This constructor takes an input of the piece color and the starting
-    position for the pawn
-     */
-    public Pawn(Color c, int xC, int yC)
-    {
-        super();
-        value = 1;
-        xCoord = xC;
-        yCoord = yC;
-        color = c;
-    }
-
-    /*
-    This constructor takes a piece color and sets the starting 
-    position as the default pawn position
+    This constructor takes a piece color
      */
     public Pawn(Color c)
     {
@@ -56,8 +42,6 @@ public class Pawn extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     @Override
@@ -69,18 +53,12 @@ public class Pawn extends ChessPiece
         if (color == ChessPiece.Color.WHITE)
         {
             moves.add(new Vector(0, -1));
-            if (yCoord == 6)
-            {
-                moves.add(new Vector(0, -2));
-            }
+            moves.add(new Vector(0, -2));
         }
         else // Black pawns move in +y direction
         {
             moves.add(new Vector(0, 1));
-            if (yCoord == 1)
-            {
-                moves.add(new Vector(0, 2));
-            }
+            moves.add(new Vector(0, 2));
         }
         return moves;
     }
@@ -135,41 +113,10 @@ public class Pawn extends ChessPiece
     true, false otherwise
      */
     @Override
-    public boolean canMove(int x, int y)
+    public boolean canMove(Vector move)
     {
-        if (x != xCoord)
-        {
-            return false;
-        }
-        if (color == Color.WHITE)
-        {
-            if (yCoord - y == 2)
-            {
-                if (yCoord == 6)
-                {
-                    return true;
-                }
-            }
-            if (yCoord - y == 1)
-            {
-                return true;
-            }
-        }
-        if (color == Color.BLACK)
-        {
-            if (y - yCoord == 2)
-            {
-                if (yCoord == 1)
-                {
-                    return true;
-                }
-            }
-            if (y - yCoord == 1)
-            {
-                return true;
-            }
-        }
-        return false;
+        HashSet<Vector> moveset = getMoveSet();
+        return moveset.contains(move);
     }
 
     @Override
@@ -190,9 +137,7 @@ public class Pawn extends ChessPiece
         if (obj instanceof Pawn)
         {
             Pawn cp = (Pawn) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }

@@ -24,19 +24,6 @@ public class Queen extends ChessPiece
     }
 
     /*
-    This constructor takes an input of the piece color and the starting
-    position for the Queen
-     */
-    public Queen(Color c, int xC, int yC)
-    {
-        super();
-        value = 9;
-        color = c;
-        xCoord = xC;
-        yCoord = yC;
-    }
-
-    /*
     This constructor takes a piece color and sets the starting 
     position as the default Queen position
      */
@@ -57,8 +44,6 @@ public class Queen extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     private static HashSet<Vector> generateMoveList()
@@ -127,9 +112,7 @@ public class Queen extends ChessPiece
         if (obj instanceof Queen)
         {
             Queen cp = (Queen) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }

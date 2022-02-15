@@ -1,7 +1,8 @@
 package chessgui;
 
 import chessgame.*;
-import java.awt.BorderLayout;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -282,7 +283,6 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             case MouseEvent.BUTTON1: // Place piece
                 if (pieceToAdd != null)
                 {
-                    pieceToAdd.movePiece(a, b);
                     gamePanel.myBoard.setPieceAt(a, b, pieceToAdd);
                 }
                 else
@@ -306,7 +306,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             default:
                 System.out.println("Button?: " + button);
         }
-        addRequest(GameTask.SET_BOARD_POSITION, gamePanel.myBoard.getPiecesList());
+        addRequest(GameTask.SET_BOARD_POSITION, gamePanel.myBoard.getPiecesArray());
         repaint();
     }
 
@@ -318,33 +318,36 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
             return;
         }
 
-        gamePanel.myBoard.removePreviousMoveHighlight();
-        ChessPiece selPiece = gamePanel.myBoard.selectedPiece;
-        ChessPiece clickedPiece = gamePanel.myBoard.getPieceAt(a, b);
+        Checkerboard boardGui = gamePanel.myBoard;
+        boardGui.removePreviousMoveHighlight();
+        Point selSpace = boardGui.selectedSpace;
+        Point clickedSpace = new Point(a,b);
+        ChessPiece clickedPiece = boardGui.getPieceAt(a, b);
         // select a piece
-        if (selPiece == null)
+        if (selSpace == null)
         {
             if (clickedPiece != null && clickedPiece.getColor() == controller.getPlayerToMove())
             {
-                gamePanel.myBoard.setSelectedPiece(clickedPiece);
+                boardGui.setSelectedSpace(clickedSpace);
                 addRequest(GameTask.FIND_MOVES_FOR_PIECE, new Object[]
                 {
-                    gamePanel.myBoard.getPiecesList(), clickedPiece
+                    boardGui.getPiecesArray(), clickedSpace
                 });
                 repaint();
             }
             return;
         } // unselect the piece
-        else if (selPiece.equals(clickedPiece))
+        else if (selSpace.equals(clickedSpace))
         {
-            gamePanel.myBoard.setSelectedPiece(null);
+            boardGui.setSelectedSpace(null);
             repaint();
             return;
         } // try to move, unselect if successful
         else
         {
             GameTask task = GameTask.CREATE_MOVE;
-            Object info = new ChessMove(selPiece, a, b);
+            ChessPiece selPiece = boardGui.getSelectedPiece();
+            Object info = new ChessMove(selPiece, selSpace, clickedSpace);
             addRequest(task, info);
         }
         repaint();
@@ -572,7 +575,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         {
             case CREATE_MOVE:
                 ChessMove move = (ChessMove) response.info;
-                gamePanel.myBoard.setSelectedPiece(null);
+                gamePanel.myBoard.setSelectedSpace(null);
                 addRequest(GameTask.SET_PLAYER_TO_MOVE, humanPlayer);
                 addRequest(GameTask.PLAY_MOVE, move);
                 break;
@@ -602,7 +605,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                     controller.promoteToThisType(piece);
                     move.promotionPiece = piece.oneLetterIdentifier();
                 }
-                gamePanel.myBoard.setPieces(controller.getPiecesList());
+                gamePanel.myBoard.setPieces(controller.getPiecesArray());
                 gamePanel.switchPlayerToMove();
                 gamePanel.myBoard.highlightPreviousMove(move);
                 repaint();
@@ -625,13 +628,13 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
                 }
                 break;
             case SET_BOARD_POSITION:
-                ArrayList<ChessPiece> pieces = (ArrayList<ChessPiece>) response.info;
+                ChessPiece[][] pieces = (ChessPiece[][]) response.info;
                 if (pieces == null)
                 {
                     break;
                 }
                 this.gamePanel.myBoard.setPieces(pieces);
-                gamePanel.myBoard.setSelectedPiece(null);
+                gamePanel.myBoard.setSelectedSpace(null);
                 repaint();
                 break;
             case SET_PLAYER_TO_MOVE:
@@ -665,7 +668,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         {
             return;
         }
-        if (GameController.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesList()), selectedFile.getAbsolutePath()))
+        if (GameController.savePositionToFile(new ChessBoard(gamePanel.myBoard.getPiecesArray()), selectedFile.getAbsolutePath()))
         {
             System.out.println("Save Successful");
         }
@@ -694,8 +697,8 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
         ChessBoard cb = new ChessBoard();
         if (GameController.loadPositionFromFile(pathname, cb))
         {
-            controller.setBoardPosition(cb.getPieces(), humanPlayer);
-            gamePanel.myBoard.setPieces(cb.getPieces());
+            controller.setBoardPosition(cb.getPiecesArray(), humanPlayer);
+            gamePanel.myBoard.setPieces(cb.getPiecesArray());
             repaint();
             return true;
         }
@@ -741,7 +744,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
     private boolean startGameWithDisplayedPieces()
     {
 
-        return controller.setBoardPosition(gamePanel.myBoard.getPiecesList(), humanPlayer);
+        return controller.setBoardPosition(gamePanel.myBoard.getPiecesArray(), humanPlayer);
     }
 
     /**
@@ -750,7 +753,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
     private void setUpNewGame()
     {
         controller.startNewGame();
-        gamePanel.myBoard.setPieces(controller.getPiecesList());
+        gamePanel.myBoard.setPieces(controller.getPiecesArray());
         repaint();
     }
 }

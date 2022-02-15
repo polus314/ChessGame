@@ -46,7 +46,7 @@ public class GamePanel extends JPanel implements ActionListener
         setBorder(BorderFactory.createLineBorder(Color.black));
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
-        myBoard.setPieces(new ChessBoard().getPieces());
+        myBoard.setPieces(new ChessBoard().getPiecesArray());
         myBoard.setX(5);
         myBoard.setY(5);
 

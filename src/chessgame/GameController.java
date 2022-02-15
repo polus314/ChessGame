@@ -1,5 +1,6 @@
 package chessgame;
 
+import java.awt.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -64,12 +65,12 @@ public class GameController implements Runnable
     private GameRequest task_SetBoardPosition(GameRequest request)
     {
         GameRequest response = new GameRequest(request.task, null, false);
-        ArrayList<ChessPiece> newPieceList = (ArrayList<ChessPiece>) request.info;
-        if (newPieceList == null)
+        ChessPiece[][] newPieceArray = (ChessPiece[][]) request.info;
+        if (newPieceArray == null)
         {
             return response;
         }
-        setBoardPosition(newPieceList, playerToMove);
+        setBoardPosition(newPieceArray, playerToMove);
         response.success = true;
         return response;
     }
@@ -88,15 +89,15 @@ public class GameController implements Runnable
         }
         else if (move.captures)
         {
-            response.success = board.capturePiece(move.piece, move.getXDest(), move.getYDest());
+            response.success = board.capturePiece(move.piece, move.orig, move.dest);
         }
         else // normal, non-capturing move
         {
-            response.success = board.movePiece(move.piece, move.getXDest(), move.getYDest());
+            response.success = board.movePiece(move.piece, move.orig, move.dest);
         }
         // check if any pawns made it to the opposite side of the board
-        Pawn pawn = (Pawn) board.needPromotion();
-        if (pawn != null)
+        Point spPawn = board.needPromotion();
+        if (spPawn != null)
         {
             move.promotes = true;
         }
@@ -159,16 +160,17 @@ public class GameController implements Runnable
         {
             return response; // bad info passed, task unsuccessful
         }
-        ArrayList<ChessPiece> pieceList = (ArrayList<ChessPiece>) info[0];
-        ChessPiece selPiece = (ChessPiece) info[1];
-        if (pieceList == null || selPiece == null || !pieceList.contains(selPiece))
+        ChessPiece[][] pieceArray = (ChessPiece[][]) info[0];
+        Point selSpace = (Point) info[1];
+        ChessPiece selPiece = pieceArray[selSpace.x][selSpace.y];
+        if (pieceArray == null || selSpace == null || selPiece == null || selPiece.color != playerToMove)
         {
             return response; // bad info passed, task unsuccessful
         }
 
-        ChessBoard cb = new ChessBoard(pieceList);
+        ChessBoard cb = new ChessBoard(pieceArray);
         // check for castling, since that is specifically excluded from cb.findMoves
-        ArrayList<ChessMove> moves = cb.findMoves(selPiece);
+        ArrayList<ChessMove> moves = cb.findMoves(selPiece, selSpace);
         if (selPiece instanceof King)
         {
             ChessPiece.Color pieceColor = selPiece.getColor();
@@ -210,9 +212,8 @@ public class GameController implements Runnable
         }
     }
 
-    public ArrayList<ChessPiece> getPiecesList()
-    {
-        return board.getPieces();
+    public ChessPiece[][] getPiecesArray() {
+        return board.getPiecesArray();
     }
 
     public ChessPiece.Color getPlayerToMove()
@@ -232,12 +233,12 @@ public class GameController implements Runnable
 
     public boolean promoteToThisType(ChessPiece piece)
     {
-        Pawn pawn = (Pawn) board.needPromotion();
-        if (pawn == null || piece instanceof King || piece instanceof Pawn)
+        Point spPawn = board.needPromotion();
+        if (spPawn == null || piece instanceof King || piece instanceof Pawn)
         {
             return false;
         }
-        board.setPieceAt(piece, pawn.xCoord, pawn.yCoord);
+        board.setPieceAt(piece, spPawn);
         return true;
     }
 
@@ -250,7 +251,7 @@ public class GameController implements Runnable
      * @param playerToMove - the player whose move it is next
      * @return whether board was legal and position was updated
      */
-    public boolean setBoardPosition(ArrayList<ChessPiece> pieces,
+    public boolean setBoardPosition(ChessPiece[][] pieces,
             ChessPiece.Color playerToMove)
     {
         ChessBoard temp = new ChessBoard(pieces);
@@ -267,7 +268,7 @@ public class GameController implements Runnable
     public void startNewGame()
     {
         playerToMove = ChessPiece.Color.WHITE;
-        setBoardPosition(new ChessBoard().getPieces(), playerToMove);
+        setBoardPosition(new ChessBoard().getPiecesArray(), playerToMove);
         moveList.clear();
     }
 
@@ -340,21 +341,18 @@ public class GameController implements Runnable
             return false;
         }
 
-        for (int row = 0; row < 8; row++)
-        {
-            for (int col = 0; col < 8; col++)
-            {
+        for (int row = 0; row < ChessBoard.HEIGHT; row++) {
+            for (int col = 0; col < ChessBoard.WIDTH; col++) {
+                Point space = new Point(col, row);
                 String nextPiece = posString.substring(0, 2);
                 if (!nextPiece.equals("--"))
                 {
                     ChessPiece cp = loadPiece(nextPiece);
-                    cp.xCoord = col;
-                    cp.yCoord = row;
-                    cb.setPieceAt(cp, col, row);
+                    cb.setPieceAt(cp, space);
                 }
                 else
                 {
-                    cb.setPieceAt(null, col, row);
+                    cb.setPieceAt(null, space);
                 }
                 posString = posString.substring(2);
             }

@@ -58,9 +58,9 @@ public class Checkerboard
     private int xPos;
     private int yPos;
     private ChessPiece[][] pieces;
-    public ChessPiece selectedPiece;
+    public Point selectedSpace;
     private ArrayList<HighlightSquare> possMoveSquares;
-    private ChessPiece possMovePiece;
+    private Point possMoveSpace;
     private HighlightSquare previousMove;
 
     public Checkerboard()
@@ -70,7 +70,6 @@ public class Checkerboard
         yPos = 0;
         
         possMoveSquares = new ArrayList<>();
-        possMovePiece = null;
         previousMove = null;
     }
 
@@ -107,7 +106,7 @@ public class Checkerboard
         {
             return;
         }
-        previousMove = new HighlightSquare(cm.getXDest(), cm.getYDest(), HIGHLIGHT_COLOR);
+        previousMove = new HighlightSquare(cm.dest.x, cm.dest.y, HIGHLIGHT_COLOR);
     }
     
     public void removePreviousMoveHighlight()
@@ -135,12 +134,11 @@ public class Checkerboard
         return false;
     }
 
-    public void setPieces(List<ChessPiece> pieces)
-    {
-        this.pieces = new ChessPiece[NUM_COLS][NUM_ROWS];
-        for (ChessPiece piece : pieces)
-        {
-            setPieceAt(piece.getX(), piece.getY(), piece);
+    public void setPieces(ChessPiece[][] pieces) {
+        for (int i = 0; i < ChessBoard.WIDTH; i++ ) {
+            for (int j = 0; j < ChessBoard.HEIGHT; j++) {
+                this.pieces[i][j] = pieces[i][j];
+            }
         }
     }
 
@@ -166,7 +164,13 @@ public class Checkerboard
 
     public ChessPiece getSelectedPiece()
     {
-        return selectedPiece.copyOfThis();
+        if (selectedSpace == null) {
+            return null;
+        }
+
+        int x = selectedSpace.x;
+        int y = selectedSpace.y;
+        return pieces[x][y];
     }
 
     public void highlightPossibleMoves(ArrayList<ChessMove> moves)
@@ -176,7 +180,7 @@ public class Checkerboard
         {
             return;
         }
-        possMovePiece = moves.get(0).piece;
+        possMoveSpace = moves.get(0).orig;
         for (ChessMove move : moves)
         {
             Color color = Color.YELLOW;
@@ -188,37 +192,33 @@ public class Checkerboard
             {
                 color = Color.RED;
             }
-            possMoveSquares.add(new HighlightSquare(move.getXDest(), move.getYDest(), color));
+            possMoveSquares.add(new HighlightSquare(move.dest.x, move.dest.y, color));
         }
     }
 
-    public void setSelectedPiece(ChessPiece cp)
+    public void setSelectedSpace(Point space)
     {
         possMoveSquares.clear();
-        ChessPiece newSelPiece = cp;
-        if (newSelPiece != null)
-        {
-            newSelPiece = newSelPiece.copyOfThis();
-        }
-        selectedPiece = newSelPiece;
+        selectedSpace = space;
     }
 
-    public ArrayList<ChessPiece> getPiecesList()
+    public ChessPiece[][] getPiecesArray()
     {
-        ArrayList<ChessPiece> piecesList = new ArrayList<>();
-        for (int i = 0; i < NUM_COLS; i++)
-        {
-            for (int j = 0; j < NUM_ROWS; j++)
-            {
-                ChessPiece current = pieces[i][j];
-                if (current == null)
-                {
-                    continue;
-                }
-                piecesList.add(current);
-            }
-        }
-        return piecesList;
+//        ChessPiece[][] piecesList = new ChessPiece[ChessBoard.WIDTH][ChessBoard.HEIGHT];
+//        for (int i = 0; i < NUM_COLS; i++)
+//        {
+//            for (int j = 0; j < NUM_ROWS; j++)
+//            {
+//                ChessPiece current = pieces[i][j];
+//                if (current == null)
+//                {
+//                    continue;
+//                }
+//                piecesList[i][j] = current;
+//            }
+//        }
+//        return piecesList;
+        return pieces;
     }
 
     /**
@@ -291,7 +291,7 @@ public class Checkerboard
         }
 
         //highlights squares that can be moved to
-        boolean highlight = (selectedPiece != null) && (selectedPiece.equals(possMovePiece));
+        boolean highlight = (selectedSpace != null) && (selectedSpace.equals(possMoveSpace));
         if (highlight)
         {
             for (HighlightSquare square : possMoveSquares)
@@ -312,6 +312,7 @@ public class Checkerboard
         {
             for (int j = 0; j < NUM_ROWS; j++)
             {
+                Point thisSpace = new Point(i, j);
                 thisPiece = pieces[i][j];
                 if (thisPiece == null)
                 {
@@ -325,11 +326,13 @@ public class Checkerboard
                 {
                     g.setColor(lightPieceColor);
                 }
-                paintPiece(g, thisPiece);
+                paintPiece(g, thisPiece, thisSpace);
             }
         }
+
+        ChessPiece selectedPiece = getSelectedPiece();
         g.setColor(selectedPieceColor);
-        paintPiece(g, selectedPiece);
+        paintPiece(g, selectedPiece, selectedSpace);
         g.setColor(Color.BLACK);
         g.drawRect(xPos, yPos, BOARD_WIDTH, BOARD_HEIGHT);
     }
@@ -345,17 +348,14 @@ public class Checkerboard
     }
 
     /**
-     * This method paints the piece cp as a letter (R for Rook, etc.) or a
-     * circle if a pawn
+     * This method retrieves the image for this piece and displays that at the given space
      *
      * @param g
      * @param cp
+     * @param space
      */
-    private void paintPiece(Graphics g, ChessPiece cp)
+    private void paintPiece(Graphics g, ChessPiece cp, Point space)
     {
-        BufferedImage img;
-        int pieceXPos, pieceYPos;
-
         // if there is a piece on this square, determines where on the board it 
         // should be drawn
         if (cp == null)
@@ -363,10 +363,10 @@ public class Checkerboard
             return;
         }
 
-        pieceXPos = xPos + SQUARE_WIDTH * cp.getX() + CENTERING_AMT_X;
-        pieceYPos = yPos + SQUARE_HEIGHT * cp.getY() + CENTERING_AMT_Y;
+        int pieceXPos = xPos + SQUARE_WIDTH * space.x + CENTERING_AMT_X;
+        int pieceYPos = yPos + SQUARE_HEIGHT * space.y + CENTERING_AMT_Y;
 
-        img = PieceImages.getPieceImage(cp, g.getColor());
+        BufferedImage img = PieceImages.getPieceImage(cp, g.getColor());
         g.drawImage(img, pieceXPos, pieceYPos, PieceImages.IMG_WIDTH, PieceImages.IMG_HEIGHT, null);
     }
 }

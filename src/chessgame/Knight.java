@@ -25,21 +25,7 @@ public class Knight extends ChessPiece
     }
 
     /*
-    This is the constructor that takes a piece color and a starting 
-    position for inputs
-     */
-    public Knight(Color c, int xC, int yC)
-    {
-        super();
-        value = 3;
-        xCoord = xC;
-        yCoord = yC;
-        color = c;
-    }
-
-    /*
-    This constructor takes a piece color and sets the starting 
-    position as the default position for the knight piece
+    This constructor takes a piece color
      */
     public Knight(Color c)
     {
@@ -49,7 +35,7 @@ public class Knight extends ChessPiece
     }
 
     /*
-    This takes a knight oject as input and copies all the attributes
+    This takes a knight object as input and copies all the attributes
     to the new knight piece
      */
     public Knight(Knight cp)
@@ -58,8 +44,6 @@ public class Knight extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     private static HashSet<Vector> generateMoveList()
@@ -122,9 +106,7 @@ public class Knight extends ChessPiece
         if (obj instanceof Knight)
         {
             Knight cp = (Knight) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }

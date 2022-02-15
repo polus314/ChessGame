@@ -1,5 +1,6 @@
 package chessgame;
 
+import java.awt.*;
 import java.io.Serializable;
 
 /**
@@ -27,8 +28,8 @@ public class ChessMove implements Serializable
     }
 
     public ChessPiece piece;
-    private int xDest;
-    private int yDest;
+    public Point orig;
+    public Point dest;
     private Type moveType;
 
     public boolean givesCheck = false;
@@ -44,49 +45,29 @@ public class ChessMove implements Serializable
 
     public ChessMove()
     {
-        xDest = 7;
-        yDest = 7;
+        orig = new Point(-1, -1);
+        dest = new Point(-1,-1);
         moveType = Type.NORMAL;
     }
 
-    public ChessMove(ChessPiece cp, int xD, int yD)
+    public ChessMove(ChessPiece cp, Point origin, Point destination)
     {
         piece = cp;
-        xDest = xD;
-        yDest = yD;
+        orig = origin;
+        dest = destination;
         moveType = Type.NORMAL;
     }
 
-    public ChessMove(int xD, int yD, Type mt)
+    public ChessMove(Point destination, Type mt)
     {
-        xDest = xD;
-        yDest = yD;
+        orig = new Point(-1, -1);
+        dest = destination;
         moveType = mt;
     }
 
     public void setMoveType(Type mt)
     {
         moveType = mt;
-    }
-
-    public void setXDest(int x)
-    {
-        xDest = x;
-    }
-
-    public void setYDest(int y)
-    {
-        yDest = y;
-    }
-
-    public int getXDest()
-    {
-        return xDest;
-    }
-
-    public int getYDest()
-    {
-        return yDest;
     }
 
     public Type getMoveType()
@@ -110,10 +91,10 @@ public class ChessMove implements Serializable
         String moveName = "";
         if (piece instanceof Pawn)
         {
-            moveName = intToColumn(piece.xCoord);
+            moveName = intToColumn(orig.x);
         }
-        moveName = moveName + pieceToString() + "x" + intToColumn(xDest) + ""
-                + intToRow(yDest);
+        moveName = moveName + pieceToString() + "x" + intToColumn(dest.x) + ""
+                + intToRow(dest.y);
         return moveName;
     }
 
@@ -183,7 +164,7 @@ public class ChessMove implements Serializable
             case NORMAL:
                 if (!captures)
                 {
-                    moveName = pieceToString() + intToColumn(xDest) + "" + intToRow(yDest);
+                    moveName = pieceToString() + intToColumn(dest.x) + "" + intToRow(dest.y);
                 }
                 else
                 {
@@ -215,8 +196,10 @@ public class ChessMove implements Serializable
         if (obj instanceof ChessMove)
         {
             ChessMove cm = (ChessMove) obj;
-            return cm.piece.equals(piece) && cm.xDest == xDest && cm.yDest == yDest
-                    && cm.moveType.equals(moveType);
+            return cm.piece.equals(piece) &&
+                    cm.orig == orig &&
+                    cm.dest == dest &&
+                    cm.moveType.equals(moveType);
         }
         return false;
     }

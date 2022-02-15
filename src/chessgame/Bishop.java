@@ -22,19 +22,6 @@ public class Bishop extends ChessPiece
     }
 
     /*
-    This is the constructor that takes a color and the starting position 
-    of the piece
-     */
-    public Bishop(Color c, int xC, int yC)
-    {
-        super();
-        value = 3;
-        xCoord = xC;
-        yCoord = yC;
-        color = c;
-    }
-
-    /*
     This constructor sets the starting position to the default position of
     a bishop and takes a color
      */
@@ -55,8 +42,6 @@ public class Bishop extends ChessPiece
         color = cp.color;
         hasMoved = cp.hasMoved;
         value = cp.value;
-        xCoord = cp.xCoord;
-        yCoord = cp.yCoord;
     }
 
     private static HashSet<Vector> generateMoveList()
@@ -123,9 +108,7 @@ public class Bishop extends ChessPiece
         if (obj instanceof Bishop)
         {
             Bishop cp = (Bishop) obj;
-            return xCoord == cp.xCoord
-                    && yCoord == cp.yCoord
-                    && color == cp.color;
+            return color == cp.color;
         }
         return false;
     }
