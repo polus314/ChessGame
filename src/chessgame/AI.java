@@ -25,67 +25,6 @@ public class AI
         DFS, BFS, GREEDY, MINI_MAX, SIMPLE
     };
 
-    /**
-     * This is a "struct" used in the game tree to hold information that is
-     * necessary for finding the best move
-     */
-    protected class GameState implements Comparable<GameState>
-    {
-        // board represents the position of the pieces
-
-        public ChessBoard board;
-
-        // move is the move used to get here from the parent state
-        public ChessMove move;
-
-        // miniMaxRating is the rating given to this node, inherited from its
-        // child
-        public float miniMaxRating;
-        public float overallRating;
-        public float materialRating;
-        public float mobilityRating;
-        public float hangingRating;
-
-        public boolean checkedForMiniMax;
-
-        public GameState(ChessBoard b, ChessMove m)
-        {
-            board = b;
-            move = m;
-            miniMaxRating = 3.14f;
-            checkedForMiniMax = false;
-        }
-
-        public GameState(ChessBoard b, ChessMove m, int mmR)
-        {
-            board = b;
-            move = m;
-            miniMaxRating = mmR;
-            checkedForMiniMax = false;
-        }
-
-        /**
-         * This method compares this to a given GameState gs to see which is
-         * greater. Compares their overall rating
-         *
-         * @param rhs board to compare this to
-         * @return -1 if this is less, 0 if equal, 1 if this is greater
-         */
-        @Override
-        public int compareTo(GameState rhs)
-        {
-            if (rhs == null)
-            {
-                return 1;
-            }
-            if (overallRating > rhs.overallRating)
-            {
-                return 1;
-            }
-            return overallRating == rhs.overallRating ? 0 : -1;
-        }
-    }
-
     protected ChessBoard gameBoard;
     protected ChessPiece.Color playerToMove;
     public Algorithm algorithm;
@@ -130,7 +69,9 @@ public class AI
                 str += "\tOVR: " + tree.info.overallRating;
                 str += "\tMATERIAL: " + tree.info.materialRating;
                 str += "\tMOBILITY: " + tree.info.mobilityRating;
-                str += "\tHANGING : " + tree.info.hangingRating;
+//                str += "\tHANGING : " + tree.info.hangingRating;
+                str += "\tKINGMOB : " + tree.info.kingMobilityRating;
+                str += "\tKINGPROX : " + tree.info.kingProximityRating;
                 writer.println(str);
             }
             writer.println("One level of Game Tree printed successfully");
@@ -150,7 +91,7 @@ public class AI
      */
     public ChessMove findBestMove()
     {
-        int depth = 5;
+        int depth = algorithm == Algorithm.SIMPLE ? 1 : 5;
         long startTime = System.currentTimeMillis();
         Tree<GameState> gameTree = generateGameTree(depth, true);
         System.out.println("Time elapsed: " + (System.currentTimeMillis() - startTime) + "ms");
@@ -291,7 +232,6 @@ public class AI
 
     private ChessMove miniMaxBestMove(Tree<GameState> gameTree)
     {
-
         boolean max = playerToMove == ChessPiece.Color.WHITE;
         float bestRating = runMiniMax(gameTree, max);
 
@@ -335,7 +275,7 @@ public class AI
         {
             GameState gs = gameTree.info;
             gameTree.info.checkedForMiniMax = true;
-            gameTree.info.miniMaxRating = 5 * gs.materialRating + 2 * gs.mobilityRating + 3 * gs.hangingRating;
+            gameTree.info.miniMaxRating = 7 * gs.materialRating + 3 * gs.mobilityRating;// + 3 * gs.hangingRating;
             return gameTree.info.miniMaxRating;
         }
         else // non-leaf nodes check their children

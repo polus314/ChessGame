@@ -1,6 +1,7 @@
 package chessgui;
 
 import chessgame.*;
+import chessutil.FileReader;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -695,7 +696,7 @@ public class GameFrame extends JFrame implements ActionListener, PropertyChangeL
     private boolean loadFromFile(String pathname)
     {
         ChessBoard cb = new ChessBoard();
-        if (GameController.loadPositionFromFile(pathname, cb))
+        if (FileReader.loadPositionFromFile(pathname, cb))
         {
             controller.setBoardPosition(cb.getPiecesArray(), humanPlayer);
             gamePanel.myBoard.setPieces(cb.getPiecesArray());

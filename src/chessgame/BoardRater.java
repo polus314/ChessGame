@@ -1,8 +1,5 @@
 package chessgame;
 
-import chessgame.AI.GameState;
-import javafx.util.Pair;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,14 +27,13 @@ public class BoardRater
         {
             return;
         }
-        if (gs.board.getPieces().size() < 8){
-            gs.overallRating = getEndgameRating(gs, player);
+        if (gs.board.getPieces().size() < 8 && gs.board.getPieces(player.opposite()).size() == 1){
+            rateForEndgame(gs, player);
             return;
         }
         ChessBoard cb = gs.board;
         gs.materialRating = matRating(cb);
         gs.mobilityRating = mobRating(cb);
-        gs.hangingRating = hangRating(cb);
         gs.overallRating = gs.materialRating * 0.75f + gs.mobilityRating * 0.25f;
     }
 
@@ -139,12 +135,12 @@ public class BoardRater
      * @param cb
      * @return int - value of pieces that are not defended sufficiently
      */
-    private float hangRating(ChessBoard cb)
-    {
-        int whiteHangers = hangValue(cb, ChessPiece.Color.WHITE);
-        int blackHangers = hangValue(cb, ChessPiece.Color.BLACK);
-        return (blackHangers - whiteHangers) / (float) TOTAL_MATERIAL;
-    }
+//    private float hangRating(ChessBoard cb)
+//    {
+//        int whiteHangers = hangValue(cb, ChessPiece.Color.WHITE);
+//        int blackHangers = hangValue(cb, ChessPiece.Color.BLACK);
+//        return (blackHangers - whiteHangers) / (float) TOTAL_MATERIAL;
+//    }
 
     private int hangValue(ChessBoard cb, ChessPiece.Color color)
     {
@@ -170,44 +166,63 @@ public class BoardRater
                 }
                 //case 2: piece's attackers are worth less than the defenders
             }
-            ArrayList<ChessPiece> piecesInAction = aimedHere(cb, goodSpace.x, goodSpace.y);
-            if (!isHanging)
-            {
-                ArrayList<ChessPiece> attackers = new ArrayList<>();
-                ArrayList<ChessPiece> defenders = new ArrayList<>();
-                for (int k = 0; k < piecesInAction.size(); k++)
-                {
-                    if (piecesInAction.get(k).color == color)
-                    {
-                        defenders.add(piecesInAction.get(k));
-                    }
-                    else
-                    {
-                        attackers.add(piecesInAction.get(k));
-                    }
-                }
-
-                if (attackers.isEmpty())
-                {
-                    isHanging = false;
-                }
-                else if (defenders.size() < attackers.size())
-                {
-                    isHanging = true;
-                } //this is rather confusing, but I think it works
-                else if (defenders.size() == attackers.size())
-                {
-                    if (sumValue(defenders, attackers.size() - 1) + goodCP.value
-                            >= sumValue(attackers, attackers.size()))
-                    {
-                        isHanging = true;
-                    }
-                }
-                else if (defenders.size() > attackers.size())
-                {
-                    isHanging = false;
-                }
-            }
+            // I can't quite figure out the algorithm for calculating this
+//            ArrayList<ChessPiece> piecesInAction = aimedHere(cb, goodSpace.x, goodSpace.y);
+//            if (!isHanging)
+//            {
+//                ArrayList<ChessPiece> attackers = new ArrayList<>();
+//                ArrayList<ChessPiece> defenders = new ArrayList<>();
+//                for (int k = 0; k < piecesInAction.size(); k++)
+//                {
+//                    if (piecesInAction.get(k).color == color)
+//                    {
+//                        defenders.add(piecesInAction.get(k));
+//                    }
+//                    else
+//                    {
+//                        attackers.add(piecesInAction.get(k));
+//                    }
+//                }
+//
+//                if (attackers.isEmpty()) {
+//                    isHanging = false;
+//                }
+//                else if (defenders.isEmpty()) {
+//                    isHanging = true;
+//                }
+//                else {
+//                    Collections.sort(attackers);
+//                    Collections.sort(defenders);
+//                    int attackValue = attackers.get(0).value;
+//                    int defendValue = goodCP.value;
+//
+//                    if (attackValue < defendValue) {
+//                        isHanging = true;
+//                    }
+//                    else {
+//                        for (int k = 1; k < attackers.size(); k++) {
+//
+//                        }
+//                    }
+//
+//                }
+//                else if (defenders.size() < attackers.size())
+//                {
+//                    isHanging = true;
+//                } //this is rather confusing, but I think it works
+//                else if (defenders.size() == attackers.size())
+//                {
+//                    if (sumValue(defenders, attackers.size() - 1) + goodCP.value
+//                            >= sumValue(attackers, attackers.size()))
+//                    {
+//                        isHanging = true;
+//                    }
+//                }
+//                else if (defenders.size() > attackers.size())
+//                {
+//                    isHanging = false;
+//                }
+//            }
             if (isHanging)
             {
                 valueOfHanging += goodCP.value;
@@ -239,18 +254,21 @@ public class BoardRater
         return sum;
     }
 
-    private float getEndgameRating(GameState gs, ChessPiece.Color player){
-        float matRating = matRating(gs.board);
-        float kingProx = kingProximity(gs);
-        float oppKingMob = kingMobility(gs, player);
-        float hangRating = hangRating(gs.board);
+    private void rateForEndgame(GameState gs, ChessPiece.Color player){
+        gs.materialRating = matRating(gs.board);
+        gs.kingProximityRating = kingProximity(gs, player);
+        gs.kingMobilityRating = kingMobility(gs, player);
+//        gs.hangingRating = hangRating(gs.board);
 
-        return hangRating * 0.15f + matRating * 0.15f + kingProx * 0.65f + oppKingMob * 0.05f;
+        gs.overallRating =
+                gs.materialRating * 0.30f +
+                gs.kingProximityRating * 0.65f +
+                gs.kingMobilityRating * 0.05f;
     }
 
     private float MAX_DISTANCE = 9.8995f;
 
-    private float kingProximity(GameState gs) {
+    private float kingProximity(GameState gs, ChessPiece.Color player) {
         Point spWhiteKing = gs.board.find(new King(ChessPiece.Color.WHITE));
         Point spBlackKing = gs.board.find(new King(ChessPiece.Color.BLACK));
 
@@ -262,8 +280,9 @@ public class BoardRater
 
         float distance = (float)Math.sqrt(Math.pow(xDiff, 2.0) + Math.pow(yDiff, 2.0));
 
-        // normalize between 0.0 and 1.0, lower distance is good (i.e. closer to 1)
-        return 1.0f - (distance / MAX_DISTANCE);
+        // normalize between -1.0 and 1.0, lower distance is good (i.e. closer to 1)
+        float value = 1.0f - (distance / MAX_DISTANCE);
+        return player == ChessPiece.Color.WHITE ? value : -value;
     }
 
     private float kingMobility(GameState gs, ChessPiece.Color player) {
@@ -303,6 +322,7 @@ public class BoardRater
             }
         }
 
-        return 1.0f - (availableSquares.size() / 64.0f);
+        float value = 1.0f - (availableSquares.size() / 64.0f);
+        return player == ChessPiece.Color.WHITE ? value : -value;
     }
 }
